@@ -1,4 +1,4 @@
-use <honeycomb.scad>;
+use <util/honeycomb.scad>
 
 module mini_itx_case() {
     // --- Motherboard Plate ---
@@ -35,12 +35,6 @@ module mini_itx_case() {
     // --- Separation between parts ---
     separation = 10; // 10mm separation
 
-    // --- SFX Power Supply Dimensions ---
-    sfx_psu_width = 125;
-    sfx_psu_depth = 100;
-    sfx_psu_height = 63.5;
-    psu_x_offset = plate_x + 300; // Offset for the power supply block
-
     union() {
         // Motherboard plate with holes
         color("blue") {
@@ -73,11 +67,5 @@ module mini_itx_case() {
             }
         }
 
-        // SFX Power Supply Block
-        color("green") {
-            translate([psu_x_offset, 0, -50]) {
-                cube([sfx_psu_width, sfx_psu_depth, sfx_psu_height]);
-            }
-        }
     }
 }

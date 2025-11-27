@@ -1,10 +1,53 @@
-use <modules/case.scad>;
-use <modules/motherboard.scad>;
+// Component Inspection View - Minimal Configuration
+// Displays individual components spread out for inspection
+// See assemblies/minimal.scad for the complete assembled case
 
-translate([0, 0, 180]) rotate([-90, 0, 0]) {
-    mini_itx_case();
-}
+include <modules/case/dimensions.scad>
 
-translate([220, 0, 170]) rotate([-90, 0, 0]) {
-    motherboard();
+// Case parts
+use <modules/case/base/motherboard_plate.scad>
+use <modules/case/base/backplate_io.scad>
+
+// Components
+use <modules/components/motherboard.scad>
+use <modules/components/power/psu_sfx.scad>
+use <modules/components/power/psu_flex_atx.scad>
+use <modules/components/storage/hdd_3_5.scad>
+
+// Spacing between components
+spacing = 50;
+
+// Rotate all to view from front
+rotate([-90, 0, 0]) {
+    // Row 1: Case parts
+    translate([0, 0, 0]) {
+        motherboard_plate();
+    }
+
+    translate([mobo_width + spacing, 0, 0]) {
+        backplate_io();
+    }
+
+    // Row 2: Motherboard with cooler
+    translate([0, -(mobo_depth + spacing), 0]) {
+        motherboard();
+    }
+
+    // Row 3: Power supplies
+    translate([0, -(mobo_depth + spacing) * 2, 0]) {
+        power_supply_sfx();
+    }
+
+    translate([sfx_width + spacing, -(mobo_depth + spacing) * 2, 0]) {
+        power_supply_flex_atx();
+    }
+
+    // Row 4: Storage
+    translate([0, -(mobo_depth + spacing) * 3, 0]) {
+        hdd_3_5();
+    }
+
+    translate([120, -(mobo_depth + spacing) * 3, 0]) {
+        hdd_3_5();
+    }
 }
