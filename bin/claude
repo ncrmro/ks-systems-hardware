@@ -1,0 +1,381 @@
+#!/usr/bin/env python3
+"""
+Claude Code Wrapper with Worktree Support
+
+IMPORTANT: Any changes to this file should be reflected in docs/conventions/AGENT_WORKTREES.md
+
+This script wraps the Claude Code CLI to provide MCP server configuration and worktree support.
+"""
+
+import json
+import os
+import subprocess
+import sys
+import uuid
+
+def get_project_root():
+    """Get the project root directory (parent of bin/)."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.dirname(script_dir)
+
+def sanitize_branch_name(branch_name):
+    """Convert branch name to a valid directory name by replacing slashes with hyphens."""
+    return branch_name.replace('/', '-')
+
+def parse_env_file(env_path):
+    """Parse .env file and extract service port information."""
+    if not os.path.exists(env_path):
+        return {}
+
+    env_vars = {}
+    try:
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                # Skip comments and empty lines
+                if not line or line.startswith('#'):
+                    continue
+                # Parse KEY=VALUE pairs
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    env_vars[key.strip()] = value.strip()
+    except Exception as e:
+        print(f"Warning: Could not parse .env file: {e}", file=sys.stderr)
+
+    return env_vars
+
+def get_service_info(env_vars):
+    """Generate service availability information from environment variables."""
+    services = []
+
+    # Map environment variables to service descriptions
+    service_mappings = [
+        ('WEB_PORT', 'Web development server', 'localhost'),
+        ('DB_PORT', 'LibSQL database', 'localhost'),
+    ]
+
+    for env_key, service_name, host in service_mappings:
+        if env_key in env_vars:
+            port = env_vars[env_key]
+            services.append(f"{service_name}: {host}:{port}")
+
+    return services
+
+def get_or_create_session_id(env_path):
+    """Get existing session ID from .env or create a new one.
+
+    Returns:
+        tuple: (session_id, is_new) where is_new is True if session was just created
+    """
+    # Parse existing .env file
+    env_vars = parse_env_file(env_path)
+
+    # Check if session ID already exists
+    if 'CLAUDE_WORKTREE_SESSION_ID' in env_vars:
+        return (env_vars['CLAUDE_WORKTREE_SESSION_ID'], False)
+
+    # Generate new session ID
+    session_id = str(uuid.uuid4())
+
+    # Append to .env file
+    try:
+        with open(env_path, 'a') as f:
+            f.write(f"\n# Claude Code worktree session ID (auto-generated)\n")
+            f.write(f"CLAUDE_WORKTREE_SESSION_ID={session_id}\n")
+    except Exception as e:
+        print(f"Warning: Could not write session ID to .env: {e}", file=sys.stderr)
+        return (None, True)
+
+    return (session_id, True)
+
+def rename_zellij_tab(tab_name):
+    """Rename the current Zellij tab if Zellij is available."""
+    # Check if we're in a Zellij session
+    if 'ZELLIJ' not in os.environ:
+        return
+
+    try:
+        subprocess.run(
+            ['zellij', 'action', 'rename-tab', tab_name],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # Silently ignore if zellij command fails or is not found
+        pass
+
+def setup_zellij_worktree_layout(worktree_path):
+    """Create a two-pane Zellij layout: Claude on top, shell on bottom in worktree directory."""
+    # Check if we're in a Zellij session
+    if 'ZELLIJ' not in os.environ:
+        return
+
+    try:
+        # Create a new pane below
+        subprocess.run(
+            ['zellij', 'action', 'new-pane', '--direction', 'down'],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        # Send cd command to the new pane
+        cd_command = f"cd {worktree_path}\n"
+        subprocess.run(
+            ['zellij', 'action', 'write-chars', cd_command],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        # Parse .env file to get the web port and session ID
+        env_path = os.path.join(worktree_path, ".env")
+        env_vars = parse_env_file(env_path)
+
+        # Echo the web URL if WEB_PORT is available
+        if 'WEB_PORT' in env_vars:
+            web_port = env_vars['WEB_PORT']
+            echo_command = f"echo '🌐 Web server: http://localhost:{web_port}'\n"
+            subprocess.run(
+                ['zellij', 'action', 'write-chars', echo_command],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+
+        # Echo the session ID if available
+        if 'CLAUDE_WORKTREE_SESSION_ID' in env_vars:
+            session_id = env_vars['CLAUDE_WORKTREE_SESSION_ID']
+            echo_command = f"echo '🔄 Session: {session_id[:8]}...'\n"
+            subprocess.run(
+                ['zellij', 'action', 'write-chars', echo_command],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+
+        # Focus back to the top pane where Claude will run
+        subprocess.run(
+            ['zellij', 'action', 'focus-previous-pane'],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # Silently ignore if zellij commands fail
+        pass
+
+def create_mcp_config(workspace_path):
+    """Create the MCP server configuration."""
+    return {
+        "mcpServers": {
+            "typescript-lsp": {
+                "command": "mcp-language-server",
+                "args": [
+                    "--workspace",
+                    workspace_path,
+                    "--lsp",
+                    "typescript-language-server",
+                    "--",
+                    "--stdio"
+                ]
+            },
+            "playwright": {
+                "type": "stdio",
+                "command": "npx",
+                "env": {
+                    "PLAYWRIGHT_BROWSERS_PATH": "",
+                    "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS": "true"
+                },
+                "args": [
+                    "@playwright/mcp@latest",
+                    "--browser=chromium",
+                    "--executable-path=/nix/store/ciwl3hnki3yvx36vjsagx2yhrcy8jb1k-playwright-browsers/chromium-1181/chrome-linux/chrome"
+                ]
+            },
+            "docker": {
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "docker-mcp"
+                ],
+                "env": {}
+            }
+        }
+    }
+
+def main():
+    """Run Claude with MCP server configuration."""
+    project_root = get_project_root()
+
+    # Process arguments to handle --worktree flag
+    args = sys.argv[1:]
+    processed_args = []
+    workspace_path = project_root  # Default to project root
+    worktree_name = None  # Track worktree name for Zellij tab renaming
+    i = 0
+
+    while i < len(args):
+        if args[i] == "--worktree":
+            # Get the worktree branch name
+            if i + 1 >= len(args):
+                print("Error: --worktree requires a branch name argument", file=sys.stderr)
+                sys.exit(1)
+
+            branch_name = args[i + 1]
+
+            # Strip 'worktree/' prefix if present (for autocomplete convenience)
+            if branch_name.startswith("worktree/"):
+                branch_name = branch_name[len("worktree/"):]
+
+            # Store the worktree name for tab renaming
+            worktree_name = branch_name
+
+            # Construct the full worktree path
+            worktree_path = os.path.join(project_root, "worktree", sanitize_branch_name(branch_name))
+
+            # Check if worktree exists by verifying both directory and git registration
+            worktree_registered = False
+            try:
+                result = subprocess.run(
+                    ["git", "worktree", "list", "--porcelain"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                # Check if this specific worktree path is registered
+                for line in result.stdout.split('\n'):
+                    if line.startswith('worktree '):
+                        registered_path = line.replace('worktree ', '')
+                        if os.path.abspath(registered_path) == os.path.abspath(worktree_path):
+                            worktree_registered = True
+                            break
+            except subprocess.CalledProcessError:
+                pass
+
+            # Create worktree if not properly registered (even if directory exists)
+            if not worktree_registered:
+                if os.path.exists(worktree_path):
+                    print(f"Found orphaned worktree directory at {worktree_path}")
+                    print(f"Re-creating worktree for branch '{branch_name}'...")
+                else:
+                    print(f"Worktree does not exist at {worktree_path}")
+                    print(f"Creating worktree for branch '{branch_name}'...")
+
+                # Get the path to bin/worktree script
+                worktree_script = os.path.join(project_root, "bin", "worktree")
+
+                try:
+                    result = subprocess.run(
+                        [worktree_script, branch_name],
+                        check=True
+                    )
+                    print(f"✓ Worktree created successfully")
+                except subprocess.CalledProcessError as e:
+                    print(f"Error: Failed to create worktree: {e}", file=sys.stderr)
+                    sys.exit(1)
+                except Exception as e:
+                    print(f"Error: Could not execute worktree script: {e}", file=sys.stderr)
+                    sys.exit(1)
+
+            # Update workspace path for TypeScript LSP
+            workspace_path = worktree_path
+
+            # Add the --add-dir flag
+            processed_args.extend(["--add-dir", worktree_path])
+
+            # Skip the worktree branch name argument
+            i += 2
+        else:
+            # Pass through other arguments
+            processed_args.append(args[i])
+            i += 1
+
+    # Parse .env file from the workspace directory
+    env_path = os.path.join(workspace_path, ".env")
+    env_vars = parse_env_file(env_path)
+    services = get_service_info(env_vars)
+
+    # For worktrees, get or create session ID and add appropriate flag
+    if workspace_path != project_root:
+        session_id, is_new = get_or_create_session_id(env_path)
+        if session_id:
+            if is_new:
+                # New session - use --session-id to create it
+                processed_args.extend(["--session-id", session_id])
+            else:
+                # Existing session - use --resume to attach to it
+                processed_args.extend(["--resume", session_id])
+
+    # Build system prompt with workspace and service information
+    system_prompt_parts = []
+
+    if workspace_path != project_root:
+        system_prompt_parts.append(
+            f"CRITICAL WORKTREE ISOLATION:\n"
+            f"You are working in an isolated git worktree at: {workspace_path}\n\n"
+            f"STRICT REQUIREMENTS:\n"
+            f"- You MUST ONLY read, edit, and create files within {workspace_path}\n"
+            f"- You MUST run ALL commands (bash, git, npm, etc.) from within {workspace_path}\n"
+            f"- You MUST NEVER access or modify files in {project_root}\n"
+            f"- You MUST NEVER access or modify files in other worktree directories\n"
+            f"- When using file paths, they MUST be within {workspace_path}\n"
+            f"- When using git commands, you are working on the branch checked out in this worktree\n\n"
+            f"This worktree is completely isolated from the main project directory. Treat it as your entire workspace."
+        )
+
+    if services:
+        service_list = "\n".join(f"  - {service}" for service in services)
+        system_prompt_parts.append(
+            f"Available services in this workspace:\n{service_list}"
+        )
+
+    # Include AGENTS.md content if it exists in project root
+    agents_md_path = os.path.join(project_root, "AGENTS.md")
+    if os.path.exists(agents_md_path):
+        try:
+            with open(agents_md_path, 'r') as f:
+                agents_content = f.read()
+                system_prompt_parts.append(agents_content)
+        except Exception as e:
+            print(f"Warning: Could not read AGENTS.md: {e}", file=sys.stderr)
+
+    if system_prompt_parts:
+        system_prompt = "\n\n".join(system_prompt_parts)
+        processed_args.extend(["--append-system-prompt", system_prompt])
+
+    # Create MCP config with the appropriate workspace path
+    mcp_config = create_mcp_config(workspace_path)
+    mcp_config_json = json.dumps(mcp_config)
+
+    # Set environment variable for hooks to know the workspace directory
+    os.environ['CLAUDE_WORKSPACE_DIR'] = workspace_path
+
+    # Print worktree notification before starting Claude
+    if workspace_path != project_root:
+        session_id = env_vars.get('CLAUDE_WORKTREE_SESSION_ID')
+        if session_id:
+            print(f"\n🌳 Working in worktree: {workspace_path}", file=sys.stderr)
+            print(f"🔄 Resuming session: {session_id[:8]}...\n", file=sys.stderr)
+        else:
+            print(f"\n🌳 Working in worktree: {workspace_path}\n", file=sys.stderr)
+        sys.stderr.flush()
+        # Rename Zellij tab to worktree name if available
+        if worktree_name:
+            rename_zellij_tab(worktree_name)
+        # Set up two-pane layout in Zellij
+        setup_zellij_worktree_layout(workspace_path)
+
+    # Build the command: claude --mcp-config <json> <processed args>
+    cmd = ["claude", "--mcp-config", mcp_config_json] + processed_args
+
+    # Execute the command, replacing the current process
+    try:
+        os.execvp("claude", cmd)
+    except OSError as e:
+        print(f"Error executing claude: {e}", file=sys.stderr)
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
