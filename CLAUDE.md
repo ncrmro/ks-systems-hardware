@@ -69,14 +69,36 @@ use <../modules/components/motherboard.scad>  // Get modules only
 - `mobo_width/depth` (170mm Mini-ITX)
 - `wall_thickness` (3mm)
 - `standoff_height` (6mm)
+- `interior_chamber_height` (standoffs + mobo + cooler, ~94mm)
+- `minimal_exterior_height` (~100mm)
+- Panel dimensions:
+  - `interior_panel_width/depth` (220mm x 170mm) - for top/bottom
+  - `side_panel_height/depth` (100mm x 176mm) - for left/right
+  - `front_back_panel_width/height` (220mm x 100mm) - for front/back
 - `flex_atx_*`, `sfx_*` (PSU dimensions)
 - `gpu_config_width/depth/height` (171x378x190mm)
+
+### Panel Positioning
+
+Panels fall into two categories:
+
+**Exterior panels** (form the outer shell):
+- Side panels: Full exterior height, positioned at Z=0, X=0 or X=case_width-wall_thickness
+
+**Interior panels** (fit between walls):
+- Top/bottom: Interior width/depth, positioned at X=wall_thickness, Y=wall_thickness
+- Front/back: Interior width, full exterior height, positioned at X=wall_thickness, Z=0
 
 ### Key Design Patterns
 
 1. **Assemblies** combine case parts and components with positioning logic
 2. **Toggle flags** (`show_panels`, `show_components`, `explode`) enable debugging
-3. **Color coding** distinguishes parts: blue=plates, red=backplates, gray=panels, purple=PCBs
+3. **Color coding** distinguishes parts:
+   - blue = motherboard plate
+   - red = backplate (I/O panel)
+   - gray = all other panels (side, top, bottom, front)
+   - purple = PCBs (motherboard)
+   - green = PSU
 4. **Honeycomb ventilation** uses the `honeycomb_xz()` utility module
 
 ## Reference Documents
