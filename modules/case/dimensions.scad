@@ -20,8 +20,9 @@ standoff_locations = [
 ];
 
 // --- I/O Shield ---
-io_shield_width = 152.4;    // 6 inches
-io_shield_height = 33.87;   // 1 1/3 inches
+// Standard ATX I/O shield dimensions
+io_shield_width = 158.75;   // 6.25 inches (standard ATX)
+io_shield_height = 44.45;   // 1.75 inches (standard ATX)
 io_shield_x_offset = (mobo_width - io_shield_width) / 2;
 io_shield_z_offset = 5;     // 5mm from bottom of plate
 
@@ -53,6 +54,26 @@ sfx_length = 125;
 sfx_width = 100;
 sfx_height = 63.5;
 
+// --- HDD 3.5" Dimensions ---
+hdd_width = 101.6;
+hdd_length = 147;
+hdd_height = 26.1;
+
+// --- NAS 2-Disk Config ---
+// 2 HDDs side-by-side (controlling dimension for case width)
+// See SPEC.md Section 3.3 for design rationale
+nas_2disk_rail_width = 2;
+nas_2disk_gap = 5;           // Gap between bays
+nas_2disk_padding = 2;       // Clearance around HDDs
+nas_2disk_bay_width = hdd_width + 2 * nas_2disk_rail_width;  // ~105.6mm per bay
+nas_2disk_inner_width = 2 * nas_2disk_bay_width + nas_2disk_gap;  // ~216.2mm
+nas_2disk_width = nas_2disk_inner_width + 2 * (wall_thickness + nas_2disk_padding);  // ~226mm
+
+// --- PSU Compartment ---
+// Flex ATX PSU stands on its side (40mm height becomes width)
+flex_atx_on_side_width = flex_atx_height;  // 40mm
+psu_compartment_width = nas_2disk_width - mobo_width;  // ~56mm (40mm PSU + 16mm clearance)
+
 // --- Derived Interior Dimensions ---
 interior_height = standoff_height + mobo_pcb_thickness + cooler_total_height;  // ~94mm
 
@@ -63,7 +84,20 @@ minimal_mobo_exterior_depth = mobo_depth + 2 * wall_thickness;   // 176mm
 minimal_exterior_height = interior_height + 2 * wall_thickness;   // ~100mm
 
 // With Flex ATX PSU next to motherboard
-minimal_with_psu_width = minimal_mobo_exterior_width + flex_atx_width;  // ~256mm
+// Width controlled by NAS 2-disk HDD layout (see SPEC.md Section 3.3)
+minimal_with_psu_width = nas_2disk_width;  // ~226mm (PSU compartment = 56mm, PSU on side = 40mm)
+
+// --- Interior Panel Dimensions (top/bottom panels fit between walls) ---
+interior_panel_width = minimal_with_psu_width - 2 * wall_thickness;  // ~220mm
+interior_panel_depth = mobo_depth;                                    // 170mm
+
+// --- Side Panel Dimensions (left/right panels form exterior walls) ---
+side_panel_height = minimal_exterior_height;                          // ~100mm
+side_panel_depth = mobo_depth + 2 * wall_thickness;                   // 176mm
+
+// --- Front/Back Panel Dimensions (fit between side walls, between top/bottom) ---
+front_back_panel_width = interior_panel_width;                        // ~220mm
+front_back_panel_height = interior_height;                            // ~94mm
 
 // --- Ventilation ---
 honeycomb_radius = 3;
@@ -97,9 +131,6 @@ radiator_240_thickness = 27;
 
 // --- NAS Many-Disk Config ---
 // 5-8 drives mounted vertically (on narrowest side)
-hdd_width = 101.6;
-hdd_length = 147;
-hdd_height = 26.1;
 nas_many_drive_count = 6;  // Default 6 drives
 nas_many_drive_spacing = 5;
 nas_many_enclosure_height = hdd_width + wall_thickness + 5;  // ~110mm (drives on side)

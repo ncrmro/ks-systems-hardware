@@ -5,10 +5,10 @@ include <../../dimensions.scad>
 use <../../../util/honeycomb.scad>
 
 module side_panel_left() {
-    // Panel dimensions
-    panel_depth = mobo_depth + 2 * wall_thickness;  // 176mm
-    panel_height = minimal_exterior_height;          // ~100mm
-    panel_thickness = wall_thickness;                // 3mm
+    // Panel dimensions (exterior, forms outer wall)
+    panel_depth = side_panel_depth;      // 176mm
+    panel_height = side_panel_height;    // ~100mm
+    panel_thickness = wall_thickness;    // 3mm
 
     // Honeycomb area (leave border around edges)
     vent_border = 10;

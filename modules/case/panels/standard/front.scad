@@ -4,10 +4,10 @@
 include <../../dimensions.scad>
 
 module front_panel() {
-    // Panel dimensions (full width including PSU area)
-    panel_width = minimal_with_psu_width;            // ~258mm
-    panel_height = minimal_exterior_height;          // ~100mm
-    panel_thickness = wall_thickness;                // 3mm
+    // Panel dimensions (interior, fits between side walls)
+    panel_width = front_back_panel_width;    // ~220mm
+    panel_height = front_back_panel_height;  // ~94mm
+    panel_thickness = wall_thickness;        // 3mm
 
     // Power button (typical 12mm momentary switch)
     power_btn_diameter = 12;

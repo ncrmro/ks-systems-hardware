@@ -47,8 +47,8 @@ module nas_2disk_assembly() {
 
         // === CASE PANELS (base frame above NAS) ===
         if (show_panels) {
-            // Bottom panel of base frame (sits on top of NAS enclosure)
-            translate([0, 0, nas_top]) {
+            // Bottom panel of base frame (interior dimensions, fits between walls)
+            translate([wall_thickness, wall_thickness, nas_top]) {
                 bottom_panel();
             }
 
@@ -62,23 +62,23 @@ module nas_2disk_assembly() {
                 backplate_io();
             }
 
-            // Front panel
-            translate([0, -explode, base_z]) {
+            // Front panel (interior dimensions, fits between walls)
+            translate([wall_thickness, -explode, base_z]) {
                 front_panel();
             }
 
-            // Left side panel
-            translate([-explode, 0, base_z]) {
+            // Left side panel (full height, starts at nas_top)
+            translate([-explode, 0, nas_top]) {
                 side_panel_left();
             }
 
-            // Right side panel
-            translate([minimal_with_psu_width - wall_thickness + explode, 0, base_z]) {
+            // Right side panel (full height, starts at nas_top)
+            translate([minimal_with_psu_width - wall_thickness + explode, 0, nas_top]) {
                 side_panel_right();
             }
 
-            // Top panel
-            translate([0, 0, nas_top + minimal_exterior_height - wall_thickness + explode]) {
+            // Top panel (interior dimensions, fits between walls)
+            translate([wall_thickness, wall_thickness, nas_top + minimal_exterior_height - wall_thickness + explode]) {
                 top_panel();
             }
         }

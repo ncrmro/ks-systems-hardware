@@ -6,20 +6,22 @@ include <../dimensions.scad>
 use <../../util/honeycomb.scad>
 
 module backplate_io() {
-    // Extended backplate width (motherboard + gap + PSU)
-    extended_width = mobo_width + wall_thickness + flex_atx_width;  // ~253mm
+    // Panel dimensions (interior, fits between side walls)
+    extended_width = front_back_panel_width;   // ~220mm
+    panel_height = front_back_panel_height;    // ~94mm
 
     // Honeycomb area calculations (motherboard section only)
     honeycomb_area_z_start = io_shield_z_offset + io_shield_height + vent_padding;
     honeycomb_area_width = mobo_width - 2 * vent_padding;
-    honeycomb_area_height = backplate_height - honeycomb_area_z_start - vent_padding;
+    honeycomb_area_height = panel_height - honeycomb_area_z_start - vent_padding;
 
     // PSU section calculations
-    psu_section_x = mobo_width + wall_thickness;
+    psu_section_x = mobo_width;  // PSU section starts at motherboard edge
+    psu_section_width = extended_width - mobo_width;  // Interior PSU compartment width
 
-    // PSU exhaust cutout (40mm fan opening, centered in PSU section)
+    // PSU exhaust cutout (40mm fan opening, centered in PSU compartment)
     psu_cutout_size = 40;
-    psu_cutout_x = psu_section_x + (flex_atx_width - psu_cutout_size) / 2;
+    psu_cutout_x = psu_section_x + (psu_section_width - psu_cutout_size) / 2;
     psu_cutout_z = standoff_height + (flex_atx_height - psu_cutout_size) / 2;  // Centered on PSU height
 
     // PSU mounting holes (M3, around the cutout)
@@ -29,7 +31,7 @@ module backplate_io() {
     color("red") {
         difference() {
             // Extended backplate spanning mobo + PSU
-            cube([extended_width, backplate_thickness, backplate_height]);
+            cube([extended_width, backplate_thickness, panel_height]);
 
             // === MOTHERBOARD SECTION ===
             // I/O shield cutout
@@ -51,9 +53,9 @@ module backplate_io() {
             // PSU mounting holes (4 corners around cutout)
             psu_mount_positions = [
                 [psu_cutout_x - psu_mount_inset, psu_cutout_z - psu_mount_inset],
-                [psu_section_x + flex_atx_width - psu_mount_inset, psu_cutout_z - psu_mount_inset],
+                [psu_section_x + psu_section_width - psu_mount_inset, psu_cutout_z - psu_mount_inset],
                 [psu_cutout_x - psu_mount_inset, psu_cutout_z + psu_cutout_size + psu_mount_inset],
-                [psu_section_x + flex_atx_width - psu_mount_inset, psu_cutout_z + psu_cutout_size + psu_mount_inset]
+                [psu_section_x + psu_section_width - psu_mount_inset, psu_cutout_z + psu_cutout_size + psu_mount_inset]
             ];
 
             for (pos = psu_mount_positions) {
