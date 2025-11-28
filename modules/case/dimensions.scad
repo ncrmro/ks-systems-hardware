@@ -39,15 +39,24 @@ cooler_total_height = cooler_heatsink_height + cooler_fan_height;  // 86mm
 
 // --- Power Supplies ---
 // Flex ATX (from technical drawing)
-// Orientation: 80mm wide (X), 150mm deep (Y), 40mm tall (Z)
-flex_atx_width = 80.0;      // G: Width (X - wider face)
+// Standing orientation: 40mm wide (X), 150mm deep (Y), 80mm tall (Z)
+flex_atx_width = 40.0;      // A: Width (X - thin side, standing)
 flex_atx_length = 150.0;    // B: Length (Y - depth)
-flex_atx_height = 40.0;     // A: Height (Z - shortest side on bottom)
+flex_atx_height = 80.0;     // G: Height (Z - tall side, standing)
 
-// Flex ATX Mounting holes - 8-32 UNC thread (4 places)
+// Flex ATX Mounting holes - 8-32 UNC thread (4 places on rear 40x80mm face)
 flex_atx_mount_hole_radius = 2.1;   // 8-32 clearance (~4.2mm dia)
-flex_atx_mount_h_spacing = 63.5;    // F: Horizontal hole spacing (within 80mm width)
-flex_atx_mount_v_spacing = 12.5;    // K: Vertical offset from edges
+flex_atx_mount_x_inset = 12.5;      // K: Distance from left/right edges
+flex_atx_mount_z_spacing = 63.5;    // F: Vertical spacing between holes
+flex_atx_mount_z_inset = (flex_atx_height - flex_atx_mount_z_spacing) / 2;  // 8.25mm from top/bottom
+
+// Calculated mounting hole positions (X, Z pairs relative to PSU origin)
+flex_atx_mount_holes = [
+    [flex_atx_mount_x_inset, flex_atx_mount_z_inset],                                    // Bottom-left
+    [flex_atx_width - flex_atx_mount_x_inset, flex_atx_mount_z_inset],                   // Bottom-right
+    [flex_atx_mount_x_inset, flex_atx_height - flex_atx_mount_z_inset],                  // Top-left
+    [flex_atx_width - flex_atx_mount_x_inset, flex_atx_height - flex_atx_mount_z_inset]  // Top-right
+];
 
 // SFX
 sfx_length = 125;
@@ -70,8 +79,8 @@ nas_2disk_inner_width = 2 * nas_2disk_bay_width + nas_2disk_gap;  // ~216.2mm
 nas_2disk_width = nas_2disk_inner_width + 2 * (wall_thickness + nas_2disk_padding);  // ~226mm
 
 // --- PSU Compartment ---
-// Flex ATX PSU stands on its side (40mm height becomes width)
-flex_atx_on_side_width = flex_atx_height;  // 40mm
+// Flex ATX PSU in standing orientation (40mm width)
+flex_atx_standing_width = flex_atx_width;  // 40mm (already in standing orientation)
 psu_compartment_width = nas_2disk_width - mobo_width;  // ~56mm (40mm PSU + 16mm clearance)
 
 // --- Interior Chamber Height (standoffs + motherboard + cooler) ---

@@ -31,7 +31,28 @@ module case_nas_2x() {
     content_y = wall + padding;
     content_z = wall;
 
+    // Feet dimensions (matching base case feet)
+    foot_diameter = 15;
+    foot_height = 8;
+    foot_inset = 15;
+
     union() {
+        // Feet (rubber bumper mounts at bottom of NAS enclosure)
+        color("darkgray") {
+            foot_positions = [
+                [foot_inset, foot_inset],
+                [outer_w - foot_inset, foot_inset],
+                [foot_inset, outer_l - foot_inset],
+                [outer_w - foot_inset, outer_l - foot_inset]
+            ];
+
+            for (pos = foot_positions) {
+                translate([pos[0], pos[1], -foot_height]) {
+                    cylinder(h = foot_height, d = foot_diameter, $fn = 30);
+                }
+            }
+        }
+
         // The Enclosure Shell
         color("silver") {
             difference() {

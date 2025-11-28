@@ -4,7 +4,7 @@
 include <../../dimensions.scad>
 use <top.scad>  // For honeycomb_xy module
 
-module bottom_panel() {
+module bottom_panel(show_feet = true) {
     // Panel dimensions (interior, fits between side walls)
     panel_width = interior_panel_width;    // ~220mm
     panel_depth = interior_panel_depth;    // 170mm
@@ -68,18 +68,20 @@ module bottom_panel() {
             }
         }
 
-        // Feet (rubber bumper mounts)
-        color("darkgray") {
-            foot_positions = [
-                [foot_inset, foot_inset],
-                [panel_width - foot_inset, foot_inset],
-                [foot_inset, panel_depth - foot_inset],
-                [panel_width - foot_inset, panel_depth - foot_inset]
-            ];
+        // Feet (rubber bumper mounts) - optional, disabled when NAS enclosure provides feet
+        if (show_feet) {
+            color("darkgray") {
+                foot_positions = [
+                    [foot_inset, foot_inset],
+                    [panel_width - foot_inset, foot_inset],
+                    [foot_inset, panel_depth - foot_inset],
+                    [panel_width - foot_inset, panel_depth - foot_inset]
+                ];
 
-            for (pos = foot_positions) {
-                translate([pos[0], pos[1], -foot_height]) {
-                    cylinder(h = foot_height, d = foot_diameter, $fn = 30);
+                for (pos = foot_positions) {
+                    translate([pos[0], pos[1], -foot_height]) {
+                        cylinder(h = foot_height, d = foot_diameter, $fn = 30);
+                    }
                 }
             }
         }
