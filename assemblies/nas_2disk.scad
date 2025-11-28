@@ -57,13 +57,13 @@ module nas_2disk_assembly() {
                 motherboard_plate();
             }
 
-            // I/O Backplate (at rear)
-            translate([base_x, mobo_depth + wall_thickness + explode, base_z]) {
+            // I/O Backplate (at rear, full height starts at nas_top)
+            translate([wall_thickness, mobo_depth + wall_thickness + explode, nas_top]) {
                 backplate_io();
             }
 
-            // Front panel (interior dimensions, fits between walls)
-            translate([wall_thickness, -explode, base_z]) {
+            // Front panel (full height, starts at nas_top)
+            translate([wall_thickness, -explode, nas_top]) {
                 front_panel();
             }
 

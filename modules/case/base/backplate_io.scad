@@ -19,14 +19,17 @@ module backplate_io() {
     psu_section_x = mobo_width;  // PSU section starts at motherboard edge
     psu_section_width = extended_width - mobo_width;  // Interior PSU compartment width
 
-    // PSU exhaust cutout (40mm fan opening, centered in PSU compartment)
-    psu_cutout_size = 40;
-    psu_cutout_x = psu_section_x + (psu_section_width - psu_cutout_size) / 2;
-    psu_cutout_z = standoff_height + (flex_atx_height - psu_cutout_size) / 2;  // Centered on PSU height
+    // PSU exhaust cutout (40mm wide x 75mm tall, centered in PSU compartment)
+    psu_cutout_width = 40;
+    psu_cutout_height = 75;
+    psu_cutout_x = psu_section_x + (psu_section_width - psu_cutout_width) / 2;
+    psu_cutout_z = standoff_height;  // Start at standoff height
 
-    // PSU mounting holes (M3, around the cutout)
-    psu_mount_inset = 5;
+    // PSU mounting holes (2 holes, 32mm apart vertically, centered on cutout)
+    psu_mount_spacing = 32;  // Flex ATX mounting hole spacing
     psu_mount_hole_radius = panel_screw_radius;  // 1.6mm for M3
+    psu_mount_center_x = psu_cutout_x + psu_cutout_width / 2;
+    psu_mount_center_z = psu_cutout_z + psu_cutout_height / 2;
 
     color("red") {
         difference() {
@@ -45,17 +48,15 @@ module backplate_io() {
             }
 
             // === PSU SECTION ===
-            // PSU exhaust cutout
+            // PSU exhaust cutout (40mm x 75mm)
             translate([psu_cutout_x, -0.1, psu_cutout_z]) {
-                cube([psu_cutout_size, backplate_thickness + 0.2, psu_cutout_size]);
+                cube([psu_cutout_width, backplate_thickness + 0.2, psu_cutout_height]);
             }
 
-            // PSU mounting holes (4 corners around cutout)
+            // PSU mounting holes (2 holes, 32mm apart, centered on cutout)
             psu_mount_positions = [
-                [psu_cutout_x - psu_mount_inset, psu_cutout_z - psu_mount_inset],
-                [psu_section_x + psu_section_width - psu_mount_inset, psu_cutout_z - psu_mount_inset],
-                [psu_cutout_x - psu_mount_inset, psu_cutout_z + psu_cutout_size + psu_mount_inset],
-                [psu_section_x + psu_section_width - psu_mount_inset, psu_cutout_z + psu_cutout_size + psu_mount_inset]
+                [psu_mount_center_x, psu_mount_center_z - psu_mount_spacing / 2],
+                [psu_mount_center_x, psu_mount_center_z + psu_mount_spacing / 2]
             ];
 
             for (pos = psu_mount_positions) {

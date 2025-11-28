@@ -40,13 +40,13 @@ module minimal_assembly() {
                 motherboard_plate();
             }
 
-            // I/O Backplate (at rear)
-            translate([base_x, mobo_depth + wall_thickness + explode, base_z]) {
+            // I/O Backplate (at rear, full height starts at Z=0)
+            translate([wall_thickness, mobo_depth + wall_thickness + explode, 0]) {
                 backplate_io();
             }
 
-            // Front panel (interior dimensions, fits between walls)
-            translate([wall_thickness, -explode, base_z]) {
+            // Front panel (full height, starts at Z=0)
+            translate([wall_thickness, -explode, 0]) {
                 front_panel();
             }
 
