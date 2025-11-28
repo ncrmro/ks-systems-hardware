@@ -73,8 +73,8 @@ module minimal_assembly() {
                 motherboard();
             }
 
-            // Flex ATX PSU (next to motherboard)
-            translate([mobo_width + wall_thickness * 2, base_y, base_z + standoff_height]) {
+            // Flex ATX PSU (next to motherboard, rear face against backplate)
+            translate([mobo_width + wall_thickness * 2, mobo_depth + wall_thickness - flex_atx_length, base_z + standoff_height]) {
                 power_supply_flex_atx();
             }
         }

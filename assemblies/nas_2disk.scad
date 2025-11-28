@@ -48,8 +48,9 @@ module nas_2disk_assembly() {
         // === CASE PANELS (base frame above NAS) ===
         if (show_panels) {
             // Bottom panel of base frame (interior dimensions, fits between walls)
+            // Feet disabled - NAS enclosure provides feet at ground level
             translate([wall_thickness, wall_thickness, nas_top]) {
-                bottom_panel();
+                bottom_panel(show_feet = false);
             }
 
             // Motherboard plate (raised by standoff height)
@@ -90,8 +91,8 @@ module nas_2disk_assembly() {
                 motherboard();
             }
 
-            // Flex ATX PSU (next to motherboard)
-            translate([mobo_width + wall_thickness * 2, base_y, base_z + standoff_height]) {
+            // Flex ATX PSU (next to motherboard, rear face against backplate)
+            translate([mobo_width + wall_thickness * 2, mobo_depth + wall_thickness - flex_atx_length, base_z + standoff_height]) {
                 power_supply_flex_atx();
             }
         }

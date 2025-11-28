@@ -19,17 +19,15 @@ module backplate_io() {
     psu_section_x = mobo_width;  // PSU section starts at motherboard edge
     psu_section_width = extended_width - mobo_width;  // Interior PSU compartment width
 
-    // PSU exhaust cutout (40mm wide x 75mm tall, centered in PSU compartment)
-    psu_cutout_width = 40;
-    psu_cutout_height = 75;
+    // PSU exhaust cutout - uses shared Flex ATX dimensions
+    psu_cutout_width = flex_atx_width;    // 40mm (from dimensions.scad)
+    psu_cutout_height = flex_atx_height;  // 80mm (from dimensions.scad)
     psu_cutout_x = psu_section_x + (psu_section_width - psu_cutout_width) / 2;
     psu_cutout_z = standoff_height;  // Start at standoff height
 
-    // PSU mounting holes (2 holes, 32mm apart vertically, centered on cutout)
-    psu_mount_spacing = 32;  // Flex ATX mounting hole spacing
-    psu_mount_hole_radius = panel_screw_radius;  // 1.6mm for M3
-    psu_mount_center_x = psu_cutout_x + psu_cutout_width / 2;
-    psu_mount_center_z = psu_cutout_z + psu_cutout_height / 2;
+    // PSU mounting holes - 4 holes using shared positions from dimensions.scad
+    // flex_atx_mount_holes contains [X, Z] positions relative to PSU origin
+    // Translate to backplate coords by adding cutout origin offset
 
     color("red") {
         difference() {
@@ -53,16 +51,11 @@ module backplate_io() {
                 cube([psu_cutout_width, backplate_thickness + 0.2, psu_cutout_height]);
             }
 
-            // PSU mounting holes (2 holes, 32mm apart, centered on cutout)
-            psu_mount_positions = [
-                [psu_mount_center_x, psu_mount_center_z - psu_mount_spacing / 2],
-                [psu_mount_center_x, psu_mount_center_z + psu_mount_spacing / 2]
-            ];
-
-            for (pos = psu_mount_positions) {
-                translate([pos[0], -0.1, pos[1]]) {
+            // PSU mounting holes (4 holes matching Flex ATX pattern from dimensions.scad)
+            for (hole = flex_atx_mount_holes) {
+                translate([psu_cutout_x + hole[0], -0.1, psu_cutout_z + hole[1]]) {
                     rotate([-90, 0, 0]) {
-                        cylinder(h = backplate_thickness + 0.2, r = psu_mount_hole_radius, $fn = 20);
+                        cylinder(h = backplate_thickness + 0.2, r = flex_atx_mount_hole_radius, $fn = 20);
                     }
                 }
             }
