@@ -5,18 +5,18 @@ include <../../dimensions.scad>
 use <../../../util/honeycomb.scad>
 
 module top_panel() {
-    // Panel dimensions (full width including PSU area)
-    panel_width = minimal_with_psu_width;            // ~258mm
-    panel_depth = mobo_depth + 2 * wall_thickness;  // 176mm
-    panel_thickness = wall_thickness;                // 3mm
+    // Panel dimensions (interior, fits between side walls)
+    panel_width = interior_panel_width;    // ~220mm
+    panel_depth = interior_panel_depth;    // 170mm
+    panel_thickness = wall_thickness;      // 3mm
 
     // Ventilation area over CPU cooler
     // Cooler is roughly centered on motherboard
     vent_border = 10;
     vent_width = mobo_width - 2 * vent_border;      // Vent over motherboard area only
     vent_depth = mobo_depth - 2 * vent_border;
-    vent_x_offset = wall_thickness + vent_border;
-    vent_y_offset = wall_thickness + vent_border;
+    vent_x_offset = vent_border;
+    vent_y_offset = vent_border;
 
     color("gray") {
         difference() {

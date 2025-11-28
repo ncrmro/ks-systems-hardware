@@ -30,8 +30,8 @@ module minimal_assembly() {
     union() {
         // === CASE PANELS ===
         if (show_panels) {
-            // Bottom panel
-            translate([0, 0, -explode]) {
+            // Bottom panel (interior dimensions, fits between walls)
+            translate([wall_thickness, wall_thickness, -explode]) {
                 bottom_panel();
             }
 
@@ -45,23 +45,23 @@ module minimal_assembly() {
                 backplate_io();
             }
 
-            // Front panel
-            translate([0, -explode, base_z]) {
+            // Front panel (interior dimensions, fits between walls)
+            translate([wall_thickness, -explode, base_z]) {
                 front_panel();
             }
 
-            // Left side panel
-            translate([-explode, 0, base_z]) {
+            // Left side panel (full height, starts at Z=0)
+            translate([-explode, 0, 0]) {
                 side_panel_left();
             }
 
-            // Right side panel
-            translate([minimal_with_psu_width - wall_thickness + explode, 0, base_z]) {
+            // Right side panel (full height, starts at Z=0)
+            translate([minimal_with_psu_width - wall_thickness + explode, 0, 0]) {
                 side_panel_right();
             }
 
-            // Top panel
-            translate([0, 0, minimal_exterior_height - wall_thickness + explode]) {
+            // Top panel (interior dimensions, fits between walls)
+            translate([wall_thickness, wall_thickness, minimal_exterior_height - wall_thickness + explode]) {
                 top_panel();
             }
         }

@@ -5,10 +5,10 @@ include <../../dimensions.scad>
 use <top.scad>  // For honeycomb_xy module
 
 module bottom_panel() {
-    // Panel dimensions (full width including PSU area)
-    panel_width = minimal_with_psu_width;            // ~258mm
-    panel_depth = mobo_depth + 2 * wall_thickness;  // 176mm
-    panel_thickness = wall_thickness;                // 3mm
+    // Panel dimensions (interior, fits between side walls)
+    panel_width = interior_panel_width;    // ~220mm
+    panel_depth = interior_panel_depth;    // 170mm
+    panel_thickness = wall_thickness;      // 3mm
 
     // Feet dimensions
     foot_diameter = 15;
@@ -19,15 +19,15 @@ module bottom_panel() {
     vent_border = 20;
     vent_width = mobo_width - 2 * vent_border;
     vent_depth = mobo_depth - 2 * vent_border;
-    vent_x_offset = wall_thickness + vent_border;
-    vent_y_offset = wall_thickness + vent_border;
+    vent_x_offset = vent_border;
+    vent_y_offset = vent_border;
 
     // NAS expansion connector holes (for future stacking)
     nas_connector_positions = [
-        [wall_thickness + 20, wall_thickness + 20],
-        [wall_thickness + mobo_width - 20, wall_thickness + 20],
-        [wall_thickness + 20, wall_thickness + mobo_depth - 20],
-        [wall_thickness + mobo_width - 20, wall_thickness + mobo_depth - 20]
+        [20, 20],
+        [mobo_width - 20, 20],
+        [20, mobo_depth - 20],
+        [mobo_width - 20, mobo_depth - 20]
     ];
 
     union() {

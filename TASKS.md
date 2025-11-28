@@ -44,7 +44,7 @@ keystone-hardware/
 │   │   │   ├── motherboard_plate.scad # ✅ 170x170mm plate (in case.scad)
 │   │   │   ├── backplate_io.scad      # ✅ I/O backplate (in case.scad)
 │   │   │   ├── standoffs.scad         # ❌ Motherboard standoffs
-│   │   │   └── frame_connector.scad   # ❌ NAS-to-base connector
+│   │   │   └── rubber_feet.scad       # ❌ Rubber feet for standalone config (same #6-32 holes as NAS mount)
 │   │   │
 │   │   ├── panels/
 │   │   │   ├── standard/              # Barebones/Minimal config
@@ -177,7 +177,7 @@ Existing files need to be reorganized:
 | Part | File | Status | Notes |
 |------|------|--------|-------|
 | Top Panel | `case-panel-top.scad` | ❌ TODO | Ventilation or radiator mount option |
-| Bottom Panel | `case-panel-bottom.scad` | ❌ TODO | Feet/standoffs, frame connection points |
+| Bottom Panel | `case-panel-bottom.scad` | ❌ TODO | 4x #6-32 threaded inserts at corners (dual-purpose: rubber feet OR NAS enclosure mounting) |
 | Front Panel | `case-panel-front.scad` | ❌ TODO | Power button, USB, LEDs |
 | Standoffs | `case-standoffs.scad` | ❌ TODO | Physical standoff models |
 
@@ -194,16 +194,16 @@ Different side panels required for each configuration:
 
 ### NAS Enclosure Parts
 
-NAS enclosures mount underneath the base frame and have their own panels:
+NAS enclosures mount underneath the base frame via 4x #6-32 screw holes at corners. **Roofless design:** enclosures have no top panel - the base frame bottom serves as the ceiling. Each enclosure has its own side panels:
 
 | Part | File | Status | Notes |
 |------|------|--------|-------|
-| 2-Disk NAS Frame | `case-nas-2disk-frame.scad` | ❌ TODO | Frame connects to base, holds 2x HDDs |
+| 2-Disk NAS Frame | `case-nas-2disk-frame.scad` | ❌ TODO | Roofless frame, mounts via 4-corner #6-32 holes, holds 2x HDDs |
 | 2-Disk NAS Side Panel (Left) | `case-nas-2disk-side-left.scad` | ❌ TODO | Air intake channels for chimney airflow |
 | 2-Disk NAS Side Panel (Right) | `case-nas-2disk-side-right.scad` | ❌ TODO | Air intake channels for chimney airflow |
 | 2-Disk NAS Front Panel | `case-nas-2disk-front.scad` | ❌ TODO | Hot-swap bay access |
 | 2-Disk NAS Back Panel | `case-nas-2disk-back.scad` | ❌ TODO | Rear enclosure panel |
-| Many-Disk NAS Frame (5-8) | `case-nas-many-frame.scad` | ❌ TODO | Larger frame for 5-8 HDDs |
+| Many-Disk NAS Frame (5-8) | `case-nas-many-frame.scad` | ❌ TODO | Roofless frame, mounts via 4-corner #6-32 holes, holds 5-8 HDDs |
 | Many-Disk NAS Side Panel (Left) | `case-nas-many-side-left.scad` | ❌ TODO | Fan mount cutouts |
 | Many-Disk NAS Side Panel (Right) | `case-nas-many-side-right.scad` | ❌ TODO | Fan mount cutouts |
 | Many-Disk NAS Front Panel | `case-nas-many-front.scad` | ❌ TODO | Hot-swap bay access |
@@ -227,7 +227,7 @@ NAS enclosures mount underneath the base frame and have their own panels:
 | PSU Bracket (Flex) | `case-psu-bracket-flex.scad` | ❌ TODO | Mounting for Flex ATX |
 | PSU Bracket (SFX) | `case-psu-bracket-sfx.scad` | ❌ TODO | Mounting for SFX |
 | PSU Bracket (Pico) | `case-psu-bracket-pico.scad` | ❌ TODO | Mounting for Pico PSU |
-| Frame Connector | `case-frame-connector.scad` | ❌ TODO | Connects NAS enclosure to base frame |
+| Rubber Feet | `case-rubber-feet.scad` | ❌ TODO | 4x feet with #6-32 thread for standalone config (removed when NAS attached) |
 | Cable Management | `case-cable-routing.scad` | ❌ TODO | Clips, channels, pass-throughs |
 
 ---
@@ -268,7 +268,7 @@ The base frame that all other configurations build upon.
 | 1.1 | Standard side panel (left) | None | Core enclosure |
 | 1.2 | Standard side panel (right) | None | Core enclosure |
 | 1.3 | Top panel | None | Core enclosure |
-| 1.4 | Bottom panel | None | Core enclosure, feet/standoffs |
+| 1.4 | Bottom panel | None | 4x #6-32 threaded inserts at corners (dual-purpose: rubber feet OR NAS mount) |
 | 1.5 | Front panel (basic) | None | Power button hole |
 | 1.6 | Standoffs | None | Motherboard mounting |
 | 1.7 | Full minimal assembly | 1.1-1.6 | Validate fit |
@@ -281,12 +281,11 @@ Stacks underneath barebones. Uses chimney airflow - no active cooling needed.
 
 | Priority | Task | Dependency | Notes |
 |----------|------|------------|-------|
-| 2.1 | Frame connector mechanism | Phase 1 | How NAS attaches to base |
-| 2.2 | 2-disk NAS frame | 2.1 | Holds 2x HDDs, connects to base |
-| 2.3 | 2-disk NAS side panels (L/R) | 2.2 | Air intake channels for chimney |
-| 2.4 | 2-disk NAS front panel | 2.2 | Hot-swap bay access |
-| 2.5 | 2-disk NAS back panel | 2.2 | Rear enclosure |
-| 2.6 | Full 2-disk NAS assembly | 2.1-2.5 | Validate airflow path |
+| 2.1 | 2-disk NAS frame | Phase 1.4 | Roofless frame, mounts via 4x #6-32 holes in base bottom panel |
+| 2.2 | 2-disk NAS side panels (L/R) | 2.1 | Air intake channels for chimney |
+| 2.3 | 2-disk NAS front panel | 2.1 | Hot-swap bay access |
+| 2.4 | 2-disk NAS back panel | 2.1 | Rear enclosure |
+| 2.5 | Full 2-disk NAS assembly | 2.1-2.4 | Validate airflow path |
 
 ---
 
@@ -316,7 +315,7 @@ Larger enclosure (5-8 drives) with dedicated fans.
 | Priority | Task | Dependency | Notes |
 |----------|------|------------|-------|
 | 4.1 | 120mm fan model | None | Reference for mounts |
-| 4.2 | Many-disk NAS frame | Phase 2.1 | Uses same connector mechanism |
+| 4.2 | Many-disk NAS frame | Phase 1.4 | Roofless frame, mounts via same 4x #6-32 holes as 2-disk |
 | 4.3 | Fan mount components | 4.1, 4.2 | Dedicated cooling |
 | 4.4 | Many-disk side panels (L/R) | 4.2, 4.3 | Fan mount cutouts |
 | 4.5 | Many-disk front panel | 4.2 | Hot-swap bay access |

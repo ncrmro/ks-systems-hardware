@@ -64,6 +64,37 @@ The most basic configuration of the case is designed for a compact, low-profile 
 *   The Mini-ITX motherboard is mounted flat.
 *   The Flex ATX power supply is mounted next to the motherboard.
 
+### 3.3. Case Width
+
+The case width is determined by the NAS 2-disk configuration (controlling dimension), ensuring both the base case and NAS enclosure share the same footprint.
+
+**Controlling Dimension - 2 HDDs Side-by-Side:**
+
+*   2 × HDD width: 2 × 101.6mm = 203.2mm
+*   Rails: 2mm × 4 = 8mm
+*   Gap between bays: 5mm
+*   Walls: 3mm × 2 = 6mm
+*   Padding: 2mm × 2 = 4mm
+*   **Total case width: ~226mm**
+
+**Base Case Width Breakdown:**
+
+*   Motherboard area: 170mm (Mini-ITX width)
+*   PSU compartment: 56mm (226mm - 170mm)
+*   **Total: 226mm**
+
+**PSU Orientation:**
+
+*   The Flex ATX PSU stands on its side (40mm height becomes width).
+*   PSU dimensions on side: 40mm wide × 150mm deep × 80mm tall.
+*   The 40mm PSU fits in the 56mm compartment with 16mm clearance.
+
+**I/O Backplate Extension:**
+
+*   The I/O backplate extends the full 226mm case width.
+*   PSU mounting screw holes are positioned in the PSU compartment area (X = 170mm to 226mm).
+*   Screw pattern: 8-32 UNC thread, aligned with Flex ATX mounting holes.
+
 ## 4. External GPU Configuration
 
 This configuration allows for the addition of a full-sized external GPU.
@@ -112,6 +143,10 @@ The case uses a stacking/modular frame approach:
 
 *   **Base Frame:** The barebones case (motherboard + Flex PSU) serves as the top/main chamber.
 *   **NAS Enclosures:** Both 2-disk and many-disk (5-8) enclosures are designed to mount **underneath** the base frame.
+*   **Roofless Enclosure Design:** NAS enclosures have no top panel (roof). The bottom of the base frame serves as the ceiling for the NAS enclosure, creating a shared boundary between chambers.
+*   **Unified Mounting System:** Four #6-32 threaded mounting points at the corners of the base frame bottom serve dual purposes:
+    *   When standalone: Rubber feet screw into these holes.
+    *   When expanded: NAS enclosure attaches via these same mounting points.
 *   **Frame Connection:** NAS enclosures connect to the base frame but feature their own side panels.
 *   **Panel Variants:** Different side panels are used for GPU configuration vs. barebones/NAS configurations.
 
@@ -146,8 +181,15 @@ Two primary layout options are supported for 3.5" Hard Disk Drives (HDDs):
 ### 6.2. NAS Enclosure Mounting
 
 *   Both NAS enclosures mount underneath the barebones case frame with Flex ATX PSU.
-*   Enclosures connect to the base frame via TODO mounting mechanism.
+*   **Roofless Design:** NAS enclosures have no top panel. The bottom of the base frame acts as the enclosure ceiling.
+*   **Mounting Points:** Four #6-32 threaded inserts at corners of the base frame bottom.
+*   **Thread Specification:** #6-32 UNC (standard PC case screw thread, approximately M3.5 metric equivalent).
+*   **Attachment Method:** NAS enclosure frame has four corresponding holes at corners that align with base frame mounting points. Screws pass through the enclosure frame into the base frame threaded inserts.
 *   Each NAS enclosure has its own dedicated side panels (separate from the base frame panels).
+*   **Benefits of Roofless Design:**
+    *   Simplified construction (fewer parts per enclosure)
+    *   Shared airflow path between chambers (for passive cooling configurations)
+    *   Easy enclosure swap without disassembling base frame
 
 ### 6.3. NAS Airflow Design
 
@@ -165,19 +207,29 @@ Two primary layout options are supported for 3.5" Hard Disk Drives (HDDs):
 *   Fan mounting locations: TODO - Front intake? Rear exhaust?
 *   Airflow is independent from the motherboard chamber above.
 
+### 6.4. Base Case Feet
+
+When no NAS enclosure is attached, rubber feet provide case support and use the same mounting system:
+
+*   **Mounting:** Four rubber feet screw into the #6-32 threaded inserts at corners of the base frame bottom.
+*   **Thread:** #6-32 UNC (standard PC case feet thread).
+*   **Purpose:** Provides stability, vibration dampening, and airflow clearance underneath the case.
+*   **Removal:** When attaching a NAS enclosure, rubber feet are unscrewed and replaced by the enclosure mounting screws.
+*   **Compatibility:** Standard PC case rubber feet with #6-32 threaded stud.
+
 ## 8. Case Dimensions
 
 Overall external dimensions for each configuration:
 
 ### 8.1. Minimal Configuration
 
-*   **Width:** TODO
+*   **Width:** 226mm (controlled by NAS 2-disk HDD layout - see Section 3.3)
 *   **Depth:** TODO
 *   **Height:** TODO
 
 ### 8.2. NAS Configuration (Option A - Flat Mount)
 
-*   **Width:** TODO
+*   **Width:** 226mm (same as minimal - base case and NAS share footprint)
 *   **Depth:** TODO
 *   **Height:** TODO
 
