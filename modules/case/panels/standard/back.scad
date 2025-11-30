@@ -19,19 +19,34 @@ module back_panel() {
     psu_section_x = mobo_width;  // PSU section starts at motherboard edge
     psu_section_width = extended_width - mobo_width;  // Interior PSU compartment width
 
-    // PSU exhaust cutout - smaller than PSU face to leave material for mounting holes
-    // Inset calculation: 5mm (hole center) + 2.1mm (hole radius) + 3mm (material) ≈ 10mm
-    psu_exhaust_inset = 10;  // Material border for mounting holes
-    psu_cutout_width = flex_atx_width - 2 * psu_exhaust_inset;    // 40 - 20 = 20mm
-    psu_cutout_height = flex_atx_height - 2 * psu_exhaust_inset;  // 80 - 20 = 60mm
+    // PSU exhaust cutout - asymmetric to maximize airflow while avoiding mounting holes
+    // Left/bottom inset: 10mm (material for bottom-left, bottom-right, top-left holes)
+    // Right inset: reduced since top-right hole (coords) is removed for C14
+    // Top inset: reduced since top-right hole (coords) is removed
+    psu_exhaust_inset_left = 10;   // Material for top-left hole (coords)
+    psu_exhaust_inset_right = 3;   // Extended - no top-right hole, bottom-right hole at Z=5 is below cutout
+    psu_exhaust_inset_bottom = 10; // Material for bottom-left and bottom-right holes
+    psu_exhaust_inset_top = 3;     // Extended - no top-right hole (coords)
+    psu_cutout_width = flex_atx_width - psu_exhaust_inset_left - psu_exhaust_inset_right;   // 40 - 10 - 3 = 27mm
+    psu_cutout_height = flex_atx_height - psu_exhaust_inset_bottom - psu_exhaust_inset_top; // 80 - 10 - 3 = 67mm
+
+    // C14 power inlet cutout dimensions (from psu_flex_atx.scad)
+    c14_body_width = 27;
+    c14_body_height = 19.5;
+    c14_clearance = 1;  // Extra clearance around C14
+    c14_cutout_width = c14_body_width + 2 * c14_clearance;
+    c14_cutout_height = c14_body_height + 2 * c14_clearance;
+    // C14 position relative to PSU origin (top-right coords = top-left view from back)
+    c14_x = flex_atx_width - 3.4 - c14_body_width;  // 9.6mm from left edge
+    c14_z = flex_atx_height - 5 - c14_body_height;   // 55.5mm from bottom
 
     // Position PSU area (where PSU face aligns) - centered in compartment
     psu_area_x = psu_section_x + (psu_section_width - flex_atx_width) / 2;
     psu_area_z = (panel_height - flex_atx_height) / 2;  // Centered vertically
 
-    // Exhaust cutout centered within PSU area
-    psu_cutout_x = psu_area_x + psu_exhaust_inset;
-    psu_cutout_z = psu_area_z + psu_exhaust_inset;
+    // Exhaust cutout positioned with asymmetric insets
+    psu_cutout_x = psu_area_x + psu_exhaust_inset_left;
+    psu_cutout_z = psu_area_z + psu_exhaust_inset_bottom;
 
     color("red") {
         difference() {
@@ -50,13 +65,24 @@ module back_panel() {
             }
 
             // === PSU SECTION ===
-            // PSU exhaust cutout (20mm x 60mm)
+            // PSU exhaust cutout (27mm x 67mm) - asymmetric, extended toward top-right (coords)
+            // where mounting hole was removed for C14
             translate([psu_cutout_x, -0.1, psu_cutout_z]) {
                 cube([psu_cutout_width, wall_thickness + 0.2, psu_cutout_height]);
             }
 
-            // PSU mounting holes (4 holes matching Flex ATX pattern from dimensions.scad)
-            // Holes are positioned relative to PSU area, not the smaller exhaust cutout
+            // C14 power inlet cutout (top-right coords = top-left view from back)
+            // Positioned to allow C14 connector to pass through panel
+            translate([psu_area_x + c14_x - c14_clearance, -0.1, psu_area_z + c14_z - c14_clearance]) {
+                cube([c14_cutout_width, wall_thickness + 0.2, c14_cutout_height]);
+            }
+
+            // PSU mounting holes (3 holes - Flex ATX pattern from dimensions.scad)
+            // Top-right (coords) removed - C14 power inlet is there = Top-left (view from back)
+            // Remaining holes:
+            //   Bottom-left (coords) = Bottom-right (view)
+            //   Bottom-right (coords) = Bottom-left (view)
+            //   Top-left (coords) = Top-right (view)
             for (hole = flex_atx_mount_holes) {
                 translate([psu_area_x + hole[0], -0.1, psu_area_z + hole[1]]) {
                     rotate([-90, 0, 0]) {

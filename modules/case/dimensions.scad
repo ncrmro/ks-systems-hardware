@@ -50,11 +50,13 @@ flex_atx_mount_x_inset = 5;         // Distance from left/right edges (corrected
 flex_atx_mount_z_inset = 5;         // Distance from top/bottom edges (corrected from 8.25)
 
 // Calculated mounting hole positions (X, Z pairs relative to PSU origin)
+// Note: Only 3 holes - top-right (coords) removed where C14 inlet is located
+// When viewing from back: top-right (coords) = top-left (view)
 flex_atx_mount_holes = [
-    [flex_atx_mount_x_inset, flex_atx_mount_z_inset],                                    // Bottom-left
-    [flex_atx_width - flex_atx_mount_x_inset, flex_atx_mount_z_inset],                   // Bottom-right
-    [flex_atx_mount_x_inset, flex_atx_height - flex_atx_mount_z_inset],                  // Top-left
-    [flex_atx_width - flex_atx_mount_x_inset, flex_atx_height - flex_atx_mount_z_inset]  // Top-right
+    [flex_atx_mount_x_inset, flex_atx_mount_z_inset],                                    // Bottom-left (coords) = Bottom-right (view)
+    [flex_atx_width - flex_atx_mount_x_inset, flex_atx_mount_z_inset],                   // Bottom-right (coords) = Bottom-left (view)
+    [flex_atx_mount_x_inset, flex_atx_height - flex_atx_mount_z_inset]                   // Top-left (coords) = Top-right (view)
+    // Top-right (coords) removed - C14 power inlet is here = Top-left (view)
 ];
 
 // SFX
