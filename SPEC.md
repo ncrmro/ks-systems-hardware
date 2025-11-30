@@ -287,10 +287,10 @@ The upper air-frame consists of four cylinders that screw onto the motherboard s
 
 ### 11.1. Standoff Design
 
-*   **Lower Portion:** Standard motherboard standoff (female thread for motherboard mounting screw)
-*   **Upper Portion:** Male threaded stud protruding above the motherboard surface
-*   **Thread Specification:** TODO - M3 or #6-32?
-*   **Protrusion Height:** TODO - Height above motherboard surface
+*   **Type:** M3x10+6mm male-female standoff
+*   **Lower Portion:** 6mm female thread (accepts motherboard mounting screw from below)
+*   **Upper Portion:** 10mm male threaded stud protruding above the motherboard surface
+*   **Thread Specification:** M3
 
 ### 11.2. Frame Cylinders
 
