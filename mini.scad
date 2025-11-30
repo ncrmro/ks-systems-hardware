@@ -9,7 +9,7 @@ use <modules/case/base/motherboard_plate.scad>
 use <modules/case/panels/standard/back.scad>
 
 // Components
-use <modules/components/motherboard.scad>
+use <modules/components/assemblies/motherboard.scad>
 use <modules/components/power/psu_sfx.scad>
 use <modules/components/power/psu_flex_atx.scad>
 use <modules/components/storage/hdd_3_5.scad>
@@ -28,9 +28,9 @@ rotate([-90, 0, 0]) {
         back_panel();
     }
 
-    // Row 2: Motherboard with cooler
+    // Row 2: Motherboard assembly (with RAM and cooler)
     translate([0, -(mobo_depth + spacing), 0]) {
-        motherboard();
+        motherboard_assembly();
     }
 
     // Row 3: Power supplies
