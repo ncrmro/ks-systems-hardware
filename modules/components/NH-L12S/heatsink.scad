@@ -1,12 +1,12 @@
-// CPU Cooler Module
-// Provides backward-compatible access to NH-L12S cooler
+// Noctua NH-L12S Complete Heatsink Assembly
+// Combines: CPU base + heatpipes + fan + fins
+// Total height: 70mm
 
-use <NH-L12S/cpu_base.scad>
-use <NH-L12S/heatpipes.scad>
-use <NH-L12S/heatsink_fins.scad>
-use <cooling/fan_120mm_15mm.scad>
+use <cpu_base.scad>
+use <heatpipes.scad>
+use <heatsink_fins.scad>
+use <../cooling/fan_120mm_15mm.scad>
 
-// Wrapper module for backward compatibility
 module noctua_nh_l12s() {
     // Overall dimensions
     cooler_w = 128;
