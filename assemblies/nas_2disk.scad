@@ -6,7 +6,7 @@ include <../modules/case/dimensions.scad>
 
 // Case parts
 use <../modules/case/base/motherboard_plate.scad>
-use <../modules/case/base/backplate_io.scad>
+use <../modules/case/panels/standard/back.scad>
 use <../modules/case/panels/standard/side_left.scad>
 use <../modules/case/panels/standard/side_right.scad>
 use <../modules/case/panels/standard/top.scad>
@@ -58,9 +58,9 @@ module nas_2disk_assembly() {
                 motherboard_plate();
             }
 
-            // I/O Backplate (at rear, full height starts at nas_top)
+            // Back panel (at rear, full height starts at nas_top)
             translate([wall_thickness, mobo_depth + wall_thickness + explode, nas_top]) {
-                backplate_io();
+                back_panel();
             }
 
             // Front panel (full height, starts at nas_top)
@@ -91,8 +91,8 @@ module nas_2disk_assembly() {
                 motherboard();
             }
 
-            // Flex ATX PSU (next to motherboard, rear face against backplate)
-            translate([mobo_width + wall_thickness * 2, mobo_depth + wall_thickness - flex_atx_length, base_z + standoff_height]) {
+            // Flex ATX PSU (next to motherboard, rear face against backplate, centered vertically)
+            translate([mobo_width + wall_thickness * 2, mobo_depth + wall_thickness - flex_atx_length, nas_top + (minimal_exterior_height - flex_atx_height) / 2]) {
                 power_supply_flex_atx();
             }
         }
