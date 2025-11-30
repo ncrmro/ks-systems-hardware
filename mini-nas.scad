@@ -6,7 +6,7 @@ include <modules/case/dimensions.scad>
 
 // Case parts
 use <modules/case/base/motherboard_plate.scad>
-use <modules/case/base/backplate_io.scad>
+use <modules/case/panels/standard/back.scad>
 use <modules/case/nas_2disk/frame.scad>
 
 // Components
@@ -25,7 +25,7 @@ rotate([-90, 0, 0]) {
     translate([0, 0, 0]) {
         motherboard_plate();
         translate([0, mobo_depth + 10, 0]) {
-            backplate_io();
+            back_panel();
         }
     }
 

@@ -170,17 +170,17 @@ def create_mcp_config(workspace_path):
     """Create the MCP server configuration."""
     return {
         "mcpServers": {
-            "openscad-lsp": {
-                "command": "mcp-language-server",
-                "args": [
-                    "--workspace",
-                    workspace_path,
-                    "--lsp",
-                    "openscad-lsp",
-                    "--",
-                    "--stdio"
-                ]
-            },
+            # "openscad-lsp": {
+            #     "command": "mcp-language-server",
+            #     "args": [
+            #         "--workspace",
+            #         workspace_path,
+            #         "--lsp",
+            #         "openscad-lsp",
+            #         "--",
+            #         "--stdio"
+            #     ]
+            # },
             "playwright": {
                 "type": "stdio",
                 "command": "npx",
@@ -311,18 +311,18 @@ def main():
     # Build system prompt with workspace and service information
     system_prompt_parts = []
 
-    # Add OpenSCAD LSP awareness
-    system_prompt_parts.append(
-        "OpenSCAD Language Server:\n"
-        "You have access to the OpenSCAD LSP via MCP tools (mcp__openscad-lsp__*):\n"
-        "- mcp__openscad-lsp__diagnostics: Get errors/warnings for a .scad file\n"
-        "- mcp__openscad-lsp__definition: Find where a symbol (module/function/variable) is defined\n"
-        "- mcp__openscad-lsp__references: Find all usages of a symbol across the codebase\n"
-        "- mcp__openscad-lsp__hover: Get type/documentation info at a specific position\n"
-        "- mcp__openscad-lsp__rename_symbol: Rename a symbol and update all references\n"
-        "- mcp__openscad-lsp__edit_file: Apply text edits to a file\n\n"
-        "Use these tools for OpenSCAD code intelligence instead of manual grep/search when appropriate."
-    )
+    # OpenSCAD LSP disabled - uncomment when re-enabled in create_mcp_config()
+    # system_prompt_parts.append(
+    #     "OpenSCAD Language Server:\n"
+    #     "You have access to the OpenSCAD LSP via MCP tools (mcp__openscad-lsp__*):\n"
+    #     "- mcp__openscad-lsp__diagnostics: Get errors/warnings for a .scad file\n"
+    #     "- mcp__openscad-lsp__definition: Find where a symbol (module/function/variable) is defined\n"
+    #     "- mcp__openscad-lsp__references: Find all usages of a symbol across the codebase\n"
+    #     "- mcp__openscad-lsp__hover: Get type/documentation info at a specific position\n"
+    #     "- mcp__openscad-lsp__rename_symbol: Rename a symbol and update all references\n"
+    #     "- mcp__openscad-lsp__edit_file: Apply text edits to a file\n\n"
+    #     "Use these tools for OpenSCAD code intelligence instead of manual grep/search when appropriate."
+    # )
 
     if workspace_path != project_root:
         system_prompt_parts.append(

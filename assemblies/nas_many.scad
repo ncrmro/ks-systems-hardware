@@ -6,7 +6,7 @@ include <../modules/case/dimensions.scad>
 
 // Case parts
 use <../modules/case/base/motherboard_plate.scad>
-use <../modules/case/base/backplate_io.scad>
+use <../modules/case/panels/standard/back.scad>
 use <../modules/case/panels/standard/side_left.scad>
 use <../modules/case/panels/standard/side_right.scad>
 use <../modules/case/panels/standard/top.scad>
@@ -57,9 +57,9 @@ module nas_many_assembly() {
                 motherboard_plate();
             }
 
-            // I/O Backplate
+            // Back panel
             translate([base_x, mobo_depth + wall_thickness + explode, base_z]) {
-                backplate_io();
+                back_panel();
             }
 
             // Front panel

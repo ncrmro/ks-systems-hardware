@@ -1,14 +1,14 @@
-// I/O Backplate with I/O shield cutout, ventilation, and PSU mounting
+// Back panel (I/O backplate) for minimal/barebones configuration
+// Features I/O shield cutout, ventilation, and PSU mounting holes
 // Mounts at rear of case behind motherboard and PSU
-// Extended to full case width to allow PSU screwing into backplate
 
-include <../dimensions.scad>
-use <../../util/honeycomb.scad>
+include <../../dimensions.scad>
+use <../../../util/honeycomb.scad>
 
-module backplate_io() {
+module back_panel() {
     // Panel dimensions (interior, fits between side walls)
     extended_width = front_back_panel_width;   // ~220mm
-    panel_height = front_back_panel_height;    // ~94mm
+    panel_height = front_back_panel_height;    // ~100mm
 
     // Honeycomb area calculations (motherboard section only)
     honeycomb_area_z_start = io_shield_z_offset + io_shield_height + vent_padding;
@@ -33,30 +33,26 @@ module backplate_io() {
     psu_cutout_x = psu_area_x + psu_exhaust_inset;
     psu_cutout_z = psu_area_z + psu_exhaust_inset;
 
-    // PSU mounting holes - 4 holes using shared positions from dimensions.scad
-    // flex_atx_mount_holes contains [X, Z] positions relative to PSU origin
-    // Translate to backplate coords by adding cutout origin offset
-
     color("red") {
         difference() {
             // Extended backplate spanning mobo + PSU
-            cube([extended_width, backplate_thickness, panel_height]);
+            cube([extended_width, wall_thickness, panel_height]);
 
             // === MOTHERBOARD SECTION ===
             // I/O shield cutout
             translate([io_shield_x_offset, -0.1, io_shield_z_offset]) {
-                cube([io_shield_width, backplate_thickness + 0.2, io_shield_height]);
+                cube([io_shield_width, wall_thickness + 0.2, io_shield_height]);
             }
 
             // Honeycomb ventilation pattern (motherboard section)
             translate([vent_padding, 0, honeycomb_area_z_start]) {
-                honeycomb_xz(honeycomb_radius, backplate_thickness, honeycomb_area_width, honeycomb_area_height);
+                honeycomb_xz(honeycomb_radius, wall_thickness, honeycomb_area_width, honeycomb_area_height);
             }
 
             // === PSU SECTION ===
-            // PSU exhaust cutout (40mm x 75mm)
+            // PSU exhaust cutout (20mm x 60mm)
             translate([psu_cutout_x, -0.1, psu_cutout_z]) {
-                cube([psu_cutout_width, backplate_thickness + 0.2, psu_cutout_height]);
+                cube([psu_cutout_width, wall_thickness + 0.2, psu_cutout_height]);
             }
 
             // PSU mounting holes (4 holes matching Flex ATX pattern from dimensions.scad)
@@ -64,7 +60,7 @@ module backplate_io() {
             for (hole = flex_atx_mount_holes) {
                 translate([psu_area_x + hole[0], -0.1, psu_area_z + hole[1]]) {
                     rotate([-90, 0, 0]) {
-                        cylinder(h = backplate_thickness + 0.2, r = flex_atx_mount_hole_radius, $fn = 20);
+                        cylinder(h = wall_thickness + 0.2, r = flex_atx_mount_hole_radius, $fn = 20);
                     }
                 }
             }
@@ -81,7 +77,7 @@ module backplate_io() {
             for (pos = panel_mount_positions) {
                 translate([pos[0], -0.1, pos[1]]) {
                     rotate([-90, 0, 0]) {
-                        cylinder(h = backplate_thickness + 0.2, r = panel_screw_radius, $fn = 20);
+                        cylinder(h = wall_thickness + 0.2, r = panel_screw_radius, $fn = 20);
                     }
                 }
             }
@@ -90,4 +86,4 @@ module backplate_io() {
 }
 
 // Preview
-backplate_io();
+back_panel();

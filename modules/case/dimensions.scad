@@ -46,9 +46,8 @@ flex_atx_height = 80.0;     // G: Height (Z - tall side, standing)
 
 // Flex ATX Mounting holes - 8-32 UNC thread (4 places on rear 40x80mm face)
 flex_atx_mount_hole_radius = 2.1;   // 8-32 clearance (~4.2mm dia)
-flex_atx_mount_x_inset = 12.5;      // K: Distance from left/right edges
-flex_atx_mount_z_spacing = 63.5;    // F: Vertical spacing between holes
-flex_atx_mount_z_inset = (flex_atx_height - flex_atx_mount_z_spacing) / 2;  // 8.25mm from top/bottom
+flex_atx_mount_x_inset = 5;         // Distance from left/right edges (corrected from 12.5)
+flex_atx_mount_z_inset = 5;         // Distance from top/bottom edges (corrected from 8.25)
 
 // Calculated mounting hole positions (X, Z pairs relative to PSU origin)
 flex_atx_mount_holes = [

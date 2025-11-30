@@ -6,7 +6,7 @@ include <modules/case/dimensions.scad>
 
 // Case parts
 use <modules/case/base/motherboard_plate.scad>
-use <modules/case/base/backplate_io.scad>
+use <modules/case/panels/standard/back.scad>
 
 // Components
 use <modules/components/motherboard.scad>
@@ -25,7 +25,7 @@ rotate([-90, 0, 0]) {
     }
 
     translate([mobo_width + spacing, 0, 0]) {
-        backplate_io();
+        back_panel();
     }
 
     // Row 2: Motherboard with cooler
