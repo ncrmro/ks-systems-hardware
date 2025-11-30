@@ -11,7 +11,7 @@ panel_thickness = 3;      // Y dimension (wall thickness)
 // Dovetail parameters (must match top panel channel)
 dovetail_angle = 50;
 dovetail_height = 3;      // Must match top panel channel height
-dovetail_length = 30;
+dovetail_length = 10;
 dovetail_base_width = 8;
 
 // Scale factor for prototyping
@@ -41,10 +41,23 @@ module front_panel(
         // Base panel - stops below dovetail
         cube([width, thickness, panel_h - dt_height]);
 
-        // Male dovetail - top flush with panel top at Z=panel_h
-        // After rotate([90,0,0]), dovetail base is at Z and widens toward -Z
-        // Place at Z=panel_h so top is flush, dovetail extends down to panel_h-dt_height
-        translate([width/2, thickness + scaled_dovetail_length/2, panel_h - (scaled_dovetail_height*2) ])
+        // Two male dovetails - each centered in one half of the panel width
+        // rotate([0,0,90]) orients dovetail length along Y-axis (depth direction)
+        // Y position beyond panel back allows dovetails to slot into top panel channels
+        // Z position at panel_h - 2*height aligns with top panel's bottom-cut channel
+
+        // Left dovetail - centered at 1/4 panel width
+        translate([width/4, thickness + scaled_dovetail_length/2, panel_h - (scaled_dovetail_height*2)])
+            rotate([0, 0, 90])
+            male_dovetail(
+                length = dt_length,
+                height = dt_height,
+                base_width = dt_base_width,
+                angle = dt_angle
+            );
+
+        // Right dovetail - centered at 3/4 panel width
+        translate([width * 3/4, thickness + scaled_dovetail_length/2, panel_h - (scaled_dovetail_height*2)])
             rotate([0, 0, 90])
             male_dovetail(
                 length = dt_length,
