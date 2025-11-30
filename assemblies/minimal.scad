@@ -45,23 +45,23 @@ module minimal_assembly() {
                 back_panel();
             }
 
-            // Front panel (full height, starts at Z=0)
-            translate([wall_thickness, -explode, 0]) {
+            // Front panel (full height, extended to cover sides, starts at Z=0)
+            translate([0, -explode, 0]) {
                 front_panel();
             }
 
-            // Left side panel (full height, starts at Z=0)
-            translate([-explode, 0, 0]) {
+            // Left side panel (full height, offset 3mm from front, starts at Z=0)
+            translate([-explode, wall_thickness, 0]) {
                 side_panel_left();
             }
 
-            // Right side panel (full height, starts at Z=0)
-            translate([minimal_with_psu_width - wall_thickness + explode, 0, 0]) {
+            // Right side panel (full height, offset 3mm from front, starts at Z=0)
+            translate([minimal_with_psu_width - wall_thickness + explode, wall_thickness, 0]) {
                 side_panel_right();
             }
 
             // Top panel (interior dimensions, fits between walls)
-            translate([wall_thickness, wall_thickness, minimal_exterior_height - wall_thickness + explode]) {
+            translate([wall_thickness, wall_thickness, minimal_exterior_height + explode]) {
                 top_panel();
             }
         }

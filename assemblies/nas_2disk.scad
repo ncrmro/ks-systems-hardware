@@ -13,6 +13,8 @@ use <../modules/case/panels/standard/top.scad>
 use <../modules/case/panels/standard/bottom.scad>
 use <../modules/case/panels/standard/front.scad>
 use <../modules/case/nas_2disk/frame.scad>
+use <../modules/case/frame/frame_cylinder.scad>
+use <../modules/case/frame/upper_frame.scad>
 
 // Components
 use <../modules/components/assemblies/motherboard.scad>
@@ -22,6 +24,8 @@ use <../modules/components/power/psu_flex_atx.scad>
 show_panels = true;
 show_components = true;
 show_nas_enclosure = true;
+show_frame_cylinders = true;
+show_upper_frame = true;
 explode = 0;  // Set > 0 to explode view (e.g., 30)
 
 // NAS enclosure dimensions (from frame.scad)
@@ -58,28 +62,42 @@ module nas_2disk_assembly() {
                 motherboard_plate();
             }
 
+            // Frame cylinders (at standoff locations, on motherboard surface)
+            if (show_frame_cylinders) {
+                translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+                    frame_cylinders();
+                }
+            }
+
+            // Upper frame (holds frame cylinders, on motherboard surface)
+            if (show_upper_frame) {
+                translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+                    upper_frame();
+                }
+            }
+
             // Back panel (at rear, full height starts at nas_top)
             translate([wall_thickness, mobo_depth + wall_thickness + explode, nas_top]) {
                 back_panel();
             }
 
-            // Front panel (full height, starts at nas_top)
-            translate([wall_thickness, -explode, nas_top]) {
+            // Front panel (full height, extended to cover sides, starts at nas_top)
+            translate([0, -explode, nas_top]) {
                 front_panel();
             }
 
-            // Left side panel (full height, starts at nas_top)
-            translate([-explode, 0, nas_top]) {
+            // Left side panel (full height, offset 3mm from front, starts at nas_top)
+            translate([-explode, wall_thickness, nas_top]) {
                 side_panel_left();
             }
 
-            // Right side panel (full height, starts at nas_top)
-            translate([minimal_with_psu_width - wall_thickness + explode, 0, nas_top]) {
+            // Right side panel (full height, offset 3mm from front, starts at nas_top)
+            translate([minimal_with_psu_width - wall_thickness + explode, wall_thickness, nas_top]) {
                 side_panel_right();
             }
 
             // Top panel (interior dimensions, fits between walls)
-            translate([wall_thickness, wall_thickness, nas_top + minimal_exterior_height - wall_thickness + explode]) {
+            translate([wall_thickness, wall_thickness, nas_top + minimal_exterior_height + explode]) {
                 top_panel();
             }
         }
