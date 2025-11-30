@@ -10,7 +10,7 @@ use <modules/case/panels/standard/back.scad>
 use <modules/case/nas_2disk/frame.scad>
 
 // Components
-use <modules/components/motherboard.scad>
+use <modules/components/assemblies/motherboard.scad>
 use <modules/components/power/psu_flex_atx.scad>
 
 // Spacing between components
@@ -29,9 +29,9 @@ rotate([-90, 0, 0]) {
         }
     }
 
-    // Motherboard with cooler (raised above NAS enclosure)
+    // Motherboard assembly (raised above NAS enclosure)
     translate([0, -(mobo_depth + spacing), nas_enclosure_height + standoff_height]) {
-        motherboard();
+        motherboard_assembly();
     }
 
     // Flex ATX PSU (next to motherboard area)

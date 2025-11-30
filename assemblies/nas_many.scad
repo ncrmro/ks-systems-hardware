@@ -15,7 +15,7 @@ use <../modules/case/panels/standard/front.scad>
 use <../modules/case/nas_many/frame.scad>
 
 // Components
-use <../modules/components/motherboard.scad>
+use <../modules/components/assemblies/motherboard.scad>
 use <../modules/components/power/psu_flex_atx.scad>
 
 // Configuration
@@ -85,9 +85,9 @@ module nas_many_assembly() {
 
         // === COMPONENTS ===
         if (show_components) {
-            // Motherboard with CPU cooler
+            // Motherboard assembly (motherboard + RAM + CPU cooler)
             translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
-                motherboard();
+                motherboard_assembly();
             }
 
             // Flex ATX PSU

@@ -15,7 +15,7 @@ use <../modules/case/panels/standard/front.scad>
 use <../modules/case/nas_2disk/frame.scad>
 
 // Components
-use <../modules/components/motherboard.scad>
+use <../modules/components/assemblies/motherboard.scad>
 use <../modules/components/power/psu_flex_atx.scad>
 
 // Toggle visibility for debugging
@@ -86,9 +86,9 @@ module nas_2disk_assembly() {
 
         // === COMPONENTS ===
         if (show_components) {
-            // Motherboard with CPU cooler (placed on standoffs)
+            // Motherboard assembly (motherboard + RAM + CPU cooler, placed on standoffs)
             translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
-                motherboard();
+                motherboard_assembly();
             }
 
             // Flex ATX PSU (next to motherboard, rear face against backplate, centered vertically)
