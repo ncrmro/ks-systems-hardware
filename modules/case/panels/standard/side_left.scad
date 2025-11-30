@@ -6,7 +6,7 @@ use <../../../util/honeycomb.scad>
 
 module side_panel_left() {
     // Panel dimensions (exterior, forms outer wall)
-    panel_depth = side_panel_depth;      // 176mm
+    panel_depth = side_panel_depth - wall_thickness;  // 173mm (shortened 3mm from front)
     panel_height = side_panel_height;    // ~100mm
     panel_thickness = wall_thickness;    // 3mm
 
@@ -15,9 +15,15 @@ module side_panel_left() {
     vent_width = panel_depth - 2 * vent_border;
     vent_height = panel_height - 2 * vent_border;
 
+    // Lip dimensions
+    lip_height = wall_thickness;      // 3mm
+    lip_depth = wall_thickness;       // 3mm (protrudes into case)
+    lip_inset = 6;                    // 6mm from top/bottom
+
     color("gray") {
-        difference() {
-            cube([panel_thickness, panel_depth, panel_height]);
+        union() {
+            difference() {
+                cube([panel_thickness, panel_depth, panel_height]);
 
             // Ventilation honeycomb
             translate([0, vent_border, vent_border]) {
@@ -39,6 +45,17 @@ module side_panel_left() {
                         cylinder(h = panel_thickness + 0.2, r = panel_screw_radius, $fn = 20);
                     }
                 }
+            }
+            }
+
+            // Bottom lip (protrudes into case, inset 3mm from front/back)
+            translate([panel_thickness, wall_thickness, lip_inset]) {
+                cube([lip_depth, panel_depth - 2 * wall_thickness, lip_height]);
+            }
+
+            // Top lip (protrudes into case, inset 3mm from front/back)
+            translate([panel_thickness, wall_thickness, panel_height - lip_inset - lip_height]) {
+                cube([lip_depth, panel_depth - 2 * wall_thickness, lip_height]);
             }
         }
     }
