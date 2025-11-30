@@ -44,8 +44,8 @@ module front_panel(
         // Male dovetail - top flush with panel top at Z=panel_h
         // After rotate([90,0,0]), dovetail base is at Z and widens toward -Z
         // Place at Z=panel_h so top is flush, dovetail extends down to panel_h-dt_height
-        translate([width/2, thickness, panel_h])
-            rotate([90, 0, 0])
+        translate([width/2, thickness + scaled_dovetail_length/2, panel_h - (scaled_dovetail_height*2) ])
+            rotate([0, 0, 90])
             male_dovetail(
                 length = dt_length,
                 height = dt_height,
