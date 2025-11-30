@@ -25,8 +25,11 @@ module motherboard_assembly() {
         }
 
         // CPU Cooler (Noctua NH-L12S)
-        translate([21, 12, mobo_thickness]) {
-            noctua_nh_l12s();
+        // Rotated 90° CCW, repositioned to stay over CPU area
+        translate([158, 21, mobo_thickness]) {
+            rotate([0, 0, 90]) {
+                noctua_nh_l12s();
+            }
         }
     }
 }
