@@ -280,3 +280,97 @@ Overall external dimensions for each configuration:
 
 *   **Hot-Swap Bays:** TODO - For NAS configuration?
 *   **Access Panels:** TODO - Tool-less access for maintenance?
+
+## 11. Open Air Frame
+
+The upper air-frame consists of four cylinders that screw onto the motherboard standoff screws. The standoffs have a male end that protrudes from the top of the motherboard, allowing the cylinders to screw into them. These cylinders are free-floating in the upper frame, enabling tool-free assembly by hand.
+
+### 11.1. Standoff Design
+
+*   **Lower Portion:** Standard motherboard standoff (female thread for motherboard mounting screw)
+*   **Upper Portion:** Male threaded stud protruding above the motherboard surface
+*   **Thread Specification:** TODO - M3 or #6-32?
+*   **Protrusion Height:** TODO - Height above motherboard surface
+
+### 11.2. Frame Cylinders
+
+*   **Material:** TODO - 3D printed, aluminum?
+*   **Internal Thread:** Matches standoff male thread
+*   **Mounting:** Free-floating within frame structure (captive but rotatable)
+*   **Purpose:** Serve as foundation for case panels to attach to
+
+### 11.3. Assembly Process
+
+1.  Install standoffs with male studs into motherboard plate
+2.  Mount motherboard onto standoffs
+3.  Place upper frame over motherboard
+4.  Hand-tighten frame cylinders onto standoff studs (no tools required)
+
+## 12. Rapid Panel Mounting System
+
+The case panels feature a unified quick-release mechanism that enables rapid access to internal components. A single latch unlocks multiple panels simultaneously.
+
+### 12.1. Quick-Release Mechanism
+
+*   **Type:** TODO - Cam latch, toggle latch, push-button release?
+*   **Location:** TODO - Corner, edge, center?
+*   **Operation:** Single action unlocks top, side, and front panels
+*   **Security:** TODO - Optional keyed lock?
+
+### 12.2. Panel Hinging
+
+Optional hinge mechanisms allow connected panels to be handled as a single assembly:
+
+*   **Top + Side Configuration:** Top panel hinges to one side panel, opening like a clamshell
+*   **Front + Top Configuration:** Front and top panels hinge together for full access
+*   **Hinge Type:** TODO - Piano hinge, concealed hinge, removable pin hinge?
+*   **Detachability:** Panels can be fully removed or left attached when opened
+
+### 12.3. Benefits
+
+*   Tool-free panel removal for maintenance and upgrades
+*   Single-handed operation for quick access
+*   Panels can be configured as single assembly or individual pieces
+*   Reduces time for component installation and service
+
+## 13. Parameterized Upper Panels
+
+The top panel features dynamically positioned ventilation and internal air channeling based on configurable parameters. This enables optimized airflow for different CPU cooler and component configurations.
+
+### 13.1. Top Panel Ventilation
+
+*   **Vent Purpose:** Direct hot air egress from CPU heatsink to exterior
+*   **Positioning:** Parameterized X/Y offset based on CPU cooler location
+*   **Vent Size:** TODO - Fixed or parameterized?
+*   **Vent Pattern:** TODO - Honeycomb, mesh, circular?
+
+### 13.2. Parameterized Vent Placement
+
+Key parameters for vent positioning:
+
+*   `cpu_cooler_offset_x` - X offset from motherboard origin to cooler center
+*   `cpu_cooler_offset_y` - Y offset from motherboard origin to cooler center
+*   `vent_diameter` - Size of the exhaust vent opening
+*   `vent_margin` - Minimum distance from panel edges
+
+### 13.3. Airflow Design
+
+*   **Negative Pressure:** Hot air exhausting directly above CPU creates negative pressure inside case
+*   **Air Intake:** Cool air drawn in through side/front panel vents
+*   **Direct Path:** Minimizes recirculation of heated air within case
+
+### 13.4. Internal Air Channels
+
+The underside of the top panel features parameterized air channels that direct airflow over specific components:
+
+*   **Channel Purpose:** Guide airflow from intake to exhaust, preventing dead zones
+*   **Channel Height:** TODO - Parameterized based on component clearance
+*   **Channel Routing:** Configurable paths over RAM, VRM, and other heat-generating components
+
+### 13.5. Channel Parameters
+
+*   `channel_width` - Width of air channels
+*   `channel_depth` - Height of channel walls (protrusion into case)
+*   `vrm_channel_enable` - Enable/disable channel over VRM area
+*   `ram_channel_enable` - Enable/disable channel over RAM slots
+*   `component_clearance` - Minimum clearance above components
