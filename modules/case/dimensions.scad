@@ -33,9 +33,10 @@ backplate_thickness = wall_thickness;
 // --- CPU Cooler (Noctua NH-L12S) ---
 cooler_width = 128;
 cooler_depth = 146;
-cooler_heatsink_height = 70;
-cooler_fan_height = 16;
-cooler_total_height = cooler_heatsink_height + cooler_fan_height;  // 86mm
+cooler_base_height = 35;      // Base plate and heatpipes
+cooler_fan_height = 15;       // 120mm x 15mm fan (NF-A12x15)
+cooler_fins_height = 20;      // Heatsink fins on top
+cooler_total_height = cooler_base_height + cooler_fan_height + cooler_fins_height;  // 70mm
 
 // --- Power Supplies ---
 // Flex ATX (from technical drawing)
@@ -149,3 +150,11 @@ nas_many_enclosure_height = hdd_width + wall_thickness + 5;  // ~110mm (drives o
 c14_width = 50;
 c14_height = 27;
 c14_depth = 30;
+
+// --- Open Air Frame ---
+// Frame cylinder height (from motherboard surface to inside panel face)
+// Derived: interior_chamber_height - standoff_height - mobo_pcb_thickness
+frame_cylinder_height = interior_chamber_height - standoff_height - mobo_pcb_thickness;  // ~86mm
+frame_cylinder_outer_diameter = 8;     // Outer diameter
+frame_cylinder_inner_diameter = 3.2;   // M3 clearance for standoff stud
+frame_cylinder_thread_depth = 10;      // Matches extended_standoff_male_height
