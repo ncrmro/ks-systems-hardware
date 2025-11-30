@@ -51,6 +51,7 @@ keystone-hardware/
 │   │   │   │   ├── side_left.scad     # ❌ Left side panel
 │   │   │   │   ├── side_right.scad    # ❌ Right side panel
 │   │   │   │   ├── top.scad           # ❌ Top panel
+│   │   │   │   ├── top_parameterized.scad # ❌ Top panel with dynamic vents
 │   │   │   │   ├── bottom.scad        # ❌ Bottom panel
 │   │   │   │   └── front.scad         # ❌ Front panel (power btn)
 │   │   │   │
@@ -79,6 +80,15 @@ keystone-hardware/
 │   │   │   ├── front.scad             # ❌ Hot-swap access
 │   │   │   ├── back.scad              # ❌ Rear panel
 │   │   │   └── fan_mount.scad         # ❌ Dedicated fan mounting
+│   │   │
+│   │   ├── frame/                     # Open air frame components
+│   │   │   ├── standoff_extended.scad # ✅ Standoff with male stud
+│   │   │   ├── frame_cylinder.scad    # ❌ Free-floating mounting cylinder
+│   │   │   └── upper_frame.scad       # ❌ Frame structure holding cylinders
+│   │   │
+│   │   ├── mounting/                  # Rapid panel mounting system
+│   │   │   ├── quick_release_latch.scad # ❌ Single-action panel release
+│   │   │   └── panel_hinge.scad       # ❌ Optional panel hinging
 │   │   │
 │   │   ├── cooling/                   # Cooling mounts
 │   │   │   └── radiator_mount.scad    # ❌ 240mm/280mm radiator mount
@@ -230,6 +240,20 @@ NAS enclosures mount underneath the base frame via 4x #6-32 screw holes at corne
 | Rubber Feet | `case-rubber-feet.scad` | ❌ TODO | 4x feet with #6-32 thread for standalone config (removed when NAS attached) |
 | Cable Management | `case-cable-routing.scad` | ❌ TODO | Clips, channels, pass-throughs |
 
+### Frame & Mounting Parts
+
+Open air frame and rapid panel mounting components:
+
+| Part | File | Status | Notes |
+|------|------|--------|-------|
+| Extended Standoff | `frame/standoff_extended.scad` | ✅ Done | M3x10+6mm male-female standoff (10mm stud above mobo) |
+| Frame Cylinder | `frame/frame_cylinder.scad` | ❌ TODO | Free-floating, captive in upper frame |
+| Upper Frame | `frame/upper_frame.scad` | ❌ TODO | Structure holding 4 cylinders |
+| Quick-Release Latch | `mounting/quick_release_latch.scad` | ❌ TODO | Single-action panel release |
+| Panel Hinge | `mounting/panel_hinge.scad` | ❌ TODO | Optional panel linking |
+| Parameterized Top Panel | `panels/standard/top_parameterized.scad` | ❌ TODO | Dynamic vent based on cpu_cooler_offset_x/y |
+| Internal Air Channels | `panels/standard/air_channels.scad` | ❌ TODO | Underside structures for airflow direction |
+
 ---
 
 ## Assembly Files
@@ -353,3 +377,20 @@ Nice-to-haves and alternative components.
 | 6.5 | NVMe SSD model | None | M.2 2280 reference |
 | 6.6 | 2.5" SSD model | None | Optional storage |
 | 6.7 | Cable management | All phases | Clips, channels, pass-throughs |
+
+---
+
+### Phase 7: Open Air Frame & Advanced Panel System
+
+Advanced mounting and ventilation features for improved accessibility and cooling.
+
+| Priority | Task | Dependency | Notes |
+|----------|------|------------|-------|
+| 7.1 | Extended standoff (M3x10+6mm) | Phase 1.6 | M3 male-female standoff: 6mm female thread below, 10mm male stud above mobo |
+| 7.2 | Frame cylinder | 7.1 | Free-floating, captive cylinder with internal thread |
+| 7.3 | Upper frame structure | 7.2 | Holds 4 frame cylinders, foundation for panels |
+| 7.4 | Quick-release latch mechanism | Phase 1 | Single action unlocks top/side/front panels |
+| 7.5 | Panel hinge component | 7.4 | Optional hinging for clamshell-style opening |
+| 7.6 | Parameterized top panel | 7.3, Phase 1.3 | Dynamic vent placement based on CPU cooler position |
+| 7.7 | Internal air channels | 7.6 | Underside structures directing airflow over components |
+| 7.8 | Full open-air frame assembly | 7.1-7.7 | Validate tool-free assembly and airflow |
