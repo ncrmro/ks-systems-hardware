@@ -1,12 +1,7 @@
 // Dovetail Joint Primitives
 // Chamfered dovetail joints for support-free 3D printing
 
-// Default parameters
-default_dovetail_angle = 50;      // Angle from vertical (degrees)
-default_dovetail_height = 5;      // Trapezoid height (mm)
-default_dovetail_length = 30;     // Length along edge (mm)
-default_dovetail_base_width = 8;  // Width at narrow end (mm)
-default_clearance = 0.3;          // Clearance per side (mm)
+include <../dimensions.scad>
 
 // Calculate top width from base width, height, and angle
 function dovetail_top_width(base_width, height, angle) =
@@ -18,15 +13,15 @@ function dovetail_top_width(base_width, height, angle) =
 // Extrudes along +X (length direction)
 // Rail widens in +Z direction (trapezoid shape)
 module male_dovetail(
-    length = default_dovetail_length,
-    height = default_dovetail_height,
-    base_width = default_dovetail_base_width,
-    angle = default_dovetail_angle
+    length = scaled_dovetail_length,
+    height = scaled_dovetail_height,
+    base_width = scaled_dovetail_base_width,
+    angle = dovetail_angle
 ) {
     top_width = dovetail_top_width(base_width, height, angle);
 
     // Trapezoidal cross-section rotated 90° CW on Z then 90° CW on X
-    rotate([-90, 180, 90])
+    rotate([-90, 180, 0])
     linear_extrude(height = length, center = true)
         polygon([
             [-base_width/2, 0],      // bottom left
@@ -43,11 +38,11 @@ module male_dovetail(
 // Extrudes along +X (length direction)
 // Channel widens in +Z direction (trapezoid shape)
 module female_dovetail(
-    length = default_dovetail_length,
-    height = default_dovetail_height,
-    base_width = default_dovetail_base_width,
-    angle = default_dovetail_angle,
-    clearance = default_clearance
+    length = scaled_dovetail_length,
+    height = scaled_dovetail_height,
+    base_width = scaled_dovetail_base_width,
+    angle = dovetail_angle,
+    clearance = scaled_clearance
 ) {
     // Add clearance to all dimensions
     adj_base_width = base_width + 2 * clearance;
@@ -55,9 +50,7 @@ module female_dovetail(
     top_width = dovetail_top_width(adj_base_width, adj_height, angle);
     adj_length = length + 2 * clearance;
 
-    // Trapezoidal cross-section rotated 90° CW on Z then 90° CW on X
-    rotate([-90, 0, 0])
-    rotate([0, 0, -90])
+    rotate([-90, 180, 0])
     linear_extrude(height = adj_length, center = true)
         polygon([
             [-adj_base_width/2, -clearance],  // bottom left (extra height for clearance)

@@ -1,34 +1,13 @@
 // Front Panel with Male Dovetail
 // Male dovetail rail on top edge to mate with top panel
 
+include <../dimensions.scad>
 use <../modules/dovetail.scad>
-
-// Panel parameters (can be overridden)
-panel_width = 100;        // X dimension (matches top panel width)
-panel_height = 100;       // Z dimension (vertical height of front panel)
-panel_thickness = 3;      // Y dimension (wall thickness)
-
-// Dovetail parameters (must match top panel channel)
-dovetail_angle = 50;
-dovetail_height = 3;      // Must match top panel channel height
-dovetail_length = 10;
-dovetail_base_width = 8;
-
-// Scale factor for prototyping
-scale_factor = 1.0;
-
-// Scaled dimensions
-scaled_width = panel_width * scale_factor;
-scaled_panel_height = panel_height * scale_factor;
-scaled_thickness = panel_thickness * scale_factor;
-scaled_dovetail_height = dovetail_height * scale_factor;
-scaled_dovetail_length = dovetail_length * scale_factor;
-scaled_dovetail_base_width = dovetail_base_width * scale_factor;
 
 module front_panel(
     width = scaled_width,
-    panel_h = scaled_panel_height,
-    thickness = scaled_thickness,
+    panel_h = scaled_height,
+    thickness = scaled_wall_thickness,
     dt_angle = dovetail_angle,
     dt_height = scaled_dovetail_height,
     dt_length = scaled_dovetail_length,
@@ -47,7 +26,7 @@ module front_panel(
         // Z position at panel_h - 2*height aligns with top panel's bottom-cut channel
 
         // Left dovetail - centered at 1/4 panel width
-        translate([width/4, thickness + scaled_dovetail_length/2, panel_h - (scaled_dovetail_height*2)])
+        translate([width/4, thickness + dt_length/2, panel_h - (dt_height*2)])
             rotate([0, 0, 90])
             male_dovetail(
                 length = dt_length,
@@ -57,7 +36,7 @@ module front_panel(
             );
 
         // Right dovetail - centered at 3/4 panel width
-        translate([width * 3/4, thickness + scaled_dovetail_length/2, panel_h - (scaled_dovetail_height*2)])
+        translate([width * 3/4, thickness + dt_length/2, panel_h - (dt_height*2)])
             rotate([0, 0, 90])
             male_dovetail(
                 length = dt_length,
