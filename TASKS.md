@@ -83,8 +83,8 @@ keystone-hardware/
 │   │   │
 │   │   ├── frame/                     # Open air frame components
 │   │   │   ├── standoff_extended.scad # ✅ Standoff with male stud
-│   │   │   ├── frame_cylinder.scad    # ❌ Free-floating mounting cylinder
-│   │   │   └── upper_frame.scad       # ❌ Frame structure holding cylinders
+│   │   │   ├── frame_cylinder.scad    # ✅ Free-floating mounting cylinder
+│   │   │   └── upper_frame.scad       # ✅ Frame structure holding cylinders
 │   │   │
 │   │   ├── mounting/                  # Rapid panel mounting system
 │   │   │   ├── quick_release_latch.scad # ❌ Single-action panel release
@@ -247,8 +247,8 @@ Open air frame and rapid panel mounting components:
 | Part | File | Status | Notes |
 |------|------|--------|-------|
 | Extended Standoff | `frame/standoff_extended.scad` | ✅ Done | M3x10+6mm male-female standoff (10mm stud above mobo) |
-| Frame Cylinder | `frame/frame_cylinder.scad` | ❌ TODO | Free-floating, captive in upper frame |
-| Upper Frame | `frame/upper_frame.scad` | ❌ TODO | Structure holding 4 cylinders |
+| Frame Cylinder | `frame/frame_cylinder.scad` | ✅ Done | Free-floating, captive in upper frame, height derived from interior_chamber_height |
+| Upper Frame | `frame/upper_frame.scad` | ✅ Done | Structure holding 4 cylinders with retention lips |
 | Quick-Release Latch | `mounting/quick_release_latch.scad` | ❌ TODO | Single-action panel release |
 | Panel Hinge | `mounting/panel_hinge.scad` | ❌ TODO | Optional panel linking |
 | Parameterized Top Panel | `panels/standard/top_parameterized.scad` | ❌ TODO | Dynamic vent based on cpu_cooler_offset_x/y |
@@ -384,13 +384,13 @@ Nice-to-haves and alternative components.
 
 Advanced mounting and ventilation features for improved accessibility and cooling.
 
-| Priority | Task | Dependency | Notes |
-|----------|------|------------|-------|
-| 7.1 | Extended standoff (M3x10+6mm) | Phase 1.6 | M3 male-female standoff: 6mm female thread below, 10mm male stud above mobo |
-| 7.2 | Frame cylinder | 7.1 | Free-floating, captive cylinder with internal thread |
-| 7.3 | Upper frame structure | 7.2 | Holds 4 frame cylinders, foundation for panels |
-| 7.4 | Quick-release latch mechanism | Phase 1 | Single action unlocks top/side/front panels |
-| 7.5 | Panel hinge component | 7.4 | Optional hinging for clamshell-style opening |
-| 7.6 | Parameterized top panel | 7.3, Phase 1.3 | Dynamic vent placement based on CPU cooler position |
-| 7.7 | Internal air channels | 7.6 | Underside structures directing airflow over components |
-| 7.8 | Full open-air frame assembly | 7.1-7.7 | Validate tool-free assembly and airflow |
+| Priority | Task | Dependency | Status | Notes |
+|----------|------|------------|--------|-------|
+| 7.1 | Extended standoff (M3x10+6mm) | Phase 1.6 | ✅ Done | M3 male-female standoff: 6mm female thread below, 10mm male stud above mobo |
+| 7.2 | Frame cylinder | 7.1 | ✅ Done | Free-floating cylinder, height = interior_chamber_height - standoff_height - mobo_pcb_thickness (~86mm) |
+| 7.3 | Upper frame structure | 7.2 | ✅ Done | Holds 4 frame cylinders with retention lips, foundation for panels |
+| 7.4 | Quick-release latch mechanism | Phase 1 | ❌ TODO | Single action unlocks top/side/front panels |
+| 7.5 | Panel hinge component | 7.4 | ❌ TODO | Optional hinging for clamshell-style opening |
+| 7.6 | Parameterized top panel | 7.3, Phase 1.3 | ❌ TODO | Dynamic vent placement based on CPU cooler position |
+| 7.7 | Internal air channels | 7.6 | ❌ TODO | Underside structures directing airflow over components |
+| 7.8 | Full open-air frame assembly | 7.1-7.7 | ❌ TODO | Validate tool-free assembly and airflow |
