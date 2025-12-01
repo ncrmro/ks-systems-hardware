@@ -9,7 +9,7 @@ top_panel_thickness = 6;     // Top/bottom panel thickness
 wall_panel_thickness = 3;    // Side/front/back panel thickness
 
 // Dovetail parameters
-dovetail_angle = 50;         // Angle from vertical (degrees)
+dovetail_angle = 15;         // Angle from vertical (degrees)
 dovetail_height = 3;         // Trapezoid height (mm)
 dovetail_length = 10;        // Length along edge (mm)
 dovetail_base_width = 8;     // Width at narrow end (mm)
