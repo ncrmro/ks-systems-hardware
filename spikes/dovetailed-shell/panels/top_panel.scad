@@ -19,10 +19,10 @@ module top_panel(
         // Origin at corner, panel extends in +X, +Y, +Z
         cube([width, depth, thickness]);
 
-        // Left female dovetail on front edge (Y=0) at 1/4 width
+        // Left female dovetail on front edge at 1/4 width
         // Matches front panel's left male dovetail position
-        translate([width/4, 0, 0])
-            rotate([0, 0, 0])
+        // Offset Y so channel starts at panel edge and extends fully inward
+        translate([width/4, dt_length/2 + dt_clearance, 0])
             female_dovetail(
                 length = dt_length,
                 height = dt_height,
@@ -31,10 +31,10 @@ module top_panel(
                 clearance = dt_clearance
             );
 
-        // Right female dovetail on front edge (Y=0) at 3/4 width
+        // Right female dovetail on front edge at 3/4 width
         // Matches front panel's right male dovetail position
-        translate([width * 3/4, 0, 0])
-            rotate([0, 0, 0])
+        // Offset Y so channel starts at panel edge and extends fully inward
+        translate([width * 3/4, dt_length/2 + dt_clearance, 0])
             female_dovetail(
                 length = dt_length,
                 height = dt_height,

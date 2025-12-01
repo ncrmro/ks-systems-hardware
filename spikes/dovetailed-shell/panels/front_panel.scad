@@ -27,7 +27,6 @@ module front_panel(
 
         // Left dovetail - centered at 1/4 panel width
         translate([width/4, thickness + dt_length/2, panel_h - (dt_height*2)])
-            rotate([0, 0, 90])
             male_dovetail(
                 length = dt_length,
                 height = dt_height,
@@ -37,7 +36,6 @@ module front_panel(
 
         // Right dovetail - centered at 3/4 panel width
         translate([width * 3/4, thickness + dt_length/2, panel_h - (dt_height*2)])
-            rotate([0, 0, 90])
             male_dovetail(
                 length = dt_length,
                 height = dt_height,
