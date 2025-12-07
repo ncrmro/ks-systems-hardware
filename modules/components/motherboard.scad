@@ -1,8 +1,8 @@
 // A module to create a rudimentary Mini-ITX motherboard model
-// Includes mounting holes and standoffs at standard Mini-ITX positions
+// Includes mounting holes at standard Mini-ITX positions
+// Note: Standoffs are now part of base_assembly, not the motherboard module
 
 include <../case/dimensions.scad>
-use <../case/frame/standoff_extended.scad>
 
 module motherboard() {
     mobo_width = 170;
@@ -18,10 +18,6 @@ module motherboard() {
     atx_conn_l = 51.6;
     atx_conn_w = 15.1;
     atx_conn_h = 19.6;
-
-    // Standoff positioning
-    // Female portion sits below PCB, male stud extends up through hole
-    standoff_female_h = 6;  // Height of female portion below PCB
 
     union() {
         // Motherboard PCB with mounting holes
@@ -48,13 +44,9 @@ module motherboard() {
             }
         }
 
-        // Standoffs - positioned so female portion is below PCB
-        // Male stud extends upward through the mounting holes
-        for (pos = standoff_locations) {
-            translate([pos[0], pos[1], -standoff_female_h]) {
-                extended_standoff();
-            }
-        }
+        // Note: Standoffs removed from motherboard module (legacy code)
+        // Standoffs are now part of base_assembly (integrated bottom panel design)
+        // See modules/case/base/base_assembly.scad
     }
 }
 

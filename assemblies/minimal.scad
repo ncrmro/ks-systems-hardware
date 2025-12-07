@@ -4,12 +4,11 @@
 include <../modules/case/dimensions.scad>
 
 // Case parts
-use <../modules/case/base/motherboard_plate.scad>
+use <../modules/case/base/base_assembly.scad>
 use <../modules/case/panels/standard/back.scad>
 use <../modules/case/panels/standard/side_left.scad>
 use <../modules/case/panels/standard/side_right.scad>
 use <../modules/case/panels/standard/top.scad>
-use <../modules/case/panels/standard/bottom.scad>
 use <../modules/case/panels/standard/front.scad>
 
 // Components
@@ -19,7 +18,7 @@ use <../modules/components/power/psu_flex_atx.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 0;  // Set > 0 to explode view (e.g., 20)
+explode = 100;  // Set > 0 to explode view (e.g., 20)
 
 module minimal_assembly() {
     // Base offsets
@@ -30,17 +29,19 @@ module minimal_assembly() {
     union() {
         // === CASE PANELS ===
         if (show_panels) {
-            // Bottom panel (interior dimensions, fits between walls)
-            translate([wall_thickness, wall_thickness, -explode]) {
-                bottom_panel();
-            }
-
-            // Motherboard plate (raised by standoff height)
-            translate([base_x, base_y, base_z + standoff_height]) {
-                motherboard_plate();
+            // Base assembly (bottom panel + standoffs + feet)
+            // Positioned at base offsets, includes integrated standoff mounting
+            translate([base_x, base_y, -explode]) {
+                base_assembly(show_feet = true);
             }
 
             // Back panel (at rear, full height starts at Z=0)
+            // DEBUG: Print positioning values
+            echo("=== BACK PANEL DEBUG ===");
+            echo("mobo_depth =", mobo_depth);
+            echo("wall_thickness =", wall_thickness);
+            echo("explode =", explode);
+            echo("Back panel Y position =", mobo_depth + wall_thickness + explode);
             translate([wall_thickness, mobo_depth + wall_thickness + explode, 0]) {
                 back_panel();
             }
@@ -69,7 +70,9 @@ module minimal_assembly() {
         // === COMPONENTS ===
         if (show_components) {
             // Motherboard assembly (motherboard + RAM + CPU cooler, placed on standoffs)
-            translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+            // Positioned at: wall_thickness (panel) + standoff_height (standoff) = 9mm
+            // No extra wall_thickness needed (motherboard plate removed)
+            translate([base_x, base_y, wall_thickness + standoff_height]) {
                 motherboard_assembly();
             }
 

@@ -43,8 +43,8 @@ openscad -o output.stl assemblies/minimal.scad
 modules/
 ├── case/
 │   ├── dimensions.scad      # Shared dimensions - INCLUDE in files needing variables
-│   ├── base/                # Motherboard plate, backplate, standoffs
-│   ├── panels/standard/     # Panels for minimal/NAS configs
+│   ├── base/                # Backplate (I/O shield mounting) - Note: motherboard_plate.scad deprecated
+│   ├── panels/standard/     # Panels for minimal/NAS configs (bottom panel has integrated standoff mounting)
 │   ├── panels/gpu/          # Panels for GPU config (taller)
 │   ├── gpu/                  # GPU mounting brackets
 │   ├── nas_2disk/           # 2-disk NAS enclosure parts
@@ -79,9 +79,13 @@ use <../modules/components/motherboard.scad>  // Get modules only
 - `mobo_width/depth` (170mm Mini-ITX)
 - `mobo_pcb_thickness` (1.6mm)
 - `wall_thickness` (3mm)
-- `standoff_height` (6mm)
-- `standoff_hole_radius` (1.6mm, M3 clearance)
+- `standoff_height` (6mm female thread portion of M3x10+6mm standoff)
+- `standoff_hole_radius` (1.6mm, M3 clearance - deprecated, see integrated design)
 - `standoff_locations` - array of 4 Mini-ITX mounting positions
+- **Integrated Bottom Panel Standoff Mounting:**
+  - `standoff_boss_height` (2.5mm above panel surface)
+  - `standoff_hex_size_flat_to_flat` (5.5mm for M3 hex head)
+  - `standoff_mounting_screw_length` (8mm, M3 socket head cap screw)
 - `interior_chamber_height` (standoffs + mobo + cooler, ~94mm)
 - `minimal_exterior_height` (~100mm)
 - `minimal_with_psu_width` (~226mm, controlled by NAS 2-disk layout)
@@ -120,10 +124,15 @@ use <../modules/components/motherboard.scad>  // Get modules only
 - `base_y = wall_thickness` (3mm from front edge)
 - `base_z = wall_thickness` (3mm from bottom)
 
-**Component stacking heights:**
-- Motherboard plate: `base_z + standoff_height` (~9mm from bottom)
-- Motherboard PCB surface: `base_z + standoff_height + wall_thickness` (~12mm)
-- Components on motherboard: Add to motherboard surface height
+**Component stacking heights (Integrated Bottom Panel Design):**
+- Bottom panel with standoff receptacles: Z=0 (positioned at wall_thickness = 3mm from exterior)
+- Standoff bases in hexagonal recesses: Z=0 to 2.5mm (boss height above panel)
+- Standoff tops (female thread end): Z=8.5mm (2.5mm boss + 6mm standoff height)
+- Motherboard PCB bottom surface: Z=~8.5mm (rests on standoff male studs)
+- Motherboard PCB top surface: Z=~10.1mm (8.5mm + 1.6mm PCB thickness)
+- Components on motherboard: Add to ~10.1mm base height
+
+**Note:** The separate motherboard plate component has been eliminated. Standoffs now mount directly into hexagonal recesses on the bottom panel interior surface, secured by M3 x 8mm screws from underneath.
 
 ### Panel Positioning
 
@@ -146,9 +155,9 @@ Panels fall into two categories:
 1. **Assemblies** combine case parts and components with positioning logic
 2. **Toggle flags** (`show_panels`, `show_components`, `explode`) enable debugging
 3. **Color coding** distinguishes parts:
-   - blue = motherboard plate
+   - blue = (deprecated - previously motherboard plate, now integrated into bottom panel)
    - red = backplate (I/O panel)
-   - gray = all other panels (side, top, bottom, front)
+   - gray = all other panels (side, top, bottom with integrated standoff mounting, front)
    - purple = PCBs (motherboard)
    - green = PSU
    - medium gray (0.4, 0.4, 0.4) = 3D printed frame parts
@@ -173,8 +182,10 @@ The case uses a stacking/modular frame approach:
 The upper air-frame system (Phase 7 in TASKS.md):
 
 - **Extended Standoffs**: M3x10+6mm male-female standoffs
-  - 6mm female thread (accepts mobo screw from below)
+  - 6mm female thread (accepts M3 x 8mm screw from below through bottom panel)
+  - Sits in hexagonal recesses on bottom panel (integrated mounting design)
   - 10mm male stud protruding above motherboard
+  - Secured via bottom-up screw mounting (no separate motherboard plate)
 - **Frame Cylinders**: Free-floating, captive in upper frame
   - Height = `interior_chamber_height - standoff_height - mobo_pcb_thickness` (~86mm)
   - Screw onto standoff male studs (tool-free assembly)
@@ -214,9 +225,9 @@ The upper air-frame system (Phase 7 in TASKS.md):
 Key files and their purposes:
 
 - `modules/case/dimensions.scad` - Single source of truth for all dimensions
-- `modules/case/base/` - Core frame components (motherboard plate, backplate)
+- `modules/case/base/` - Core frame components (backplate; Note: motherboard_plate.scad is deprecated)
 - `modules/case/frame/` - Open air frame components (standoffs, cylinders, upper frame)
-- `modules/case/panels/standard/` - Panels for minimal/NAS configs
+- `modules/case/panels/standard/` - Panels for minimal/NAS configs (bottom panel has integrated standoff mounting)
 - `modules/case/panels/gpu/` - Taller panels for GPU configuration
 - `modules/case/nas_2disk/` - 2-disk NAS enclosure (frame, hotswap rails)
 - `modules/case/nas_many/` - Many-disk NAS enclosure

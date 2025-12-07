@@ -40,15 +40,33 @@ The case is designed around the following core components:
 *   **3.5" HDD:** 146mm x 101.6mm x 26.1mm (L x W x H). Used in NAS configurations.
 *   **2.5" SSD:** 100mm x 69.85mm x 7mm (L x W x H). Optional storage expansion.
 
-### 2.1. Motherboard Mounting
+### 2.1. Motherboard Mounting - Integrated Bottom Panel
 
-*   **Standoff Pattern:** TODO - Standard Mini-ITX pattern?
-*   **Standoff Heights:**
-    *   Minimal Configuration: TODO
-    *   NAS Configuration (Option A): TODO
-    *   NAS Configuration (Option B): TODO
-    *   GPU Configuration: TODO
-*   **Fasteners:** TODO - Screw type and size
+The motherboard mounting system uses an integrated design where the bottom panel directly accepts standoff bases via hexagonal recesses. This eliminates the separate motherboard plate component while improving structural integrity.
+
+**Standoff Mounting System:**
+*   **Mounting Points:** Four hexagonal recesses on bottom panel interior surface
+*   **Pattern:** Standard Mini-ITX: [12.7, 12.7], [165.1, 12.7], [12.7, 165.1], [165.1, 165.1] mm from panel origin
+*   **Standoff Type:** M3x10+6mm male-female standoffs
+    *   Lower portion: 6mm female thread (accepts mounting screw from below)
+    *   Upper portion: 10mm male threaded stud protruding above motherboard surface
+
+**Hexagonal Receptacle Specifications:**
+*   **Hex Size:** 5.5mm flat-to-flat (matches M3 hex head width)
+*   **Boss Height:** 2.5mm above panel interior surface
+*   **Pocket Depth:** 2.2mm (recessed to accommodate hex screw head)
+*   **Total Recess Depth:** ~4.7mm (pocket + boss clearance)
+
+**Fastening Method:**
+*   **Screw Type:** M3 socket head cap screw (ISO 4762)
+*   **Screw Length:** M3 x 8mm (recommended)
+*   **Screw Orientation:** Upward through panel from underneath (bottom-up mounting)
+*   **Thread Engagement:** 6mm into standoff female thread
+*   **Torque Specification:** 1.5-2.0 Nm (finger-tight plus 1/4 turn)
+
+**Configuration Heights:**
+*   **All Configurations:** Standoff height = 6mm female thread portion + 2.5mm boss height = 8.5mm from bottom panel surface to motherboard mounting surface
+*   This applies to: Minimal, NAS 2-disk, NAS many-disk, and GPU configurations
 
 ## 3. Base Configuration
 
@@ -144,9 +162,10 @@ The case uses a stacking/modular frame approach:
 *   **Base Frame:** The barebones case (motherboard + Flex PSU) serves as the top/main chamber.
 *   **NAS Enclosures:** Both 2-disk and many-disk (5-8) enclosures are designed to mount **underneath** the base frame.
 *   **Roofless Enclosure Design:** NAS enclosures have no top panel (roof). The bottom of the base frame serves as the ceiling for the NAS enclosure, creating a shared boundary between chambers.
-*   **Unified Mounting System:** Four #6-32 threaded mounting points at the corners of the base frame bottom serve dual purposes:
+*   **Unified Mounting System:** Four #6-32 threaded mounting points at the corners of the **bottom panel** serve dual purposes:
     *   When standalone: Rubber feet screw into these holes.
     *   When expanded: NAS enclosure attaches via these same mounting points.
+    *   **Note:** These #6-32 corner mounts are separate from the M3 standoff mounting system. The bottom panel features both: M3 hexagonal recesses for motherboard standoffs (at Mini-ITX pattern positions) and #6-32 threaded holes at corners for NAS/feet attachment.
 *   **Frame Connection:** NAS enclosures connect to the base frame but feature their own side panels.
 *   **Panel Variants:** Different side panels are used for GPU configuration vs. barebones/NAS configurations.
 
@@ -301,10 +320,14 @@ The upper air-frame consists of four cylinders that screw onto the motherboard s
 
 ### 11.3. Assembly Process
 
-1.  Install standoffs with male studs into motherboard plate
-2.  Mount motherboard onto standoffs
-3.  Place upper frame over motherboard
-4.  Hand-tighten frame cylinders onto standoff studs (no tools required)
+1.  Position bottom panel with interior side facing up (for screw access)
+2.  Insert M3 x 8mm screws through bottom panel from underneath
+3.  Position extended standoffs in hexagonal recesses (female thread facing down)
+4.  Thread screws upward into standoff female threads (6mm engagement minimum)
+5.  Torque screws to 1.5-2.0 Nm (finger-tight plus 1/4 turn)
+6.  Flip assembly and mount motherboard onto standoff male studs from above
+7.  Place upper frame over motherboard
+8.  Hand-tighten frame cylinders onto standoff male studs (tool-free assembly)
 
 ## 12. Rapid Panel Mounting System
 
