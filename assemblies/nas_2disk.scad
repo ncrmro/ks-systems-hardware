@@ -5,12 +5,11 @@
 include <../modules/case/dimensions.scad>
 
 // Case parts
-use <../modules/case/base/motherboard_plate.scad>
+use <../modules/case/base/base_assembly.scad>
 use <../modules/case/panels/standard/back.scad>
 use <../modules/case/panels/standard/side_left.scad>
 use <../modules/case/panels/standard/side_right.scad>
 use <../modules/case/panels/standard/top.scad>
-use <../modules/case/panels/standard/bottom.scad>
 use <../modules/case/panels/standard/front.scad>
 use <../modules/case/nas_2disk/frame.scad>
 use <../modules/case/frame/frame_cylinder.scad>
@@ -51,27 +50,22 @@ module nas_2disk_assembly() {
 
         // === CASE PANELS (base frame above NAS) ===
         if (show_panels) {
-            // Bottom panel of base frame (interior dimensions, fits between walls)
+            // Base assembly (bottom panel + standoffs + feet)
             // Feet disabled - NAS enclosure provides feet at ground level
-            translate([wall_thickness, wall_thickness, nas_top]) {
-                bottom_panel(show_feet = false);
-            }
-
-            // Motherboard plate (raised by standoff height)
-            translate([base_x, base_y, base_z + standoff_height]) {
-                motherboard_plate();
+            translate([base_x, base_y, nas_top]) {
+                base_assembly(show_feet = false);
             }
 
             // Frame cylinders (at standoff locations, on motherboard surface)
             if (show_frame_cylinders) {
-                translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+                translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
                     frame_cylinders();
                 }
             }
 
             // Upper frame (holds frame cylinders, on motherboard surface)
             if (show_upper_frame) {
-                translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+                translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
                     upper_frame();
                 }
             }
@@ -105,7 +99,8 @@ module nas_2disk_assembly() {
         // === COMPONENTS ===
         if (show_components) {
             // Motherboard assembly (motherboard + RAM + CPU cooler, placed on standoffs)
-            translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+            // Positioned at: nas_top + wall_thickness (panel) + standoff_height = ~40mm
+            translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
                 motherboard_assembly();
             }
 

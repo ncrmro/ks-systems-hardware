@@ -1,5 +1,17 @@
 // Bottom panel for minimal/barebones configuration
-// Features feet mounts and optional NAS expansion connector points
+//
+// INTEGRATED STANDOFF MOUNTING DESIGN:
+// - Hexagonal receptacles at Mini-ITX standoff positions (12.7, 165.1 pattern)
+// - Hexagonal bosses (2.5mm height) accept M3x10+6mm male-female standoffs
+// - M3 x 8mm socket head cap screws secure standoffs from underneath (bottom-up mounting)
+// - Eliminates separate motherboard plate component
+//
+// ADDITIONAL FEATURES:
+// - 4x #6-32 threaded holes at corners for NAS mounting or rubber feet
+// - Honeycomb ventilation in motherboard area
+// - Optional feet mounts (disabled when NAS enclosure provides feet)
+//
+// See SPEC.md Section 2.1 for complete mounting specifications
 
 include <../../dimensions.scad>
 use <top.scad>  // For honeycomb_xy module

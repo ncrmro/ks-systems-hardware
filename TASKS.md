@@ -41,7 +41,7 @@ keystone-hardware/
 │   ├── case/                          # Case part models
 │   │   │
 │   │   ├── base/                      # Base frame (all configs)
-│   │   │   ├── motherboard_plate.scad # ✅ 170x170mm plate (in case.scad)
+│   │   │   ├── motherboard_plate.scad # ⚠️ DEPRECATED - See integrated bottom panel design (panels/standard/bottom.scad)
 │   │   │   ├── backplate_io.scad      # ✅ I/O backplate (in case.scad)
 │   │   │   ├── standoffs.scad         # ❌ Motherboard standoffs
 │   │   │   └── rubber_feet.scad       # ❌ Rubber feet for standalone config (same #6-32 holes as NAS mount)
@@ -125,7 +125,8 @@ keystone-hardware/
 ### Migration Notes
 
 Existing files need to be reorganized:
-- `modules/case.scad` → Split into `modules/case/base/motherboard_plate.scad` and `backplate_io.scad`
+- `modules/case.scad` → Split into `modules/case/base/motherboard_plate.scad` (DEPRECATED) and `backplate_io.scad`
+- **Note**: `motherboard_plate.scad` is now deprecated. Standoff mounting is integrated into `bottom.scad` via hexagonal recesses
 - `modules/case-2x-nas.scad` → `modules/case/nas_2disk/frame.scad` (rename)
 - `modules/case-hdd-hotswap-rails-35.scad` → `modules/case/nas_2disk/hotswap_rails.scad`
 - `modules/*.scad` (components) → `modules/components/` subdirectories
@@ -173,7 +174,7 @@ Existing files need to be reorganized:
 
 | Part | File | Status | Notes |
 |------|------|--------|-------|
-| Motherboard Plate | `case.scad` | ✅ Done | 170x170mm with standoff holes |
+| Motherboard Plate | `case.scad` | ⚠️ Deprecated | Replaced by integrated bottom panel design (see Phase 1.4) |
 | Backplate (I/O) | `case.scad` | ✅ Done | I/O shield cutout + honeycomb ventilation |
 | 2-Bay NAS Enclosure | `case-2x-nas.scad` | ✅ Done | Houses 2x 3.5" HDDs with hot-swap rails |
 | HDD Hot-Swap Rails | `case-hdd-hotswap-rails-35.scad` | ✅ Done | Rails for 3.5" HDD insertion |
@@ -292,7 +293,7 @@ The base frame that all other configurations build upon.
 | 1.1 | Standard side panel (left) | None | Core enclosure |
 | 1.2 | Standard side panel (right) | None | Core enclosure |
 | 1.3 | Top panel | None | Core enclosure |
-| 1.4 | Bottom panel | None | 4x #6-32 threaded inserts at corners (dual-purpose: rubber feet OR NAS mount) |
+| 1.4 | Bottom panel | None | **Integrated standoff mounting**: Hexagonal recesses at Mini-ITX positions for M3 standoffs + 4x #6-32 corners for feet/NAS mount |
 | 1.5 | Front panel (basic) | None | Power button hole |
 | 1.6 | Standoffs | None | Motherboard mounting |
 | 1.7 | Full minimal assembly | 1.1-1.6 | Validate fit |

@@ -6,7 +6,7 @@
 include <../modules/case/dimensions.scad>
 
 // Case parts
-use <../modules/case/base/motherboard_plate.scad>
+use <../modules/case/base/base_assembly.scad>
 use <../modules/case/gpu/bracket.scad>
 use <../modules/case/gpu/io_bracket.scad>
 

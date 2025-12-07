@@ -5,12 +5,11 @@
 include <../modules/case/dimensions.scad>
 
 // Case parts
-use <../modules/case/base/motherboard_plate.scad>
+use <../modules/case/base/base_assembly.scad>
 use <../modules/case/panels/standard/back.scad>
 use <../modules/case/panels/standard/side_left.scad>
 use <../modules/case/panels/standard/side_right.scad>
 use <../modules/case/panels/standard/top.scad>
-use <../modules/case/panels/standard/bottom.scad>
 use <../modules/case/panels/standard/front.scad>
 use <../modules/case/nas_many/frame.scad>
 
@@ -47,14 +46,10 @@ module nas_many_assembly() {
 
         // === CASE PANELS (base frame above NAS) ===
         if (show_panels) {
-            // Bottom panel of base frame
-            translate([0, 0, nas_height]) {
-                bottom_panel();
-            }
-
-            // Motherboard plate
-            translate([base_x, base_y, base_z + standoff_height]) {
-                motherboard_plate();
+            // Base assembly (bottom panel + standoffs + feet)
+            // Feet disabled - NAS enclosure provides feet
+            translate([base_x, base_y, nas_height]) {
+                base_assembly(show_feet = false);
             }
 
             // Back panel
@@ -86,7 +81,8 @@ module nas_many_assembly() {
         // === COMPONENTS ===
         if (show_components) {
             // Motherboard assembly (motherboard + RAM + CPU cooler)
-            translate([base_x, base_y, base_z + standoff_height + wall_thickness]) {
+            // Positioned at: nas_height + wall_thickness (panel) + standoff_height = ~119mm
+            translate([base_x, base_y, nas_height + wall_thickness + standoff_height]) {
                 motherboard_assembly();
             }
 
