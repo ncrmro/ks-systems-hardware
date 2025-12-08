@@ -22,7 +22,12 @@ use <../modules/components/ram.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 0;  // Set > 0 to explode view (e.g., 20)
+explode = 100;  // Set > 0 to explode view (e.g., 20)
+
+// === COORDINATE SYSTEM ===
+// X-axis: 0 = left side (front panel left edge), increases toward right
+// Y-axis: 0 = front (front panel), increases toward back (along side panels)
+// Z-axis: 0 = bottom, increases upward
 
 module pico_assembly() {
     // Base offsets
@@ -109,16 +114,16 @@ module pico_assembly() {
                 }
             }
 
-            // RAM (2 sticks)
-            translate([base_x + 10, base_y + 20, wall_thickness + standoff_height + mobo_pcb_thickness]) {
+            // RAM (2 sticks, 5mm from front, 17mm from left)
+            translate([base_x + 17, base_y + 5, wall_thickness + standoff_height + mobo_pcb_thickness]) {
                 ram_stick();
-                translate([0, 11.2, 0]) {
+                translate([0, 8, 0]) {
                     ram_stick();
                 }
             }
 
-            // NH-L9 CPU Cooler (centered over CPU socket area)
-            translate([base_x + 158, base_y + 21, wall_thickness + standoff_height + mobo_pcb_thickness]) {
+            // NH-L9 CPU Cooler (20mm from front and left edges of motherboard)
+            translate([base_x + 115, base_y + 20, wall_thickness + standoff_height + mobo_pcb_thickness]) {
                 rotate([0, 0, 90]) {
                     noctua_nh_l9();
                 }
