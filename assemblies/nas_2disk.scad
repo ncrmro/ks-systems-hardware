@@ -2,7 +2,7 @@
 // Base frame stacked on top of 2-disk NAS enclosure
 // Uses passive chimney airflow: Intake -> HDDs -> Motherboard -> Heatsink -> Exhaust
 
-include <../modules/case/dimensions.scad>
+include <../modules/case/dimensions_minimal.scad>
 
 // Case parts
 use <../modules/case/base/base_assembly.scad>

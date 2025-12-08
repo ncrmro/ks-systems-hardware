@@ -2,7 +2,7 @@
 // Mirror of left panel - features ventilation honeycomb and mounting holes
 // Parametric: passes parameters through to side_panel_left
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 use <side_left.scad>
 
 module side_panel_right(

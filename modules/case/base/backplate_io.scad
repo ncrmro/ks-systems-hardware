@@ -2,7 +2,7 @@
 // Mounts at rear of case behind motherboard and PSU
 // Extended to full case width to allow PSU screwing into backplate
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 use <../../util/honeycomb.scad>
 
 module backplate_io() {

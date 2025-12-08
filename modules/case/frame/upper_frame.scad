@@ -2,7 +2,7 @@
 // Rectangular frame that sits at the top of the frame cylinders
 // Outside dimensions match Mini-ITX motherboard (170mm x 170mm)
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 // --- Frame Dimensions ---
 // Rail width must be > standoff distance from edge (12.7mm) + hole radius + margin

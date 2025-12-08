@@ -15,7 +15,7 @@
 //       base_assembly(show_feet = true);
 //   }
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 use <../panels/standard/bottom.scad>
 use <../frame/standoff_extended.scad>
 

@@ -3,7 +3,7 @@
 // 6mm female thread below (accepts motherboard mounting screw)
 // 6mm male stud above (frame cylinders screw onto this)
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 // --- Extended Standoff Dimensions ---
 extended_standoff_female_height = 6;      // Female portion height (below mobo)

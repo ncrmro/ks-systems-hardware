@@ -1,7 +1,7 @@
 // Motherboard mounting plate for Mini-ITX
 // 170x170mm plate with standoff mounting holes
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 module motherboard_plate() {
     color("blue") {

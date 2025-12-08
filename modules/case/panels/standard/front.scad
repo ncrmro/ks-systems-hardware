@@ -2,7 +2,7 @@
 // Features power button hole and optional LED/USB cutouts
 // Parametric: accepts width and height for different configurations
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 
 module front_panel(
     width = front_back_panel_width + 2 * wall_thickness,

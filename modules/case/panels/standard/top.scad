@@ -2,7 +2,7 @@
 // Features ventilation honeycomb over CPU cooler area
 // Parametric: accepts width and depth for different configurations
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
 module top_panel(

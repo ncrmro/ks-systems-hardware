@@ -2,7 +2,7 @@
 // Free-floating cylinder that screws onto extended standoff male studs
 // Provides mounting point for upper frame and panels
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 // Color for 3D printed parts
 cylinder_color = [0.3, 0.3, 0.3];  // Dark gray

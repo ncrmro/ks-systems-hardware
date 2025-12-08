@@ -3,7 +3,7 @@
 // All I/O faces DOWN (bottom of case)
 // From SPEC: Width 171mm, Depth 190mm, Height 378mm (standing)
 
-include <../modules/case/dimensions.scad>
+include <../modules/case/dimensions_minimal.scad>
 
 // Case parts
 use <../modules/case/base/base_assembly.scad>

@@ -6,7 +6,7 @@
 include <../modules/case/dimensions_pico.scad>
 
 // Case parts
-use <../modules/case/base/base_assembly.scad>
+use <../modules/case/base/base_assembly_pico.scad>
 use <../modules/case/panels/standard/back_pico.scad>
 use <../modules/case/panels/standard/side_left.scad>
 use <../modules/case/panels/standard/side_right.scad>
@@ -19,7 +19,7 @@ use <../modules/components/motherboard/motherboard_full_pico.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 100;  // Set > 0 to explode view (e.g., 20)
+explode = 20;  // Set > 0 to explode view (e.g., 20)
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right
@@ -37,7 +37,7 @@ module pico_assembly() {
         if (show_panels) {
             // Base assembly (bottom panel + standoffs)
             translate([base_x, base_y, -explode]) {
-                base_assembly(
+                base_assembly_pico(
                     panel_width = interior_panel_width,
                     panel_depth = interior_panel_depth
                 );

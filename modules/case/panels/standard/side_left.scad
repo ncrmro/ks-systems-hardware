@@ -2,7 +2,7 @@
 // Features ventilation honeycomb and mounting holes
 // Parametric: accepts depth and height for different configurations
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
 module side_panel_left(

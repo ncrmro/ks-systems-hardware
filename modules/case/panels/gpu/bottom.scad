@@ -2,7 +2,7 @@
 // Contains cutouts for: Motherboard I/O, GPU outputs, Power inlet
 // All I/O faces down in vertical GPU config
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 
 module gpu_bottom_panel() {
     panel_width = gpu_config_width;

@@ -3,7 +3,7 @@
 // All I/O faces DOWN, 240mm radiator for cooling
 // High-performance build with liquid cooling
 
-include <../modules/case/dimensions.scad>
+include <../modules/case/dimensions_minimal.scad>
 
 // Case parts
 use <../modules/case/base/base_assembly.scad>

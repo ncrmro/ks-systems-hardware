@@ -2,7 +2,7 @@
 // Drives mounted vertically (on narrowest side - 26.1mm)
 // Features dedicated fan cooling
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 use <../../components/storage/hdd_3_5.scad>
 use <../../components/cooling/fan_120.scad>
 

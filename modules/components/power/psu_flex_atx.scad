@@ -1,5 +1,5 @@
-// Use shared dimensions from dimensions.scad
-include <../../case/dimensions.scad>
+// Use dimensions from dimensions_minimal.scad
+include <../../case/dimensions_minimal.scad>
 
 // C14 inlet dimensions (for power plug on rear of PSU)
 flex_c14_body_width = 27;

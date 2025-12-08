@@ -2,7 +2,7 @@
 // Displays individual components spread out for inspection
 // See assemblies/minimal.scad for the complete assembled case
 
-include <modules/case/dimensions.scad>
+include <modules/case/dimensions_minimal.scad>
 
 // Case parts
 use <modules/case/base/motherboard_plate.scad>

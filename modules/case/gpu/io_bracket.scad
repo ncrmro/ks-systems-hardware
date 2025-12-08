@@ -1,7 +1,7 @@
 // GPU I/O Bracket
 // Rear bracket for GPU display outputs (faces bottom in vertical config)
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 module gpu_io_bracket() {
     // Standard PCIe bracket dimensions
