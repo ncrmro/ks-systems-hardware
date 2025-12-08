@@ -1,13 +1,17 @@
 // Top panel for minimal/barebones configuration
 // Features ventilation honeycomb over CPU cooler area
+// Parametric: accepts width and depth for different configurations
 
 include <../../dimensions.scad>
 use <../../../util/honeycomb.scad>
 
-module top_panel() {
+module top_panel(
+    width = interior_panel_width,
+    depth = interior_panel_depth
+) {
     // Panel dimensions (interior, fits between side walls)
-    panel_width = interior_panel_width;    // ~220mm
-    panel_depth = interior_panel_depth;    // 170mm
+    panel_width = width;
+    panel_depth = depth;
     panel_thickness = wall_thickness;      // 3mm
 
     // Ventilation area over CPU cooler

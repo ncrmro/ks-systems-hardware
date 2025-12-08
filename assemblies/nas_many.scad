@@ -46,10 +46,10 @@ module nas_many_assembly() {
 
         // === CASE PANELS (base frame above NAS) ===
         if (show_panels) {
-            // Base assembly (bottom panel + standoffs + feet)
-            // Feet disabled - NAS enclosure provides feet
+            // Base assembly (bottom panel + standoffs)
+            // NAS enclosure provides feet
             translate([base_x, base_y, nas_height]) {
-                base_assembly(show_feet = false);
+                base_assembly();
             }
 
             // Back panel

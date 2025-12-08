@@ -18,7 +18,7 @@ use <../modules/components/power/psu_flex_atx.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 100;  // Set > 0 to explode view (e.g., 20)
+explode = 10;  // Set > 0 to explode view (e.g., 20)
 
 module minimal_assembly() {
     // Base offsets
@@ -29,10 +29,10 @@ module minimal_assembly() {
     union() {
         // === CASE PANELS ===
         if (show_panels) {
-            // Base assembly (bottom panel + standoffs + feet)
+            // Base assembly (bottom panel + standoffs)
             // Positioned at base offsets, includes integrated standoff mounting
             translate([base_x, base_y, -explode]) {
-                base_assembly(show_feet = true);
+                base_assembly();
             }
 
             // Back panel (at rear, full height starts at Z=0)

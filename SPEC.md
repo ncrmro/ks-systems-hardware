@@ -8,7 +8,8 @@ This document outlines the design requirements for a modular and expandable comp
 
 The primary goal of this design is **scalability**. The case should support configurations ranging from the most minimal build to high-performance or high-storage setups:
 
-*   **Minimal Configuration:** Motherboard, CPU, low-profile heatsink (Noctua NH-L12S with 120mm thin fan), NVMe SSD, and a Pico or Flex ATX PSU. This represents the smallest possible footprint.
+*   **Pico Configuration:** Ultra-compact motherboard-only build with Pico ATX PSU (on-board DC-DC converter), Noctua NH-L9 cooler, and NVMe SSD. This is the absolute smallest configuration at 176mm x 176mm x 52mm.
+*   **Minimal Configuration:** Motherboard, CPU, low-profile heatsink (Noctua NH-L12S with 120mm thin fan), NVMe SSD, and a Flex ATX PSU. Includes dedicated PSU compartment.
 *   **NAS Configuration:** Expanded to include multiple 3.5" HDDs for network-attached storage.
 *   **Full GPU Configuration:** Expanded to accommodate a full-sized graphics card with dedicated cooling.
 
@@ -33,10 +34,12 @@ The case is designed around the following core components:
 
 *   **Motherboard:** Mini-ITX form factor (170mm x 170mm).
 *   **Power Supply:** Supports multiple form factors depending on configuration:
-    *   **Pico PSU:** For minimal builds with external AC adapter.
+    *   **Pico ATX:** DC-DC converter PCB mounted on motherboard (60mm x 50mm x 10mm typical). External AC-DC adapter. DC input via 5.5mm x 2.5mm barrel jack on back panel.
     *   **Flex ATX:** 150mm x 81.5mm x 40mm (L x W x H). Compact option for space-constrained builds.
     *   **SFX:** 125mm x 100mm x 63.5mm (L x W x H). Higher wattage option for GPU configurations.
-*   **CPU Cooler:** Noctua NH-L12S (70mm height without fan).
+*   **CPU Cooler Options:**
+    *   **Noctua NH-L9:** 37mm height, 95mm x 95mm footprint. Used in Pico configuration for ultra-compact builds.
+    *   **Noctua NH-L12S:** 70mm height, 128mm x 146mm footprint. Used in Minimal and NAS configurations.
 *   **3.5" HDD:** 146mm x 101.6mm x 26.1mm (L x W x H). Used in NAS configurations.
 *   **2.5" SSD:** 100mm x 69.85mm x 7mm (L x W x H). Optional storage expansion.
 
@@ -47,9 +50,9 @@ The motherboard mounting system uses an integrated design where the bottom panel
 **Standoff Mounting System:**
 *   **Mounting Points:** Four hexagonal recesses on bottom panel interior surface
 *   **Pattern:** Standard Mini-ITX: [12.7, 12.7], [165.1, 12.7], [12.7, 165.1], [165.1, 165.1] mm from panel origin
-*   **Standoff Type:** M3x10+6mm male-female standoffs
+*   **Standoff Type:** M3x6+6mm male-female standoffs
     *   Lower portion: 6mm female thread (accepts mounting screw from below)
-    *   Upper portion: 10mm male threaded stud protruding above motherboard surface
+    *   Upper portion: 6mm male threaded stud protruding above motherboard surface
 
 **Hexagonal Receptacle Specifications:**
 *   **Hex Size:** 5.5mm flat-to-flat (matches M3 hex head width)
@@ -240,11 +243,19 @@ When no NAS enclosure is attached, rubber feet provide case support and use the 
 
 Overall external dimensions for each configuration:
 
-### 8.1. Minimal Configuration
+### 8.1. Pico Configuration
+
+*   **Width:** 176mm (mobo_width 170mm + 2 × wall_thickness 6mm)
+*   **Depth:** 176mm (mobo_depth 170mm + 2 × wall_thickness 6mm)
+*   **Height:** ~63mm (standoffs 6mm + mobo 1.6mm + I/O shield 44.45mm + offset 5mm + walls 6mm)
+*   **Volume:** ~2.0L (0.176 × 0.176 × 0.063 m³)
+*   **Note:** Height controlled by I/O shield (taller than NH-L9 cooler at 37mm)
+
+### 8.2. Minimal Configuration
 
 *   **Width:** 226mm (controlled by NAS 2-disk HDD layout - see Section 3.3)
-*   **Depth:** TODO
-*   **Height:** TODO
+*   **Depth:** 176mm
+*   **Height:** ~100mm (standoffs 6mm + mobo 1.6mm + NH-L12S cooler 70mm + walls 6mm)
 
 ### 8.2. NAS Configuration (Option A - Flat Mount)
 
@@ -306,9 +317,9 @@ The upper air-frame consists of four cylinders that screw onto the motherboard s
 
 ### 11.1. Standoff Design
 
-*   **Type:** M3x10+6mm male-female standoff
+*   **Type:** M3x6+6mm male-female standoff
 *   **Lower Portion:** 6mm female thread (accepts motherboard mounting screw from below)
-*   **Upper Portion:** 10mm male threaded stud protruding above the motherboard surface
+*   **Upper Portion:** 6mm male threaded stud protruding above the motherboard surface
 *   **Thread Specification:** M3
 
 ### 11.2. Frame Cylinders
