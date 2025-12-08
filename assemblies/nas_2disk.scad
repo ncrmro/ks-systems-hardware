@@ -50,10 +50,10 @@ module nas_2disk_assembly() {
 
         // === CASE PANELS (base frame above NAS) ===
         if (show_panels) {
-            // Base assembly (bottom panel + standoffs + feet)
-            // Feet disabled - NAS enclosure provides feet at ground level
+            // Base assembly (bottom panel + standoffs)
+            // NAS enclosure provides feet at ground level
             translate([base_x, base_y, nas_top]) {
-                base_assembly(show_feet = false);
+                base_assembly();
             }
 
             // Frame cylinders (at standoff locations, on motherboard surface)

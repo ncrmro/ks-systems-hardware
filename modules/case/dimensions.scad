@@ -39,13 +39,21 @@ io_shield_z_offset = 5;     // 5mm from bottom of plate
 backplate_height = 88.9;    // 3.5 inches
 backplate_thickness = wall_thickness;
 
-// --- CPU Cooler (Noctua NH-L12S) ---
+// --- CPU Cooler (Noctua NH-L12S) - Minimal/NAS configurations ---
 cooler_width = 128;
 cooler_depth = 146;
 cooler_base_height = 35;      // Base plate and heatpipes
 cooler_fan_height = 15;       // 120mm x 15mm fan (NF-A12x15)
 cooler_fins_height = 20;      // Heatsink fins on top
 cooler_total_height = cooler_base_height + cooler_fan_height + cooler_fins_height;  // 70mm
+
+// --- CPU Cooler (Noctua NH-L9) - Pico configuration ---
+cooler_nh_l9_width = 95;
+cooler_nh_l9_depth = 95;
+cooler_nh_l9_base_height = 5;       // CPU contact base
+cooler_nh_l9_heatsink_height = 18;  // Aluminum fins
+cooler_nh_l9_fan_height = 14;       // 92mm x 14mm fan
+cooler_nh_l9_total_height = cooler_nh_l9_base_height + cooler_nh_l9_heatsink_height + cooler_nh_l9_fan_height;  // 37mm
 
 // --- Power Supplies ---
 // Flex ATX (from technical drawing)
@@ -166,4 +174,4 @@ c14_depth = 30;
 frame_cylinder_height = interior_chamber_height - standoff_height - mobo_pcb_thickness;  // ~86mm
 frame_cylinder_outer_diameter = 8;     // Outer diameter
 frame_cylinder_inner_diameter = 3.2;   // M3 clearance for standoff stud
-frame_cylinder_thread_depth = 10;      // Matches extended_standoff_male_height
+frame_cylinder_thread_depth = 6;       // Matches extended_standoff_male_height (M3x6+6mm)

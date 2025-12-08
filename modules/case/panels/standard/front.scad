@@ -1,12 +1,16 @@
 // Front panel for minimal/barebones configuration
 // Features power button hole and optional LED/USB cutouts
+// Parametric: accepts width and height for different configurations
 
 include <../../dimensions.scad>
 
-module front_panel() {
+module front_panel(
+    width = front_back_panel_width + 2 * wall_thickness,
+    height = front_back_panel_height
+) {
     // Panel dimensions (extended 3mm each side to cover side panel gap)
-    panel_width = front_back_panel_width + 2 * wall_thickness;  // ~226mm (+6mm)
-    panel_height = front_back_panel_height;  // ~94mm
+    panel_width = width;
+    panel_height = height;
     panel_thickness = wall_thickness;        // 3mm
 
     // Power button (typical 12mm momentary switch)
@@ -57,23 +61,6 @@ module front_panel() {
                     cylinder(h = panel_thickness + 0.2, d = hdd_led_diameter, $fn = 20);
                 }
             }
-
-            // Corner mounting holes
-            corner_offset = panel_screw_inset;
-            hole_positions = [
-                [corner_offset, corner_offset],
-                [panel_width - corner_offset, corner_offset],
-                [corner_offset, extended_panel_height - corner_offset],
-                [panel_width - corner_offset, extended_panel_height - corner_offset]
-            ];
-
-            for (pos = hole_positions) {
-                translate([pos[0], -0.1, pos[1]]) {
-                    rotate([-90, 0, 0]) {
-                        cylinder(h = panel_thickness + 0.2, r = panel_screw_radius, $fn = 20);
-                    }
-                }
-            }
             }
 
             // Bottom lip (protrudes backward into case, inset 3mm from sides)
@@ -82,7 +69,8 @@ module front_panel() {
             }
 
             // Top lip (protrudes backward into case, inset 3mm from sides)
-            translate([wall_thickness, panel_thickness, panel_height - 6]) {
+            // Positioned relative to panel height to work with all configurations
+            translate([wall_thickness, panel_thickness, panel_height - wall_thickness - lip_height]) {
                 cube([panel_width - 2 * wall_thickness, lip_depth, lip_height]);
             }
         }

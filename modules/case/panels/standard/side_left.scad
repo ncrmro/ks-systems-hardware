@@ -1,13 +1,17 @@
 // Left side panel for minimal/barebones configuration
 // Features ventilation honeycomb and mounting holes
+// Parametric: accepts depth and height for different configurations
 
 include <../../dimensions.scad>
 use <../../../util/honeycomb.scad>
 
-module side_panel_left() {
+module side_panel_left(
+    depth = side_panel_depth,
+    height = side_panel_height
+) {
     // Panel dimensions (exterior, forms outer wall)
-    panel_depth = side_panel_depth - wall_thickness;  // 173mm (shortened 3mm from front)
-    panel_height = side_panel_height;    // ~100mm
+    panel_depth = depth - wall_thickness;  // Shortened 3mm from front
+    panel_height = height;
     panel_thickness = wall_thickness;    // 3mm
 
     // Honeycomb area (leave border around edges)
@@ -28,23 +32,6 @@ module side_panel_left() {
             // Ventilation honeycomb
             translate([0, vent_border, vent_border]) {
                 honeycomb_yz(honeycomb_radius, panel_thickness, vent_width, vent_height);
-            }
-
-            // Corner mounting holes
-            corner_offset = panel_screw_inset;
-            hole_positions = [
-                [corner_offset, corner_offset],
-                [panel_depth - corner_offset, corner_offset],
-                [corner_offset, panel_height - corner_offset],
-                [panel_depth - corner_offset, panel_height - corner_offset]
-            ];
-
-            for (pos = hole_positions) {
-                translate([-0.1, pos[0], pos[1]]) {
-                    rotate([0, 90, 0]) {
-                        cylinder(h = panel_thickness + 0.2, r = panel_screw_radius, $fn = 20);
-                    }
-                }
             }
             }
 

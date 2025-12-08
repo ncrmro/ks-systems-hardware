@@ -1,13 +1,13 @@
-// Extended Standoff - M3x10+6mm Male-Female
+// Extended Standoff - M3x6+6mm Male-Female
 // Used for Open Air Frame mounting system
 // 6mm female thread below (accepts motherboard mounting screw)
-// 10mm male stud above (frame cylinders screw onto this)
+// 6mm male stud above (frame cylinders screw onto this)
 
 include <../dimensions.scad>
 
 // --- Extended Standoff Dimensions ---
 extended_standoff_female_height = 6;      // Female portion height (below mobo)
-extended_standoff_male_height = 10;       // Male stud height (above mobo)
+extended_standoff_male_height = 6;        // Male stud height (above mobo)
 extended_standoff_outer_diameter = 5;     // Outer diameter of standoff body
 extended_standoff_thread_diameter = 3;    // M3 thread diameter
 extended_standoff_thread_clearance = 3.2; // M3 clearance hole

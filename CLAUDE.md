@@ -181,10 +181,10 @@ The case uses a stacking/modular frame approach:
 
 The upper air-frame system (Phase 7 in TASKS.md):
 
-- **Extended Standoffs**: M3x10+6mm male-female standoffs
+- **Extended Standoffs**: M3x6+6mm male-female standoffs
   - 6mm female thread (accepts M3 x 8mm screw from below through bottom panel)
   - Sits in hexagonal recesses on bottom panel (integrated mounting design)
-  - 10mm male stud protruding above motherboard
+  - 6mm male stud protruding above motherboard
   - Secured via bottom-up screw mounting (no separate motherboard plate)
 - **Frame Cylinders**: Free-floating, captive in upper frame
   - Height = `interior_chamber_height - standoff_height - mobo_pcb_thickness` (~86mm)
