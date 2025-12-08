@@ -11,7 +11,7 @@ use <../modules/case/gpu/bracket.scad>
 use <../modules/case/gpu/io_bracket.scad>
 
 // Components
-use <../modules/components/motherboard.scad>
+use <../modules/components/motherboard/motherboard.scad>
 use <../modules/components/gpu.scad>
 use <../modules/components/pcie_riser.scad>
 use <../modules/components/power/psu_sfx.scad>

@@ -2,7 +2,7 @@
 // Includes mounting holes at standard Mini-ITX positions
 // Note: Standoffs are now part of base_assembly, not the motherboard module
 
-include <../case/dimensions.scad>
+include <../../case/dimensions.scad>
 
 module motherboard() {
     mobo_width = 170;

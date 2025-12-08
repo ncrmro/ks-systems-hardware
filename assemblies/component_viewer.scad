@@ -2,7 +2,7 @@
 // Displays all components in a grid for inspection
 
 // Components
-use <../modules/components/motherboard.scad>
+use <../modules/components/motherboard/motherboard.scad>
 use <../modules/components/cpu_cooler.scad>  // provides noctua_nh_l12s()
 use <../modules/components/gpu.scad>
 use <../modules/components/ram.scad>  // provides ram_stick()

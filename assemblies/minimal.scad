@@ -12,7 +12,7 @@ use <../modules/case/panels/standard/top.scad>
 use <../modules/case/panels/standard/front.scad>
 
 // Components
-use <../modules/components/assemblies/motherboard.scad>
+use <../modules/components/motherboard/motherboard_full_minitx.scad>
 use <../modules/components/power/psu_flex_atx.scad>
 
 // Toggle visibility for debugging
@@ -73,7 +73,7 @@ module minimal_assembly() {
             // Positioned at: wall_thickness (panel) + standoff_height (standoff) = 9mm
             // No extra wall_thickness needed (motherboard plate removed)
             translate([base_x, base_y, wall_thickness + standoff_height]) {
-                motherboard_assembly();
+                motherboard_full_minitx();
             }
 
             // Flex ATX PSU (next to motherboard, rear face against backplate, centered vertically)
