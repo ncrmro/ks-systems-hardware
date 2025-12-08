@@ -2,7 +2,7 @@
 // PSU mounts above motherboard in this config
 // Features ventilation
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
 module gpu_top_panel() {

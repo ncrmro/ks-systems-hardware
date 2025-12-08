@@ -1,5 +1,5 @@
 use <util/honeycomb.scad>
-include <case/dimensions.scad>
+include <case/dimensions_minimal.scad>
 
 module mini_itx_case() {
     // --- Case Dimensions ---

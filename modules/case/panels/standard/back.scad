@@ -2,7 +2,7 @@
 // Features I/O shield cutout, ventilation, and PSU mounting holes
 // Mounts at rear of case behind motherboard and PSU
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
 module back_panel() {

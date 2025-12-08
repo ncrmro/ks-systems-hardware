@@ -2,7 +2,7 @@
 // Extended height for vertical GPU orientation
 // Features ventilation for GPU cooling
 
-include <../../dimensions.scad>
+include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
 module gpu_side_panel_right() {

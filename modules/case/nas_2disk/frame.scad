@@ -1,6 +1,6 @@
 use <../../components/storage/hdd_3_5.scad>
 use <hotswap_rails.scad>
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 module case_nas_2x() {
     // Use shared dimensions from dimensions.scad

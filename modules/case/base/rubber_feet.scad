@@ -9,7 +9,7 @@
 // Mounting: Screws into #6-32 threaded inserts at bottom panel corners
 // Compatible with standard PC case feet thread size
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 module rubber_foot() {
     // #6-32 UNC thread specifications

@@ -1,32 +1,24 @@
-// Bottom panel for minimal/barebones configuration
+// Bottom panel for Pico configuration
 //
 // INTEGRATED STANDOFF MOUNTING DESIGN:
-// - Hexagonal receptacles at Mini-ITX standoff positions (12.7, 165.1 pattern)
+// - Hexagonal receptacles at Mini-ITX standoff positions
 // - Hexagonal bosses (2.5mm height) accept M3x10+6mm male-female standoffs
-// - M3 x 8mm socket head cap screws secure standoffs from underneath (bottom-up mounting)
-// - Eliminates separate motherboard plate component
+// - M3 x 8mm socket head cap screws secure standoffs from underneath
 //
-// ADDITIONAL FEATURES:
-// - 4x #6-32 threaded holes at corners for NAS mounting or rubber feet
-// - Honeycomb ventilation in motherboard area
-// - Optional feet mounts (disabled when NAS enclosure provides feet)
-//
-// See SPEC.md Section 2.1 for complete mounting specifications
-// Parametric: accepts width and depth for different configurations
+// Standalone file for 3D printing - uses pico dimensions
 
-include <../../dimensions_minimal.scad>
+include <../../dimensions_pico.scad>
 use <top.scad>  // For honeycomb_xy module
 
-module bottom_panel(
+module bottom_panel_pico(
     width = interior_panel_width,
     depth = interior_panel_depth
 ) {
-    // Panel dimensions (interior, fits between side walls)
     panel_width = width;
     panel_depth = depth;
-    panel_thickness = wall_thickness;      // 3mm
+    panel_thickness = wall_thickness;
 
-    // Ventilation area (smaller than top, for bottom intake)
+    // Ventilation area
     vent_border = 20;
     vent_width = mobo_width - 2 * vent_border;
     vent_depth = mobo_depth - 2 * vent_border;
@@ -34,12 +26,11 @@ module bottom_panel(
     vent_y_offset = vent_border;
 
     union() {
-        // Main panel
         color("gray") {
             difference() {
                 cube([panel_width, panel_depth, panel_thickness]);
 
-                // Ventilation honeycomb (less dense than top)
+                // Ventilation honeycomb
                 translate([vent_x_offset, vent_y_offset, 0]) {
                     honeycomb_xy(honeycomb_radius + 1, panel_thickness, vent_width, vent_depth);
                 }
@@ -66,9 +57,8 @@ module bottom_panel(
                 }
             }
         }
-
     }
 }
 
 // Preview
-bottom_panel();
+bottom_panel_pico();

@@ -1,7 +1,7 @@
 // Minimal/Barebones Configuration Assembly
 // Complete case with motherboard, CPU cooler, and Flex ATX PSU
 
-include <../modules/case/dimensions.scad>
+include <../modules/case/dimensions_minimal.scad>
 
 // Case parts
 use <../modules/case/base/base_assembly.scad>

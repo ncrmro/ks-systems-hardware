@@ -1,7 +1,7 @@
 // Vertical GPU Mounting Bracket
 // Holds GPU in vertical orientation with PCIe slot facing down
 
-include <../dimensions.scad>
+include <../dimensions_minimal.scad>
 
 module gpu_bracket() {
     // Bracket dimensions

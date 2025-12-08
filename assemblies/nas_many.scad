@@ -2,7 +2,7 @@
 // Base frame stacked on top of many-disk NAS enclosure
 // Features active fan cooling for drives
 
-include <../modules/case/dimensions.scad>
+include <../modules/case/dimensions_minimal.scad>
 
 // Case parts
 use <../modules/case/base/base_assembly.scad>
