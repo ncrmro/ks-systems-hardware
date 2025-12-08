@@ -15,6 +15,10 @@ Keystone Hardware is an OpenSCAD project for designing a modular, expandable com
 - **NAS many-disk**: Base + 5-8 HDDs with active fan cooling
   - HDDs mounted vertically (on narrow edge)
   - Uses same 4x #6-32 corner mounting system
+- **Pico**: Ultra-compact case with Pico ATX PSU and NH-L9 cooler
+  - Case dimensions: 176mm x 176mm x ~63mm
+  - No PSU compartment - Pico ATX mounts directly on motherboard
+  - External AC adapter with barrel jack connection
 - **GPU**: Vertical orientation with full-size GPU, all I/O facing bottom
   - Max GPU: 320mm length, 3-slot width (60mm)
   - PCIe riser cable required
@@ -50,15 +54,18 @@ modules/
 │   ├── nas_2disk/           # 2-disk NAS enclosure parts
 │   └── nas_many/            # Many-disk NAS enclosure parts
 ├── components/              # Hardware models (motherboard, PSU, HDD, etc.)
-│   ├── power/               # PSU models (SFX, Flex ATX)
+│   ├── motherboard/         # Motherboard assemblies (base, with_ram, full configs)
+│   ├── power/               # PSU models (SFX, Flex ATX, Pico)
 │   ├── storage/             # HDDs, SSDs
 │   └── cooling/             # Fans, radiators, AIO
 └── util/
     └── honeycomb.scad       # Ventilation pattern utility
 
 assemblies/                  # Complete case assemblies
-├── minimal.scad             # Barebones case
+├── minimal.scad             # Barebones case with Flex ATX PSU
+├── pico.scad                # Ultra-compact with Pico PSU + NH-L9
 ├── nas_2disk.scad           # With 2-disk NAS
+├── nas_many.scad            # With many-disk NAS (5-8 drives)
 ├── gpu.scad                 # GPU configuration
 └── gpu_aio.scad             # GPU with liquid cooling
 ```
@@ -72,7 +79,7 @@ assemblies/                  # Complete case assemblies
 **Module structure:**
 ```openscad
 include <../modules/case/dimensions.scad>  // Get shared dimensions
-use <../modules/components/motherboard.scad>  // Get modules only
+use <../modules/components/motherboard/motherboard_full_minitx.scad>  // Get modules only
 ```
 
 **Shared dimensions** are defined in `modules/case/dimensions.scad`. Key variables:
@@ -114,10 +121,16 @@ use <../modules/components/motherboard.scad>  // Get modules only
 
 ### Coordinate System & Assembly Positioning
 
-**Coordinate conventions:**
+**Coordinate conventions (case-level):**
 - X-axis: Width (left-right, 0 = left side of case)
 - Y-axis: Depth (front-back, 0 = front of case)
 - Z-axis: Height (bottom-top, 0 = bottom of case)
+
+**Motherboard assembly coordinate system:**
+- X-axis: 0 = left side of motherboard, increases toward right
+- Y-axis: 0 = front of motherboard, increases toward back
+- Z-axis: 0 = bottom of motherboard PCB, increases upward
+- Components on motherboard are positioned relative to PCB top surface (Z = mobo_pcb_thickness = 1.6mm)
 
 **Base positioning offsets** (used in assemblies):
 - `base_x = wall_thickness` (3mm from left edge)
@@ -231,9 +244,12 @@ Key files and their purposes:
 - `modules/case/panels/gpu/` - Taller panels for GPU configuration
 - `modules/case/nas_2disk/` - 2-disk NAS enclosure (frame, hotswap rails)
 - `modules/case/nas_many/` - Many-disk NAS enclosure
-- `modules/components/assemblies/motherboard.scad` - Complete motherboard assembly
+- `modules/components/motherboard/` - Motherboard assemblies:
+  - `motherboard.scad` - Base Mini-ITX PCB with I/O shield, ATX connector
+  - `motherboard_with_ram.scad` - Base + 2x RAM sticks
+  - `motherboard_full_minitx.scad` - Base + RAM + NH-L12S cooler (for minimal/NAS configs)
+  - `motherboard_full_pico.scad` - Base + RAM + NH-L9 cooler + Pico PSU (for pico config)
 - `modules/components/` - Hardware component models:
-  - `motherboard.scad` - Mini-ITX with I/O shield, connectors, RAM slots
   - `cpu_cooler.scad` - Noctua NH-L12S assembly
   - `NH-L12S/` - Detailed CPU cooler sub-components (base, heatpipes, fins, heatsink)
   - `power/psu_flex_atx.scad` - Flex ATX PSU with mounting holes

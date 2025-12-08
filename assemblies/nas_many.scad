@@ -14,7 +14,7 @@ use <../modules/case/panels/standard/front.scad>
 use <../modules/case/nas_many/frame.scad>
 
 // Components
-use <../modules/components/assemblies/motherboard.scad>
+use <../modules/components/motherboard/motherboard_full_minitx.scad>
 use <../modules/components/power/psu_flex_atx.scad>
 
 // Configuration
@@ -83,7 +83,7 @@ module nas_many_assembly() {
             // Motherboard assembly (motherboard + RAM + CPU cooler)
             // Positioned at: nas_height + wall_thickness (panel) + standoff_height = ~119mm
             translate([base_x, base_y, nas_height + wall_thickness + standoff_height]) {
-                motherboard_assembly();
+                motherboard_full_minitx();
             }
 
             // Flex ATX PSU

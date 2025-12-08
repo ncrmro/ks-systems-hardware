@@ -13,11 +13,8 @@ use <../modules/case/panels/standard/side_right.scad>
 use <../modules/case/panels/standard/top.scad>
 use <../modules/case/panels/standard/front.scad>
 
-// Components
-use <../modules/components/motherboard.scad>
-use <../modules/components/cpu_cooler_nh_l9.scad>
-use <../modules/components/power/psu_pico.scad>
-use <../modules/components/ram.scad>
+// Motherboard assembly (includes motherboard, RAM, NH-L9 cooler, Pico PSU)
+use <../modules/components/motherboard/motherboard_full_pico.scad>
 
 // Toggle visibility for debugging
 show_panels = true;
@@ -92,46 +89,10 @@ module pico_assembly() {
 
         // === COMPONENTS ===
         if (show_components) {
-            // Motherboard (on standoffs)
+            // Motherboard assembly (on standoffs)
+            // Includes: motherboard PCB, RAM, NH-L9 cooler, Pico PSU
             translate([base_x, base_y, wall_thickness + standoff_height]) {
-                color("purple") {
-                    difference() {
-                        union() {
-                            // Motherboard PCB
-                            cube([mobo_width, mobo_depth, mobo_pcb_thickness]);
-                            // I/O Shield
-                            translate([io_shield_x_offset, mobo_depth - 2, mobo_pcb_thickness]) {
-                                cube([io_shield_width, 2, io_shield_height]);
-                            }
-                        }
-                        // Mounting holes
-                        for (pos = standoff_locations) {
-                            translate([pos[0], pos[1], -0.1]) {
-                                cylinder(h = mobo_pcb_thickness + 0.2, r = standoff_hole_radius, $fn = 32);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // RAM (2 sticks, 5mm from front, 17mm from left)
-            translate([base_x + 17, base_y + 5, wall_thickness + standoff_height + mobo_pcb_thickness]) {
-                ram_stick();
-                translate([0, 8, 0]) {
-                    ram_stick();
-                }
-            }
-
-            // NH-L9 CPU Cooler (20mm from front and left edges of motherboard)
-            translate([base_x + 115, base_y + 20, wall_thickness + standoff_height + mobo_pcb_thickness]) {
-                rotate([0, 0, 90]) {
-                    noctua_nh_l9();
-                }
-            }
-
-            // Pico PSU (on motherboard, near back panel)
-            translate([base_x + mobo_width - 65, base_y + mobo_depth - 55, wall_thickness + standoff_height + mobo_pcb_thickness]) {
-                psu_pico();
+                motherboard_full_pico();
             }
         }
     }
