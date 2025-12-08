@@ -1,8 +1,16 @@
-// A module to create a rudimentary Mini-ITX motherboard model
-// Includes mounting holes at standard Mini-ITX positions
+// Mini-ITX Motherboard Base
+// Contains: PCB + I/O shield + 24-pin ATX connector + mounting holes
+// This is the foundation for all motherboard assemblies
+//
+// Coordinate System:
+// X-axis: 0 = left side, increases toward right
+// Y-axis: 0 = front, increases toward back (I/O shield at back)
+// Z-axis: 0 = bottom of motherboard PCB, increases upward
+//
 // Note: Standoffs are now part of base_assembly, not the motherboard module
 
 include <../../case/dimensions.scad>
+use <atx_24pin_connector.scad>
 
 module motherboard() {
     mobo_width = 170;
@@ -13,11 +21,6 @@ module motherboard() {
     io_shield_height = 33.87;
     io_shield_thickness = 2;
     io_shield_x_offset = (mobo_width - io_shield_width) / 2;
-
-    // ATX 24-pin connector dimensions
-    atx_conn_l = 51.6;
-    atx_conn_w = 15.1;
-    atx_conn_h = 19.6;
 
     union() {
         // Motherboard PCB with mounting holes
@@ -30,10 +33,6 @@ module motherboard() {
                     translate([io_shield_x_offset, mobo_depth - io_shield_thickness, mobo_thickness]) {
                         cube([io_shield_width, io_shield_thickness, io_shield_height]);
                     }
-                    // 24-pin ATX Connector
-                    translate([mobo_width - atx_conn_l, 0, mobo_thickness]) {
-                        cube([atx_conn_l, atx_conn_w, atx_conn_h]);
-                    }
                 }
                 // Mounting holes at Mini-ITX standoff locations
                 for (pos = standoff_locations) {
@@ -41,6 +40,14 @@ module motherboard() {
                         cylinder(h = mobo_thickness + 0.2, r = standoff_hole_radius, $fn = 32);
                     }
                 }
+            }
+        }
+
+        // 24-pin ATX Connector (right edge, 25mm from front)
+        // Rotated 90° so longest side runs along Y axis
+        translate([mobo_width, 25, mobo_thickness]) {
+            rotate([0, 0, 90]) {
+                atx_24pin_connector();
             }
         }
 
