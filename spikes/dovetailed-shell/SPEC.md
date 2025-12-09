@@ -110,8 +110,11 @@ This spike explores a chamfered-dovetail joint system for assembling flat 3D-pri
 ```
 spikes/dovetailed-shell/
 ├── SPEC.md                    # This specification
+├── dimensions.scad            # Shared dimension parameters
 ├── modules/
-│   └── dovetail.scad          # Dovetail joint primitives
+│   ├── dovetail.scad          # Combined test visualization
+│   ├── male_dovetail.scad     # Male dovetail rail primitive
+│   └── female_dovetail.scad   # Female dovetail with integrated boss
 ├── panels/
 │   ├── top_panel.scad         # Top panel with female dovetails
 │   └── front_panel.scad       # Front panel with male dovetail
@@ -126,3 +129,41 @@ spikes/dovetailed-shell/
 1. Print at 50% scale first to verify joint fit
 2. Adjust `clearance` parameter based on test results
 3. Print at 100% scale once joint geometry is validated
+
+## Implementation Notes
+
+### Female Dovetail Boss Design
+
+The female dovetail uses an integrated boss design rather than thickening the entire panel:
+
+- **Base panel**: Standard 3mm thickness
+- **Boss**: Raised rectangular section (3mm height) only where the dovetail channel is cut
+- **Material savings**: ~50% less filament compared to thickening entire panel to 6mm
+
+### OpenSCAD Geometry Approach
+
+Three approaches were evaluated for creating the trapezoidal dovetail channel:
+
+| Approach | Description | Verdict |
+|----------|-------------|---------|
+| `polygon()` + `rotate()` | 2D polygon extruded then rotated into position | **Rejected** - rotation math error-prone and hard to debug |
+| `linear_extrude()` + `scale` | Extrude with taper using scale parameter | Viable but requires ratio calculation |
+| `hull()` | Connect two rectangles at different Z positions | **Selected** - most intuitive and explicit |
+
+**Why hull() was chosen:**
+
+1. **Explicit geometry** - Each end of the channel is a visible shape at a specific Z position
+2. **No rotation math** - Avoids complex coordinate transforms
+3. **Easy to debug** - Can visualize each rectangle independently
+4. **Intuitive** - "Connect narrow rectangle at top to wide rectangle at bottom"
+
+### Channel Geometry
+
+```
+Z=0 (panel surface)     Z=-height (entry point)
+┌────────────┐          ┌──────────────────┐
+│ narrow_width│   hull   │    wide_width    │
+└────────────┘  ──────►  └──────────────────┘
+```
+
+The `hull()` function creates a convex hull between the two thin rectangles, forming a perfect trapezoidal prism without any rotation operations.

@@ -2,7 +2,7 @@
 // Male dovetail rail on top edge to mate with top panel
 
 include <../dimensions.scad>
-use <../modules/dovetail.scad>
+use <../modules/male_dovetail.scad>
 
 module front_panel(
     width = scaled_width,
