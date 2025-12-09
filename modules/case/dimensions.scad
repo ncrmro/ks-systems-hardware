@@ -14,10 +14,10 @@ mobo_pcb_thickness = 1.6;
 standoff_height = 6;  // Female thread portion of M3x10+6mm male-female standoff
 standoff_hole_radius = 1.6;  // M3 clearance (deprecated - see integrated bottom panel design)
 standoff_locations = [
-    [5, 5],       // Front-left: 5mm from left, 5mm from front
-    [165, 5],     // Front-right: 5mm from right, 5mm from front
-    [5, 160],     // Back-left: 5mm from left, 10mm from back
-    [165, 137]    // Back-right: 5mm from right, 33mm from back
+    [6.35, 5],       // Front-left: 6.35mm from left, 5mm from front
+    [163.65, 5],     // Front-right: 6.35mm from right, 5mm from front
+    [6.35, 160],     // Back-left: 6.35mm from left, 10mm from back
+    [163.65, 137]    // Back-right: 6.35mm from right, 33mm from back
 ];
 
 // --- Standoff Hexagonal Receptacles (Integrated Bottom Panel Design) ---

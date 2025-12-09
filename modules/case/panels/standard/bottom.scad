@@ -19,7 +19,9 @@ use <top.scad>  // For honeycomb_xy module
 
 module bottom_panel(
     width = interior_panel_width,
-    depth = interior_panel_depth
+    depth = interior_panel_depth,
+    ventilation = true,
+    center_cutout = false
 ) {
     // Panel dimensions (interior, fits between side walls)
     panel_width = width;
@@ -33,6 +35,11 @@ module bottom_panel(
     vent_x_offset = vent_border;
     vent_y_offset = vent_border;
 
+    // Center cutout dimensions (sized to avoid standoffs)
+    cutout_size = 100;  // Square cutout size
+    cutout_x = (mobo_width - cutout_size) / 2;
+    cutout_y = (mobo_depth - cutout_size) / 2;
+
     union() {
         // Main panel
         color("gray") {
@@ -40,8 +47,17 @@ module bottom_panel(
                 cube([panel_width, panel_depth, panel_thickness]);
 
                 // Ventilation honeycomb (less dense than top)
-                translate([vent_x_offset, vent_y_offset, 0]) {
-                    honeycomb_xy(honeycomb_radius + 1, panel_thickness, vent_width, vent_depth);
+                if (ventilation) {
+                    translate([vent_x_offset, vent_y_offset, 0]) {
+                        honeycomb_xy(honeycomb_radius + 1, panel_thickness, vent_width, vent_depth);
+                    }
+                }
+
+                // Center square cutout (reduces print time)
+                if (center_cutout) {
+                    translate([cutout_x, cutout_y, -0.1]) {
+                        cube([cutout_size, cutout_size, panel_thickness + 0.2]);
+                    }
                 }
 
                 // Standoff mounting holes (M3 screw clearance through panel and boss)
@@ -61,6 +77,10 @@ module bottom_panel(
                         // Hex pocket for standoff base (5.5mm flat-to-flat)
                         translate([0, 0, standoff_boss_height - standoff_pocket_depth]) {
                             cylinder(h = standoff_pocket_depth + 0.1, r = standoff_hex_size_flat_to_flat / 2 / cos(30), $fn = 6);
+                        }
+                        // Screw clearance hole through boss
+                        translate([0, 0, -0.1]) {
+                            cylinder(h = standoff_boss_height + 0.2, r = standoff_screw_clearance_hole / 2, $fn = 20);
                         }
                     }
                 }
