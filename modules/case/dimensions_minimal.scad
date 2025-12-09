@@ -64,17 +64,24 @@ minimal_exterior_height = interior_chamber_height + 2 * wall_thickness;
 // With Flex ATX PSU next to motherboard
 minimal_with_psu_width = nas_2disk_width;
 
-// --- Interior Panel Dimensions (top/bottom panels fit between walls) ---
-interior_panel_width = minimal_with_psu_width - 2 * wall_thickness;
+// --- Exterior Panel Dimensions (bottom/top panels span full width and cover back) ---
+exterior_panel_width = minimal_with_psu_width;           // 226mm - full case width
+exterior_panel_depth = mobo_depth + wall_thickness;      // 173mm - extends to cover back panel
+
+// --- Interior Panel Dimensions (for reference) ---
+interior_panel_width = minimal_with_psu_width - 2 * wall_thickness;  // 220mm
 interior_panel_depth = mobo_depth;
 
-// --- Side Panel Dimensions (left/right panels form exterior walls) ---
-side_panel_height = minimal_exterior_height;
-side_panel_depth = mobo_depth + 2 * wall_thickness;
+// --- Side Panel Dimensions (left/right panels sit between top/bottom) ---
+side_panel_height = minimal_exterior_height - 2 * wall_thickness;  // 94mm (shortened)
+side_panel_depth = exterior_panel_depth + wall_thickness;          // 176mm - extends to cover back panel
+
+// --- Back Panel Dimensions (sits between top/bottom, shortened height) ---
+back_panel_height = side_panel_height;                   // 94mm (same as side panels)
 
 // --- Front/Back Panel Dimensions ---
 front_back_panel_width = interior_panel_width;
-front_back_panel_height = side_panel_height;
+front_back_panel_height = minimal_exterior_height;  // Full height (unchanged)
 
 // --- GPU ---
 gpu_length = 320;

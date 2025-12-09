@@ -19,7 +19,7 @@ use <../modules/components/motherboard/motherboard_full_pico.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 20;  // Set > 0 to explode view (e.g., 20)
+explode = 0;  // Set > 0 to explode view (e.g., 20)
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right
@@ -36,22 +36,15 @@ module pico_assembly() {
         // === CASE PANELS ===
         if (show_panels) {
             // Base assembly (bottom panel + standoffs)
-            translate([base_x, base_y, -explode]) {
-                base_assembly_pico(
-                    panel_width = interior_panel_width,
-                    panel_depth = interior_panel_depth
-                );
+            // Positioned at X=0, Y=wall_thickness (behind front panel, extends to cover back)
+            translate([0, wall_thickness, -explode]) {
+                base_assembly_pico();
             }
 
-            // Back panel (at rear, with barrel jack hole)
-            translate([wall_thickness, mobo_depth + wall_thickness + explode, 0]) {
-                back_panel_pico(
-                    width = front_back_panel_width,
-                    height = front_back_panel_height,
-                    barrel_x = pico_barrel_jack_x,
-                    barrel_z = pico_barrel_jack_z,
-                    barrel_diameter = pico_barrel_jack_diameter
-                );
+            // Back panel (shortened height, raised to sit on bottom panel)
+            // Y position at exterior_panel_depth (173mm), Z raised by wall_thickness
+            translate([wall_thickness, exterior_panel_depth + explode, wall_thickness]) {
+                back_panel_pico();
             }
 
             // Front panel (extended width, pico height)
@@ -62,27 +55,30 @@ module pico_assembly() {
                 );
             }
 
-            // Left side panel
-            translate([-explode, wall_thickness, 0]) {
+            // Left side panel (shortened height, raised to sit on bottom panel)
+            // Y=wall_thickness (behind front panel)
+            translate([-explode, wall_thickness, wall_thickness]) {
                 side_panel_left(
-                    depth = pico_case_depth,
+                    depth = side_panel_depth,
                     height = side_panel_height
                 );
             }
 
-            // Right side panel
-            translate([pico_case_width - wall_thickness + explode, wall_thickness, 0]) {
+            // Right side panel (shortened height, raised to sit on bottom panel)
+            // Y=wall_thickness (behind front panel)
+            translate([pico_case_width - wall_thickness + explode, wall_thickness, wall_thickness]) {
                 side_panel_right(
-                    depth = pico_case_depth,
+                    depth = side_panel_depth,
                     height = side_panel_height
                 );
             }
 
-            // Top panel
-            translate([wall_thickness, wall_thickness, pico_exterior_height + explode]) {
+            // Top panel (full exterior width/depth, covers side panels from above)
+            // Positioned at X=0, Y=wall_thickness (behind front panel)
+            translate([0, wall_thickness, pico_exterior_height - wall_thickness + explode]) {
                 top_panel(
-                    width = interior_panel_width,
-                    depth = interior_panel_depth
+                    width = exterior_panel_width,
+                    depth = exterior_panel_depth
                 );
             }
         }
@@ -91,7 +87,10 @@ module pico_assembly() {
         if (show_components) {
             // Motherboard assembly (on standoffs)
             // Includes: motherboard PCB, RAM, NH-L9 cooler, Pico PSU
-            translate([base_x, base_y, wall_thickness + standoff_height]) {
+            // X offset: wall_thickness (to clear left side panel)
+            // Y offset: wall_thickness (behind front panel, matches bottom panel positioning)
+            // Z offset: wall_thickness (panel) + standoff_height (standoff)
+            translate([wall_thickness, wall_thickness, wall_thickness + standoff_height]) {
                 motherboard_full_pico();
             }
         }

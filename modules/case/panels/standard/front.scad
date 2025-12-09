@@ -28,8 +28,8 @@ module front_panel(
     hdd_led_x = power_led_x + 10;
     hdd_led_z = power_btn_z;
 
-    // Extended panel height (raised 3mm)
-    extended_panel_height = panel_height + wall_thickness;  // +3mm
+    // Panel height (matches case exterior height)
+    actual_panel_height = panel_height;  // No extension needed with new panel hierarchy
 
     // Raised lip dimensions
     lip_height = wall_thickness;      // 3mm
@@ -39,7 +39,7 @@ module front_panel(
     color("gray") {
         union() {
             difference() {
-                cube([panel_width, panel_thickness, extended_panel_height]);
+                cube([panel_width, panel_thickness, actual_panel_height]);
 
             // Power button hole
             translate([power_btn_x, -0.1, power_btn_z]) {

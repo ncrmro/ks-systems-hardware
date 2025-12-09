@@ -20,8 +20,9 @@ use <../panels/standard/bottom.scad>
 use <../frame/standoff_extended.scad>
 
 module base_assembly(
-    panel_width = interior_panel_width,
-    panel_depth = interior_panel_depth
+    panel_width = exterior_panel_width,
+    panel_depth = exterior_panel_depth,  // 173mm - extends to cover back panel
+    standoff_x_offset = wall_thickness   // Offset standoffs to align with motherboard
 ) {
     union() {
         // Bottom panel with integrated standoff receptacles
@@ -30,11 +31,12 @@ module base_assembly(
         // Extended standoffs positioned on top of bottom panel
         // The hexagonal boss is a structural feature on the panel for screw retention
         // Standoffs sit on the panel top surface at Z = wall_thickness (3mm)
+        // X offset added to align with motherboard (which is at X=wall_thickness in assembly)
         echo("=== BASE ASSEMBLY DEBUG ===");
-        echo("Rendering", len(standoff_locations), "standoffs at Z=", wall_thickness);
+        echo("Rendering", len(standoff_locations), "standoffs with X offset=", standoff_x_offset);
         for (loc = standoff_locations) {
-            echo("Standoff at X=", loc[0], "Y=", loc[1], "Z=", wall_thickness);
-            translate([loc[0], loc[1], wall_thickness]) {
+            echo("Standoff at X=", loc[0] + standoff_x_offset, "Y=", loc[1], "Z=", wall_thickness);
+            translate([loc[0] + standoff_x_offset, loc[1], wall_thickness]) {
                 extended_standoff();  // Correct module name from standoff_extended.scad
             }
         }

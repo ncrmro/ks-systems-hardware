@@ -25,19 +25,27 @@ pico_interior_chamber_height = pico_min_height_for_io;  // Use I/O shield as con
 pico_exterior_height = pico_interior_chamber_height + 2 * wall_thickness;  // ~63mm
 
 // --- Panel Dimensions (standard variable names for panels to use) ---
-// Interior panels (fit between walls)
+// Exterior panels (bottom/top span full width and cover back)
+exterior_panel_width = pico_case_width;                          // 176mm - full case width
+exterior_panel_depth = pico_case_depth - wall_thickness;         // 173mm - extends to cover back panel
+
+// Interior panels (for reference)
 interior_panel_width = pico_case_width - 2 * wall_thickness;    // 170mm
 interior_panel_depth = pico_case_depth - 2 * wall_thickness;    // 170mm
 
-// Front/back panels (between side walls)
+// Front/back panels (between side walls, full height)
 front_back_panel_width = interior_panel_width;   // 170mm
-front_back_panel_height = pico_exterior_height;  // ~63mm
+front_back_panel_height = pico_exterior_height;  // ~63mm (unchanged)
 
-// Side panels (exterior walls)
-side_panel_height = pico_exterior_height;        // ~63mm
-side_panel_depth = pico_case_depth;              // 176mm
+// Side panels (sit between top/bottom panels)
+side_panel_height = pico_exterior_height - 2 * wall_thickness;  // ~57mm (shortened)
+side_panel_depth = exterior_panel_depth + wall_thickness;       // 176mm - extends to cover back panel
+
+// Back panel height (shortened, sits between top/bottom)
+back_panel_height = side_panel_height;                          // ~57mm (same as side panels)
 
 // --- Pico PSU (Barrel Jack on Back Panel) ---
+// Barrel jack position is relative to the shortened back panel (which is raised by wall_thickness)
 pico_barrel_jack_x = interior_panel_width - 40;  // 130mm from left (right side)
-pico_barrel_jack_z = pico_exterior_height / 2;   // ~31mm (centered vertically)
+pico_barrel_jack_z = (pico_exterior_height / 2) - wall_thickness;  // ~28mm (centered in case, adjusted for raised panel)
 pico_barrel_jack_diameter = 8;                   // 8mm hole for 5.5x2.5mm barrel jack

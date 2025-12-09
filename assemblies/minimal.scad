@@ -18,7 +18,7 @@ use <../modules/components/power/psu_flex_atx.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 10;  // Set > 0 to explode view (e.g., 20)
+explode = 0;  // Set > 0 to explode view (e.g., 20)
 
 module minimal_assembly() {
     // Base offsets
@@ -30,19 +30,14 @@ module minimal_assembly() {
         // === CASE PANELS ===
         if (show_panels) {
             // Base assembly (bottom panel + standoffs)
-            // Positioned at base offsets, includes integrated standoff mounting
-            translate([base_x, base_y, -explode]) {
+            // Positioned at X=0, Y=wall_thickness (behind front panel, extends to cover back)
+            translate([0, wall_thickness, -explode]) {
                 base_assembly();
             }
 
-            // Back panel (at rear, full height starts at Z=0)
-            // DEBUG: Print positioning values
-            echo("=== BACK PANEL DEBUG ===");
-            echo("mobo_depth =", mobo_depth);
-            echo("wall_thickness =", wall_thickness);
-            echo("explode =", explode);
-            echo("Back panel Y position =", mobo_depth + wall_thickness + explode);
-            translate([wall_thickness, mobo_depth + wall_thickness + explode, 0]) {
+            // Back panel (shortened height, raised to sit on bottom panel)
+            // Y position at exterior_panel_depth (173mm), Z raised by wall_thickness
+            translate([wall_thickness, exterior_panel_depth + explode, wall_thickness]) {
                 back_panel();
             }
 
@@ -51,18 +46,21 @@ module minimal_assembly() {
                 front_panel();
             }
 
-            // Left side panel (full height, offset 3mm from front, starts at Z=0)
-            translate([-explode, wall_thickness, 0]) {
+            // Left side panel (shortened height, raised to sit on bottom panel)
+            // Y=wall_thickness (behind front panel)
+            translate([-explode, wall_thickness, wall_thickness]) {
                 side_panel_left();
             }
 
-            // Right side panel (full height, offset 3mm from front, starts at Z=0)
-            translate([minimal_with_psu_width - wall_thickness + explode, wall_thickness, 0]) {
+            // Right side panel (shortened height, raised to sit on bottom panel)
+            // Y=wall_thickness (behind front panel)
+            translate([minimal_with_psu_width - wall_thickness + explode, wall_thickness, wall_thickness]) {
                 side_panel_right();
             }
 
-            // Top panel (interior dimensions, fits between walls)
-            translate([wall_thickness, wall_thickness, minimal_exterior_height + explode]) {
+            // Top panel (full exterior width/depth, covers side panels from above)
+            // Positioned at X=0, Y=wall_thickness (behind front panel)
+            translate([0, wall_thickness, minimal_exterior_height - wall_thickness + explode]) {
                 top_panel();
             }
         }
@@ -70,14 +68,18 @@ module minimal_assembly() {
         // === COMPONENTS ===
         if (show_components) {
             // Motherboard assembly (motherboard + RAM + CPU cooler, placed on standoffs)
-            // Positioned at: wall_thickness (panel) + standoff_height (standoff) = 9mm
-            // No extra wall_thickness needed (motherboard plate removed)
-            translate([base_x, base_y, wall_thickness + standoff_height]) {
+            // X offset: wall_thickness (to clear left side panel)
+            // Y offset: wall_thickness (behind front panel, matches bottom panel positioning)
+            // Z offset: wall_thickness (panel) + standoff_height (standoff) = 9mm
+            translate([wall_thickness, wall_thickness, wall_thickness + standoff_height]) {
                 motherboard_full_minitx();
             }
 
             // Flex ATX PSU (next to motherboard, rear face against backplate, centered vertically)
-            translate([mobo_width + wall_thickness * 2, mobo_depth + wall_thickness - flex_atx_length, (minimal_exterior_height - flex_atx_height) / 2]) {
+            // X: mobo_width + 2*wall_thickness (after motherboard and interior wall)
+            // Y: exterior_panel_depth - flex_atx_length (rear against back panel)
+            // Z: centered vertically in case
+            translate([mobo_width + wall_thickness * 2, exterior_panel_depth - flex_atx_length, (minimal_exterior_height - flex_atx_height) / 2]) {
                 power_supply_flex_atx();
             }
         }
