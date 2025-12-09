@@ -3,15 +3,15 @@
 // No PSU exhaust, C14 inlet, or mounting holes (Pico PSU is on-board)
 // Parametric: accepts dimensions and barrel jack position
 
-include <../../dimensions.scad>
+include <../../dimensions_pico.scad>
 use <../../../util/honeycomb.scad>
 
 module back_panel_pico(
-    width,
-    height,
-    barrel_x,
-    barrel_z,
-    barrel_diameter = 8
+    width = front_back_panel_width,            // 170mm
+    height = back_panel_height,                // ~57mm - shortened to sit between top/bottom panels
+    barrel_x = pico_barrel_jack_x,
+    barrel_z = pico_barrel_jack_z,
+    barrel_diameter = pico_barrel_jack_diameter
 ) {
     // Panel dimensions
     panel_width = width;

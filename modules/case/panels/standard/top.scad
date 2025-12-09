@@ -6,8 +6,9 @@ include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
 module top_panel(
-    width = interior_panel_width,
-    depth = interior_panel_depth
+    width = exterior_panel_width,
+    depth = exterior_panel_depth,         // 173mm - extends to cover back panel
+    vent_x_offset_extra = wall_thickness  // Offset vent to center over motherboard
 ) {
     // Panel dimensions (interior, fits between side walls)
     panel_width = width;
@@ -19,7 +20,7 @@ module top_panel(
     vent_border = 10;
     vent_width = mobo_width - 2 * vent_border;      // Vent over motherboard area only
     vent_depth = mobo_depth - 2 * vent_border;
-    vent_x_offset = vent_border;
+    vent_x_offset = vent_border + vent_x_offset_extra;  // Offset to center over motherboard
     vent_y_offset = vent_border;
 
     color("gray") {

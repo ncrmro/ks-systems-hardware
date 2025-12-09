@@ -5,10 +5,12 @@
 include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
 
-module back_panel() {
+module back_panel(
+    height = back_panel_height  // 94mm - shortened to sit between top/bottom panels
+) {
     // Panel dimensions (interior, fits between side walls)
     extended_width = front_back_panel_width;   // ~220mm
-    panel_height = front_back_panel_height;    // ~100mm
+    panel_height = height;                     // Uses parameter (94mm default)
 
     // Honeycomb area calculations (motherboard section only)
     honeycomb_area_z_start = io_shield_z_offset + io_shield_height + vent_padding;
