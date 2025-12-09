@@ -97,9 +97,13 @@ use <../modules/components/motherboard/motherboard_full_minitx.scad>  // Get mod
 - `minimal_exterior_height` (~100mm)
 - `minimal_with_psu_width` (~226mm, controlled by NAS 2-disk layout)
 - Panel dimensions:
-  - `interior_panel_width/depth` (220mm x 170mm) - for top/bottom
-  - `side_panel_height/depth` (100mm x 176mm) - for left/right
-  - `front_back_panel_width/height` (220mm x 100mm) - for front/back
+  - `exterior_panel_width` (226mm minimal, 176mm pico) - for bottom/top panels (full case width)
+  - `exterior_panel_depth` (173mm) - for bottom/top panels (mobo_depth + wall_thickness, covers back)
+  - `interior_panel_width/depth` (220mm x 170mm) - interior reference dimensions
+  - `side_panel_height` (94mm minimal, ~57mm pico) - shortened to sit between top/bottom
+  - `side_panel_depth` (176mm) - extends to cover back panel (accounts for internal subtraction)
+  - `back_panel_height` (same as side_panel_height) - shortened to sit between top/bottom
+  - `front_back_panel_width/height` (220mm x 100mm) - for front/back panels
   - `panel_screw_radius`, `panel_screw_inset` - for mounting holes
 - PSU dimensions:
   - `flex_atx_*` (40x150x80mm, standing orientation)
@@ -149,19 +153,27 @@ use <../modules/components/motherboard/motherboard_full_minitx.scad>  // Get mod
 
 ### Panel Positioning
 
-Panels fall into two categories:
+The case uses a **stacked panel hierarchy** where bottom/top panels form the floor/ceiling and other panels sit between them:
 
-**Exterior panels** (form the outer shell):
-- Side panels: Full exterior height, positioned at Z=0
-  - Left: X=0 (sometimes offset -explode for exploded view)
-  - Right: X=case_width-wall_thickness (sometimes offset +explode)
-- Front/back panels: Full exterior height, positioned at Z=0
-  - Front: Y=0 (sometimes offset -explode)
-  - Back: Y=mobo_depth+wall_thickness (sometimes offset +explode)
+**Floor/Ceiling panels** (full exterior width, extended depth to cover back):
+- Bottom: `exterior_panel_width` x `exterior_panel_depth` (226x173mm minimal, 176x173mm pico)
+  - Position: X=0, Y=wall_thickness, Z=0
+  - Includes integrated standoff mounting receptacles
+- Top: Same dimensions as bottom
+  - Position: X=0, Y=wall_thickness, Z=exterior_height-wall_thickness
 
-**Interior panels** (fit between walls):
-- Top: Interior width/depth, positioned at X=wall_thickness, Y=wall_thickness, Z=minimal_exterior_height
-- Bottom: Interior width/depth, positioned at X=wall_thickness, Y=wall_thickness, Z=0 (sometimes offset -explode)
+**Vertical panels** (shortened height, raised to sit on bottom panel):
+- Side panels: wall_thickness x side_panel_depth x side_panel_height (3x176x94mm minimal)
+  - Left: X=0, Y=wall_thickness, Z=wall_thickness
+  - Right: X=case_width-wall_thickness, Y=wall_thickness, Z=wall_thickness
+  - Note: Module internally subtracts wall_thickness from depth parameter
+- Back panel: front_back_panel_width x wall_thickness x back_panel_height (220x3x94mm minimal)
+  - Position: X=wall_thickness, Y=exterior_panel_depth, Z=wall_thickness
+
+**Front panel** (full height, at case front edge):
+- Dimensions: (front_back_panel_width + 2*wall_thickness) x wall_thickness x front_back_panel_height
+- Position: X=0, Y=0, Z=0
+- Extends full case width to cover side panel edges
 
 ### Key Design Patterns
 
@@ -212,9 +224,7 @@ The upper air-frame system (Phase 7 in TASKS.md):
 - **Raised Lips**: Front and side panels have 3mm lips that protrude into case
   - Purpose: Creates mounting surface for frame components
   - Positioning: Inset 3mm from sides, positioned at specific heights
-- **Extended Panels**: Some panels extend 3mm beyond nominal dimensions
-  - Front panel: Extended +6mm width (3mm each side) to cover gaps
-  - Front panel: Extended +3mm height at bottom
+- **Extended Width**: Front panel extends +6mm width (3mm each side) to cover side panel edges
 - **Mounting Holes**: Corner screw holes for panel attachment
   - Radius defined by `panel_screw_radius`
   - Inset defined by `panel_screw_inset`
