@@ -277,20 +277,124 @@ Overall external dimensions for each configuration:
 
 ## 9. Panel Construction & Attachment
 
-### 9.1. Materials
+### 9.1. Two-Piece Assembly Concept
 
-*   **Primary Material:** TODO - 3D printed, aluminum, acrylic?
-*   **Wall Thickness:** TODO
+The case uses a two-piece dovetail assembly system for tool-free construction:
 
-### 9.2. Attachment Mechanism
+*   **Base Assembly:** Back panel + Bottom panel joined via dovetails (semi-permanent connection)
+*   **Upper Shell:** Top + Front + Left side + Right side panels interconnected via dovetails, forming a removable "hood" that lifts off as a single unit
+*   **Assembly Method:** Snap-fit dovetail latches enable tool-free assembly and disassembly
 
-*   **Panel Attachment:** TODO - Screws, magnets, tool-less clips?
-*   **Fastener Specifications:** TODO
+### 9.2. Materials
 
-### 9.3. Ventilation
+*   **Primary Material:** 3D printed (PLA or PETG)
+*   **Wall Thickness:** 3mm (standard panels), 6mm where dovetail boss required
 
-*   **Ventilation Pattern:** TODO - Honeycomb, mesh, slots?
-*   **Ventilation Locations:** TODO - Which panels have ventilation?
+### 9.3. Dovetail Joint Geometry
+
+The dovetail joint system uses chamfered trapezoidal profiles with integrated snap-fit latches:
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Dovetail Angle | 15° | Angle from vertical |
+| Engagement Depth | 3mm | How deep the joint engages |
+| Base Width | 8mm | Width at narrow end of dovetail |
+| Clearance | 0.15mm | Per-side clearance (FDM tuned) |
+| Top Width | Calculated | base_width + 2 × depth × tan(angle) |
+
+### 9.4. Male Dovetail (Rail)
+
+The male dovetail is a trapezoidal rail that protrudes from panel edges:
+
+*   **Profile:** Narrower at base (panel edge), wider at tip
+*   **Center Slot:** 5mm wide slot creates two flex arms for snap-fit mechanism
+*   **Slot Margin:** 2mm solid material at base end for structural integrity, open at free end
+*   **Catch Bumps:** Symmetric ramped bumps on both outer faces at the free end
+
+**Catch Profile:**
+```
+        ___________
+       /           \
+      /   plateau   \
+     /    (3mm)      \
+____/                 \____
+   entry             exit
+   ramp              ramp
+   (2mm)             (2mm)
+```
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Catch Height | 0.8mm | Bump protrusion from dovetail face |
+| Catch Plateau | 3mm | Flat top of bump |
+| Catch Ramp | 2mm | Entry and exit ramp length |
+
+### 9.5. Female Dovetail (Channel)
+
+The female dovetail is a trapezoidal channel cut into panel edges:
+
+*   **Boss Design:** 3mm raised rectangular section only where channel is cut (saves ~50% material vs thickening entire panel)
+*   **Channel Profile:** Wider at interior (entry point), narrower at panel surface (locking point)
+*   **Geometry Method:** hull() approach connecting two rectangles at different Z positions
+*   **Catch Recesses:** Ramped recesses cut into inner channel walls for snap-fit engagement
+*   **Window Clearance:** 0.3mm clearance around catches in recesses
+
+### 9.6. Panel Edge Assignments
+
+**Base Assembly (Back + Bottom):**
+
+| Panel | Edge | Dovetail Type | Connects To |
+|-------|------|---------------|-------------|
+| Bottom | Back edge | Female | Back panel bottom edge |
+| Back | Bottom edge | Male | Bottom panel back edge |
+
+**Upper Shell (Top + Front + Sides):**
+
+| Panel | Edge | Dovetail Type | Connects To |
+|-------|------|---------------|-------------|
+| Top | Front edge | Female | Front panel top edge |
+| Top | Left edge | Female | Left side panel top edge |
+| Top | Right edge | Female | Right side panel top edge |
+| Front | Top edge | Male | Top panel front edge |
+| Front | Left edge | Male | Left side panel front edge |
+| Front | Right edge | Male | Right side panel front edge |
+| Left Side | Top edge | Male | Top panel left edge |
+| Left Side | Front edge | Female | Front panel left edge |
+| Right Side | Top edge | Male | Top panel right edge |
+| Right Side | Front edge | Female | Front panel right edge |
+
+**Assembly Order (Upper Shell):**
+1. Connect front panel to both side panels (front male dovetails → side female channels)
+2. Lower top panel onto the front+sides sub-assembly (side/front male dovetails → top female channels)
+
+### 9.7. Print Orientation
+
+Print orientation is critical for snap-fit functionality:
+
+*   **Male Dovetails:** Print with dovetails facing DOWN against build plate
+    *   Layer lines run parallel to flex arms
+    *   Enables proper elastic deformation during insertion/release
+    *   Printing dovetails-up causes prongs to snap instead of flex
+*   **Female Dovetails:** Print with channels facing UP
+    *   Support-free printing of chamfered surfaces
+    *   Outer panel face down on build plate
+
+### 9.8. Assembly & Disassembly
+
+**To Assemble (Insert):**
+1. Align male dovetail with female channel
+2. Slide forward - ramped catches cam inward against channel walls
+3. When catches align with recesses, they snap in (audible click)
+
+**To Disassemble (Release):**
+1. Squeeze the two flex halves of the male dovetail together (pinch at free end)
+2. Center slot compresses, catches retract from recesses
+3. Slide panels apart
+
+### 9.9. Ventilation
+
+*   **Ventilation Pattern:** Honeycomb pattern for optimal strength-to-airflow ratio
+*   **Ventilation Locations:** Top panel (above CPU cooler), side panels (intake), back panel (above I/O shield)
 
 ## 10. Front Panel I/O & Access
 
@@ -342,29 +446,30 @@ The upper air-frame consists of four cylinders that screw onto the motherboard s
 
 ## 12. Rapid Panel Mounting System
 
-The case panels feature a unified quick-release mechanism that enables rapid access to internal components. A single latch unlocks multiple panels simultaneously.
+The case panels use the dovetail snap-fit system (see Section 9) for tool-free rapid access to internal components.
 
 ### 12.1. Quick-Release Mechanism
 
-*   **Type:** TODO - Cam latch, toggle latch, push-button release?
-*   **Location:** TODO - Corner, edge, center?
-*   **Operation:** Single action unlocks top, side, and front panels
-*   **Security:** TODO - Optional keyed lock?
+*   **Type:** Snap-fit dovetail latches with squeeze-to-release flex arms
+*   **Location:** All panel edges where panels connect (see Section 9.6 for edge assignments)
+*   **Operation:** Pinch the male dovetail flex arms to release catches, then slide apart
+*   **Security:** Friction fit provides secure hold; panels cannot accidentally detach
 
-### 12.2. Panel Hinging
+### 12.2. Connected Shell Design
 
-Optional hinge mechanisms allow connected panels to be handled as a single assembly:
+The upper shell (Top + Front + Sides) forms a single interconnected assembly:
 
-*   **Top + Side Configuration:** Top panel hinges to one side panel, opening like a clamshell
-*   **Front + Top Configuration:** Front and top panels hinge together for full access
-*   **Hinge Type:** TODO - Piano hinge, concealed hinge, removable pin hinge?
-*   **Detachability:** Panels can be fully removed or left attached when opened
+*   **Shell Assembly:** Front panel connects to both side panels, then top panel caps the assembly
+*   **One-Piece Removal:** Entire upper shell lifts off base assembly as a single unit
+*   **Full Access:** Removing shell exposes motherboard, CPU cooler, and all internal components
+*   **No Hinges Required:** Dovetail system eliminates need for separate hinge mechanisms
 
 ### 12.3. Benefits
 
 *   Tool-free panel removal for maintenance and upgrades
-*   Single-handed operation for quick access
-*   Panels can be configured as single assembly or individual pieces
+*   Single-handed operation for quick access (squeeze and slide)
+*   Upper shell handled as single assembly - no loose panels
+*   Audible click confirms secure panel engagement
 *   Reduces time for component installation and service
 
 ## 13. Parameterized Upper Panels
