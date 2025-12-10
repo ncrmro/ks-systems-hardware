@@ -1,16 +1,31 @@
 // Back panel (I/O backplate) for minimal/barebones configuration
 // Features I/O shield cutout, ventilation, and PSU mounting holes
 // Mounts at rear of case behind motherboard and PSU
+//
+// DOVETAIL JOINTS (Base Assembly):
+// - Male dovetails on bottom edge connect to bottom panel female dovetails
+// - Rails extend downward (-Z) from panel bottom edge
+// - Per SPEC.md Section 9.6
 
 include <../../dimensions_minimal.scad>
 use <../../../util/honeycomb.scad>
+use <../../../util/dovetail/male_dovetail.scad>
 
 module back_panel(
-    height = back_panel_height  // 94mm - shortened to sit between top/bottom panels
+    height = back_panel_height,  // 94mm - shortened to sit between top/bottom panels
+    with_dovetails = true        // Male dovetails on bottom edge for base assembly
 ) {
     // Panel dimensions (interior, fits between side walls)
     extended_width = front_back_panel_width;   // ~220mm
     panel_height = height;                     // Uses parameter (94mm default)
+
+    // Dovetail positions on bottom edge (match bottom panel positions)
+    // Male rails extend downward (-Z), positioned to align with female channels
+    // Back panel width is 220mm (front_back_panel_width), sits inset by wall_thickness from bottom panel
+    // Bottom panel positions: width * 0.25 and width * 0.75 (at 226mm: 56.5mm and 169.5mm)
+    // Back panel offset: wall_thickness (3mm) from bottom panel edge
+    // So back panel X positions = (bottom_panel_position - wall_thickness)
+    dovetail_positions = [exterior_panel_width * 0.25 - wall_thickness, exterior_panel_width * 0.75 - wall_thickness];
 
     // Honeycomb area calculations (motherboard section only)
     honeycomb_area_z_start = io_shield_z_offset + io_shield_height + vent_padding;
@@ -109,6 +124,17 @@ module back_panel(
                     }
                 }
             }
+        }
+    }
+
+    // Male dovetails on bottom edge (for base assembly connection to bottom panel)
+    // Rails extend downward (-Z), positioned at Z=0 (bottom of panel)
+    if (with_dovetails) {
+        color("red")
+        for (x_pos = dovetail_positions) {
+            translate([x_pos, wall_thickness/2, 0])
+                rotate([180, 0, 0])  // Rotate so rail faces downward (-Z)
+                    male_dovetail();
         }
     }
 }

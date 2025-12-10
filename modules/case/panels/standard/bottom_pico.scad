@@ -5,17 +5,25 @@
 // - Hexagonal bosses (2.5mm height) accept M3x10+6mm male-female standoffs
 // - M3 x 8mm socket head cap screws secure standoffs from underneath
 //
+// DOVETAIL JOINTS (Base Assembly):
+// - Female dovetails on back edge connect to back panel male dovetails
+// - Bosses extend upward (+Z) into case interior
+// - Per SPEC.md Section 9.6
+//
 // Standalone file for 3D printing - uses pico dimensions
 
 include <../../dimensions_pico.scad>
+include <../../../util/dovetail/dimensions.scad>
 use <top.scad>  // For honeycomb_xy module
+use <../../../util/dovetail/female_dovetail.scad>
 
 module bottom_panel_pico(
     width = exterior_panel_width,
     depth = exterior_panel_depth,       // 173mm - extends to cover back panel
     ventilation = false,
     center_cutout = true,
-    standoff_x_offset = wall_thickness  // Offset standoffs to align with motherboard
+    standoff_x_offset = wall_thickness,  // Offset standoffs to align with motherboard
+    with_dovetails = true                // Female dovetails on back edge for base assembly
 ) {
     panel_width = width;
     panel_depth = depth;
@@ -32,6 +40,12 @@ module bottom_panel_pico(
     cutout_size = 125;  // Square cutout size
     cutout_x = (mobo_width - cutout_size) / 2 + standoff_x_offset;  // Offset to center over motherboard
     cutout_y = (mobo_depth - cutout_size) / 2;
+
+    // Dovetail positions on back edge (2 dovetails at 25% and 75% of width)
+    // Female channels face +Y, bosses extend +Z into case
+    dovetail_positions = [width * 0.25, width * 0.75];
+    // Offset Y to align boss back face with panel edge (accounting for asymmetric boss geometry)
+    dovetail_y = depth - (dovetail_length / 2 + dovetail_clearance);
 
     union() {
         color("gray") {
@@ -76,6 +90,16 @@ module bottom_panel_pico(
                         }
                     }
                 }
+            }
+        }
+
+        // Female dovetails on back edge (for base assembly connection to back panel)
+        // Boss extends upward (+Z), channel faces +Y toward back panel
+        if (with_dovetails) {
+            for (x_pos = dovetail_positions) {
+                translate([x_pos, dovetail_y, panel_thickness + dovetail_height])
+                    rotate([180, 0, 0])  // Rotate so channel faces +Y (back panel slides in from +Y)
+                        female_dovetail();
             }
         }
     }
