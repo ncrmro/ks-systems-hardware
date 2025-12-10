@@ -6,6 +6,11 @@
 // - M3 x 8mm socket head cap screws secure standoffs from underneath (bottom-up mounting)
 // - Eliminates separate motherboard plate component
 //
+// DOVETAIL JOINTS (Base Assembly):
+// - Female dovetails on back edge connect to back panel male dovetails
+// - Bosses extend upward (+Z) into case interior
+// - Per SPEC.md Section 9.6
+//
 // ADDITIONAL FEATURES:
 // - 4x #6-32 threaded holes at corners for NAS mounting or rubber feet
 // - Honeycomb ventilation in motherboard area
@@ -15,14 +20,17 @@
 // Parametric: accepts width and depth for different configurations
 
 include <../../dimensions_minimal.scad>
+include <../../../util/dovetail/dimensions.scad>
 use <top.scad>  // For honeycomb_xy module
+use <../../../util/dovetail/female_dovetail.scad>
 
 module bottom_panel(
     width = exterior_panel_width,
     depth = exterior_panel_depth,       // 173mm - extends to cover back panel
     ventilation = true,
     center_cutout = false,
-    standoff_x_offset = wall_thickness  // Offset standoffs to align with motherboard
+    standoff_x_offset = wall_thickness,  // Offset standoffs to align with motherboard
+    with_dovetails = true                // Female dovetails on back edge for base assembly
 ) {
     // Panel dimensions (interior, fits between side walls)
     panel_width = width;
@@ -40,6 +48,12 @@ module bottom_panel(
     cutout_size = 100;  // Square cutout size
     cutout_x = (mobo_width - cutout_size) / 2 + standoff_x_offset;  // Offset to center over motherboard
     cutout_y = (mobo_depth - cutout_size) / 2;
+
+    // Dovetail positions on back edge (2 dovetails at 25% and 75% of width)
+    // Female channels face +Y, bosses extend +Z into case
+    dovetail_positions = [width * 0.25, width * 0.75];
+    // Offset Y to align boss back face with panel edge (accounting for asymmetric boss geometry)
+    dovetail_y = depth - (dovetail_length / 2 + dovetail_clearance);
 
     union() {
         // Main panel
@@ -88,6 +102,15 @@ module bottom_panel(
             }
         }
 
+        // Female dovetails on back edge (for base assembly connection to back panel)
+        // Boss extends upward (+Z), channel faces +Y toward back panel
+        if (with_dovetails) {
+            for (x_pos = dovetail_positions) {
+                translate([x_pos, dovetail_y, panel_thickness + dovetail_height])
+                    rotate([180, 0, 0])  // Rotate so channel faces +Y (back panel slides in from +Y)
+                        female_dovetail();
+            }
+        }
     }
 }
 
