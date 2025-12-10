@@ -20,6 +20,23 @@ dovetail_edge_inset = 3;     // Inset from panel edge (mm)
 dovetail_boss_height = dovetail_height;  // Boss height = channel depth
 dovetail_boss_margin = 2;                // Extra wall around dovetail channel
 
+// Center-slot latch parameters (integrated snap-fit retention)
+// Slot runs through center of dovetail, allowing squeeze-to-insert/release
+center_slot_width = 5;          // mm - flex gap width
+center_slot_end_margin = 2;       // mm - solid material at each end of slot
+
+// Catch bump parameters (ramped profile on outer dovetail faces)
+catch_bump_height = 0.8;          // mm - protrusion from dovetail surface
+catch_bump_length = 3;            // mm - length along insertion direction
+catch_ramp_angle = 35;            // degrees - entry ramp angle
+catch_ramp_length = 2;            // mm - length of entry ramp
+catch_retention_length = 1;       // mm - vertical retention face length
+catch_position_from_end = 2;      // mm - catch position from free end
+
+// Female window parameters (external access for release)
+window_clearance = 0.3;           // mm - clearance around catch
+window_finger_depth = 5;          // mm - depth for finger access to squeeze
+
 // Scale factor for prototyping
 scale_factor = 1.0;
 
@@ -35,3 +52,14 @@ scaled_dovetail_base_width = dovetail_base_width * scale_factor;
 scaled_clearance = dovetail_clearance * scale_factor;
 scaled_boss_height = dovetail_boss_height * scale_factor;
 scaled_boss_margin = dovetail_boss_margin * scale_factor;
+
+// Scaled center-slot latch parameters
+scaled_slot_width = center_slot_width * scale_factor;
+scaled_slot_end_margin = center_slot_end_margin * scale_factor;
+scaled_catch_height = catch_bump_height * scale_factor;
+scaled_catch_length = catch_bump_length * scale_factor;
+scaled_catch_ramp_length = catch_ramp_length * scale_factor;
+scaled_catch_retention_length = catch_retention_length * scale_factor;
+scaled_catch_position = catch_position_from_end * scale_factor;
+scaled_window_clearance = window_clearance * scale_factor;
+scaled_window_depth = window_finger_depth * scale_factor;

@@ -167,3 +167,63 @@ Z=0 (panel surface)     Z=-height (entry point)
 ```
 
 The `hull()` function creates a convex hull between the two thin rectangles, forming a perfect trapezoidal prism without any rotation operations.
+
+## Center-Slot Snap-Fit Latch Mechanism
+
+### Overview
+
+The dovetail joint includes an integrated snap-fit latch to prevent vertical play. A slot runs through the center of the male dovetail, creating two flex arms. Ramped catch bumps on the outer faces snap into recesses in the female channel walls.
+
+### Design Features
+
+**Center Slot (Male Dovetail):**
+- Slot width: 1.8mm
+- Runs through full dovetail height (3mm)
+- Leaves 2mm solid material at base end (panel attachment) for structural integrity
+- Open at free end for maximum flex
+- Creates two flex halves that can be squeezed together
+
+**Ramped Catch Bumps:**
+```
+Catch Profile (side view):
+        ___
+       /   |  <- vertical retention face (1mm)
+      /    |
+     /     |  <- 35° entry ramp (2mm)
+____/      |____
+     0.8mm height
+```
+- Entry ramp: 35° angle for smooth insertion
+- Retention face: Near vertical for positive lock
+- Located near free end of dovetail
+
+**Inner Catch Recesses (Female Channel):**
+- Cut into INNER channel walls where catches snap in
+- Recesses extend outward from channel wall by catch height + clearance
+- Full length of catch (ramp + plateau + retention face)
+
+### Assembly/Disassembly
+
+**To Insert:**
+1. Align male dovetail with female channel
+2. Slide forward - ramped catches cam inward against channel walls
+3. Squeeze dovetail if needed to compress center slot
+4. When catches align with recesses, they snap in - audible click
+
+**To Release:**
+1. Squeeze the two flex halves of the male dovetail together (pinch at free end)
+2. Center slot compresses, catches retract from recesses
+3. Slide panels apart
+
+### Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `center_slot_width` | 1.8mm | Flex gap width |
+| `center_slot_end_margin` | 2mm | Solid at base end (open at free end) |
+| `catch_bump_height` | 0.8mm | Catch protrusion |
+| `catch_ramp_angle` | 35° | Entry ramp angle |
+| `catch_ramp_length` | 2mm | Ramp length |
+| `catch_bump_length` | 3mm | Catch plateau |
+| `catch_retention_length` | 1mm | Vertical face |
+| `window_depth` | 5mm | Recess depth into channel wall |
