@@ -88,26 +88,29 @@ module male_dovetail(
         }
 
         // Symmetric ramped catch bumps on outer faces (if latch enabled)
+        // Rotated to match the dovetail's tapered angle
         if (with_latch) {
-            // Left catch (negative X side, bump protrudes further -X)
-            translate([-top_width/2, catch_y, 0])
-                ramped_catch(
-                    bump_height = catch_height,
-                    ramp_length = ramp_length,
-                    catch_length = catch_length,
-                    thickness = height,
-                    direction = -1
-                );
+            // Left catch - rotate to match slope, position at base_width edge
+            translate([-base_width/2, catch_y, 0])
+                rotate([0, -angle, 0])
+                    ramped_catch(
+                        bump_height = catch_height,
+                        ramp_length = ramp_length,
+                        catch_length = catch_length,
+                        thickness = height,
+                        direction = -1
+                    );
 
-            // Right catch (positive X side, bump protrudes further +X)
-            translate([top_width/2, catch_y, 0])
-                ramped_catch(
-                    bump_height = catch_height,
-                    ramp_length = ramp_length,
-                    catch_length = catch_length,
-                    thickness = height,
-                    direction = 1
-                );
+            // Right catch - rotate to match slope, position at base_width edge
+            translate([base_width/2, catch_y, 0])
+                rotate([0, angle, 0])
+                    ramped_catch(
+                        bump_height = catch_height,
+                        ramp_length = ramp_length,
+                        catch_length = catch_length,
+                        thickness = height,
+                        direction = 1
+                    );
         }
     }
 }

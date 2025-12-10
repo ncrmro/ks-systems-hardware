@@ -72,47 +72,54 @@ module female_dovetail(
             }
 
             // Inner channel recesses - ramped to match male catch profile
+            // Rotated to follow the sloped channel walls
             if (with_catch_windows) {
-                // Left recess (negative X side)
-                // Entry ramp (0 → full depth)
-                hull() {
-                    // Start of ramp - at channel wall
-                    translate([-narrow_width/2 - 0.01, recess_y_start, -height - clearance])
-                        cube([0.02, 0.01, height + 2*clearance]);
-                    // End of ramp - at full depth
+                // Left recess (negative X side) - rotate to follow wall slope
+                translate([-narrow_width/2, 0, 0])
+                rotate([0, angle, 0])
+                translate([narrow_width/2, 0, 0])
+                union() {
+                    // Entry ramp (0 → full depth)
+                    hull() {
+                        translate([-narrow_width/2 - 0.01, recess_y_start, -height - clearance])
+                            cube([0.02, 0.01, height + 2*clearance]);
+                        translate([-narrow_width/2 - recess_depth, entry_ramp_end, -height - clearance])
+                            cube([recess_depth, 0.01, height + 2*clearance]);
+                    }
+                    // Plateau (full depth)
                     translate([-narrow_width/2 - recess_depth, entry_ramp_end, -height - clearance])
-                        cube([recess_depth, 0.01, height + 2*clearance]);
-                }
-                // Plateau (full depth)
-                translate([-narrow_width/2 - recess_depth, entry_ramp_end, -height - clearance])
-                    cube([recess_depth, catch_length, height + 2*clearance]);
-                // Exit ramp (full depth → 0)
-                hull() {
-                    // Start of exit ramp - at full depth
-                    translate([-narrow_width/2 - recess_depth, plateau_end, -height - clearance])
-                        cube([recess_depth, 0.01, height + 2*clearance]);
-                    // End of exit ramp - at channel wall
-                    translate([-narrow_width/2 - 0.01, exit_ramp_end, -height - clearance])
-                        cube([0.02, 0.01, height + 2*clearance]);
+                        cube([recess_depth, catch_length, height + 2*clearance]);
+                    // Exit ramp (full depth → 0)
+                    hull() {
+                        translate([-narrow_width/2 - recess_depth, plateau_end, -height - clearance])
+                            cube([recess_depth, 0.01, height + 2*clearance]);
+                        translate([-narrow_width/2 - 0.01, exit_ramp_end, -height - clearance])
+                            cube([0.02, 0.01, height + 2*clearance]);
+                    }
                 }
 
-                // Right recess (positive X side) - mirror of left
-                // Entry ramp (0 → full depth)
-                hull() {
-                    translate([narrow_width/2 - 0.01, recess_y_start, -height - clearance])
-                        cube([0.02, 0.01, height + 2*clearance]);
+                // Right recess (positive X side) - rotate to follow wall slope
+                translate([narrow_width/2, 0, 0])
+                rotate([0, -angle, 0])
+                translate([-narrow_width/2, 0, 0])
+                union() {
+                    // Entry ramp (0 → full depth)
+                    hull() {
+                        translate([narrow_width/2 - 0.01, recess_y_start, -height - clearance])
+                            cube([0.02, 0.01, height + 2*clearance]);
+                        translate([narrow_width/2, entry_ramp_end, -height - clearance])
+                            cube([recess_depth, 0.01, height + 2*clearance]);
+                    }
+                    // Plateau (full depth)
                     translate([narrow_width/2, entry_ramp_end, -height - clearance])
-                        cube([recess_depth, 0.01, height + 2*clearance]);
-                }
-                // Plateau (full depth)
-                translate([narrow_width/2, entry_ramp_end, -height - clearance])
-                    cube([recess_depth, catch_length, height + 2*clearance]);
-                // Exit ramp (full depth → 0)
-                hull() {
-                    translate([narrow_width/2, plateau_end, -height - clearance])
-                        cube([recess_depth, 0.01, height + 2*clearance]);
-                    translate([narrow_width/2 - 0.01, exit_ramp_end, -height - clearance])
-                        cube([0.02, 0.01, height + 2*clearance]);
+                        cube([recess_depth, catch_length, height + 2*clearance]);
+                    // Exit ramp (full depth → 0)
+                    hull() {
+                        translate([narrow_width/2, plateau_end, -height - clearance])
+                            cube([recess_depth, 0.01, height + 2*clearance]);
+                        translate([narrow_width/2 - 0.01, exit_ramp_end, -height - clearance])
+                            cube([0.02, 0.01, height + 2*clearance]);
+                    }
                 }
             }
         }

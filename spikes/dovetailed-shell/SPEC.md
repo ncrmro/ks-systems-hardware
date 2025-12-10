@@ -103,7 +103,9 @@ This spike explores a chamfered-dovetail joint system for assembling flat 3D-pri
 ## Print Orientation
 
 - **Top panel**: Print with outer (top) face down on bed. Dovetail channels face up during print, ensuring support-free printing of the chamfered surfaces.
-- **Front panel**: Print with outer (front) face down on bed. Dovetail rail faces up during print.
+- **Front panel**: Print with outer (front) face UP on bed (dovetail rail facing down against bed).
+  - **Critical**: The snap-fit latch prongs must flex during insertion. When printed with dovetails facing up, the layer lines run perpendicular to the flex direction, causing the prongs to snap instead of bend.
+  - Printing dovetails-down orients layers parallel to the flex arms, allowing proper elastic deformation during insertion/release.
 
 ## File Structure
 
