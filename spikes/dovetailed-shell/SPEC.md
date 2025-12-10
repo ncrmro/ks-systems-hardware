@@ -177,30 +177,35 @@ The dovetail joint includes an integrated snap-fit latch to prevent vertical pla
 ### Design Features
 
 **Center Slot (Male Dovetail):**
-- Slot width: 1.8mm
+- Slot width: 5mm
 - Runs through full dovetail height (3mm)
 - Leaves 2mm solid material at base end (panel attachment) for structural integrity
 - Open at free end for maximum flex
 - Creates two flex halves that can be squeezed together
 
-**Ramped Catch Bumps:**
+**Symmetric Ramped Catch Bumps:**
 ```
 Catch Profile (side view):
-        ___
-       /   |  <- vertical retention face (1mm)
-      /    |
-     /     |  <- 35° entry ramp (2mm)
-____/      |____
+        ___________
+       /           \
+      /   plateau   \
+     /    (3mm)      \
+____/                 \____
+   entry             exit
+   ramp              ramp
+   (2mm)             (2mm)
      0.8mm height
 ```
-- Entry ramp: 35° angle for smooth insertion
-- Retention face: Near vertical for positive lock
-- Located near free end of dovetail
+- Entry ramp: Angled for smooth insertion
+- Plateau: Flat top of bump (3mm)
+- Exit ramp: Mirror of entry ramp for easy release
+- Located at free end of dovetail
 
-**Inner Catch Recesses (Female Channel):**
+**Ramped Catch Recesses (Female Channel):**
 - Cut into INNER channel walls where catches snap in
-- Recesses extend outward from channel wall by catch height + clearance
-- Full length of catch (ramp + plateau + retention face)
+- Recesses have matching ramped profile (entry ramp → plateau → exit ramp)
+- Recess depth at plateau: catch height + clearance
+- Ramps taper from channel wall to full depth
 
 ### Assembly/Disassembly
 
@@ -219,11 +224,9 @@ ____/      |____
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| `center_slot_width` | 1.8mm | Flex gap width |
+| `center_slot_width` | 5mm | Flex gap width |
 | `center_slot_end_margin` | 2mm | Solid at base end (open at free end) |
 | `catch_bump_height` | 0.8mm | Catch protrusion |
-| `catch_ramp_angle` | 35° | Entry ramp angle |
-| `catch_ramp_length` | 2mm | Ramp length |
-| `catch_bump_length` | 3mm | Catch plateau |
-| `catch_retention_length` | 1mm | Vertical face |
-| `window_depth` | 5mm | Recess depth into channel wall |
+| `catch_ramp_length` | 2mm | Ramp length (both entry and exit) |
+| `catch_bump_length` | 3mm | Catch plateau length |
+| `window_clearance` | 0.3mm | Clearance around catch in recess |
