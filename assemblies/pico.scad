@@ -16,10 +16,13 @@ use <../modules/case/panels/standard/front.scad>
 // Motherboard assembly (includes motherboard, RAM, NH-L9 cooler, Pico PSU)
 use <../modules/components/motherboard/motherboard_full_pico.scad>
 
+// Power connector
+use <../modules/components/power/barrel_jack_5_5x2_5.scad>
+
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 0;  // Set > 0 to explode view (e.g., 20)
+explode = 10;  // Set > 0 to explode view (e.g., 20)
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right
@@ -92,6 +95,19 @@ module pico_assembly() {
             // Z offset: wall_thickness (panel) + standoff_height (standoff)
             translate([wall_thickness, wall_thickness, wall_thickness + standoff_height]) {
                 motherboard_full_pico();
+            }
+
+            // Barrel jack power connector (mounted in back panel)
+            // Position matches the hole in back_panel_pico
+            // Rotated 180° around X so barrel socket faces exterior (+Y direction)
+            translate([
+                wall_thickness + pico_barrel_jack_x,
+                exterior_panel_depth + wall_thickness + explode,
+                wall_thickness + pico_barrel_jack_z
+            ]) {
+                rotate([180, 0, 0]) {
+                    barrel_jack_5_5x2_5();
+                }
             }
         }
     }

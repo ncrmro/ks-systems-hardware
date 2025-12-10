@@ -69,7 +69,7 @@ module barrel_jack_5_5x2_5() {
 }
 
 // Panel cutout dimensions for reference
-function barrel_jack_panel_cutout_diameter() = 8;
+function barrel_jack_panel_cutout_diameter() = 7;
 
 // Preview
 barrel_jack_5_5x2_5();
