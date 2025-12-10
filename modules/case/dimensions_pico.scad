@@ -45,7 +45,10 @@ side_panel_depth = exterior_panel_depth + wall_thickness;       // 176mm - exten
 back_panel_height = side_panel_height;                          // ~57mm (same as side panels)
 
 // --- Pico PSU (Barrel Jack on Back Panel) ---
-// Barrel jack position is relative to the shortened back panel (which is raised by wall_thickness)
-pico_barrel_jack_x = interior_panel_width - 40;  // 130mm from left (right side)
-pico_barrel_jack_z = (pico_exterior_height / 2) - wall_thickness;  // ~28mm (centered in case, adjusted for raised panel)
-pico_barrel_jack_diameter = 8;                   // 8mm hole for 5.5x2.5mm barrel jack
+// Barrel jack positioned in upper-right corner, above I/O shield
+// I/O shield spans X=5.6mm to X=164.4mm, Z=5mm to Z=49.5mm
+pico_barrel_jack_diameter = 7;                   // 7mm threaded hole for 5.5x2.5mm barrel jack
+pico_barrel_jack_x = interior_panel_width - 10;  // 160mm from left (far right, clear of I/O shield)
+// Center the hole in remaining space above I/O shield
+io_shield_top = io_shield_z_offset + io_shield_height;  // ~49.45mm
+pico_barrel_jack_z = (io_shield_top + back_panel_height) / 2;  // Center between I/O shield top and panel top
