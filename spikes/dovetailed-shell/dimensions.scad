@@ -13,7 +13,7 @@ dovetail_angle = 15;         // Angle from vertical (degrees)
 dovetail_height = 3;         // Trapezoid height (mm)
 dovetail_length = 10;        // Length along edge (mm)
 dovetail_base_width = 8;     // Width at narrow end (mm)
-dovetail_clearance = 0.3;    // Clearance per side (mm)
+dovetail_clearance = 0.15;   // Clearance per side (mm) - reduced from 0.3 to fix loose fit
 dovetail_edge_inset = 3;     // Inset from panel edge (mm)
 
 // Boss parameters (raised sections for female dovetails)
