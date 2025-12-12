@@ -5,7 +5,7 @@
 // Dovetail geometry parameters
 dovetail_angle = 15;              // Angle from vertical (degrees)
 dovetail_height = 3;              // Trapezoid height / engagement depth (mm)
-dovetail_length = 10;             // Length along panel edge (mm)
+dovetail_length = 20;             // Length along panel edge (mm)
 dovetail_base_width = 8;          // Width at narrow end (mm)
 dovetail_clearance = 0.15;        // Clearance per side (mm) - FDM tuned
 

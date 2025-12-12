@@ -3,15 +3,15 @@
 
 // Panel dimensions
 panel_width = 100;           // X dimension
-panel_depth = 20;           // Y dimension
-panel_height = 20;          // Z dimension (for vertical panels)
+panel_depth = 25;           // Y dimension
+panel_height = 10;          // Z dimension (for vertical panels)
 top_panel_thickness = 3;     // Top/bottom panel thickness (same as wall)
 wall_panel_thickness = 3;    // Side/front/back panel thickness
 
 // Dovetail parameters
 dovetail_angle = 15;         // Angle from vertical (degrees)
 dovetail_height = 3;         // Trapezoid height (mm)
-dovetail_length = 10;        // Length along edge (mm)
+dovetail_length = 20;        // Length along edge (mm)
 dovetail_base_width = 8;     // Width at narrow end (mm)
 dovetail_clearance = 0.15;   // Clearance per side (mm) - reduced from 0.3 to fix loose fit
 dovetail_edge_inset = 3;     // Inset from panel edge (mm)
@@ -22,7 +22,7 @@ dovetail_boss_margin = 2;                // Extra wall around dovetail channel
 
 // Center-slot latch parameters (integrated snap-fit retention)
 // Slot runs through center of dovetail, allowing squeeze-to-insert/release
-center_slot_width = 5;          // mm - flex gap width
+center_slot_width = 3;          // mm - flex gap width
 center_slot_end_margin = 2;       // mm - solid material at each end of slot
 
 // Catch bump parameters (ramped profile on outer dovetail faces)
@@ -34,7 +34,7 @@ catch_retention_length = 1;       // mm - vertical retention face length
 catch_position_from_end = 2;      // mm - catch position from free end
 
 // Female window parameters (external access for release)
-window_clearance = 0.3;           // mm - clearance around catch
+window_clearance = 0.15;          // mm - clearance around catch (reduced for tighter fit)
 window_finger_depth = 5;          // mm - depth for finger access to squeeze
 
 // Scale factor for prototyping
