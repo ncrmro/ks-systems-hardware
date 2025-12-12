@@ -15,6 +15,7 @@ include <../../../util/dovetail/dimensions.scad>
 use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/male_dovetail.scad>
 use <../../../util/dovetail/female_dovetail.scad>
+use <../../../util/dovetail/female_dovetail_pocket.scad>
 
 module side_panel_pico(
     side = "left",                 // "left" or "right"
@@ -41,6 +42,25 @@ module side_panel_pico(
     // Single clip connects to back panel male clip
     back_dovetail_position = panel_height * 0.5;
 
+    // Front edge dovetail position (female clip - INTERNAL non-visible)
+    // Connects to front panel male clip
+    front_dovetail_position = panel_height * 0.5;
+
+    // Catch access cutout dimensions
+    catch_cutout_width = dovetail_base_width;  // 8mm - width to access both catches
+    catch_cutout_height = catch_bump_length + 2 * catch_ramp_length;  // 7mm
+
+    // Dovetail channel length (shared calculation)
+    channel_length = dovetail_length + 2 * dovetail_clearance;
+
+    // Calculate back dovetail Y position (used for cutout and shelf)
+    // After rotation, the pocket's opening faces +Y
+    // Position so opening is flush with panel back edge
+    back_dovetail_y = panel_depth - channel_length/2;
+
+    // Front dovetail Y position - opening faces +Y, flush with front edge
+    front_dovetail_y = channel_length/2;
+
     union() {
         color("gray") {
             difference() {
@@ -50,6 +70,21 @@ module side_panel_pico(
                 translate([0, vent_border, vent_border]) {
                     honeycomb_yz(honeycomb_radius, panel_thickness, vent_width, vent_height);
                 }
+
+                // Cutout for back dovetail (goes through panel)
+                // Sized to fit the dovetail boss only
+                if (with_dovetails) {
+                    // Boss dimensions (must match female_dovetail)
+                    boss_width = (dovetail_base_width + 2 * dovetail_height * tan(dovetail_angle))
+                                 + 2 * dovetail_boss_margin;
+                    boss_depth = channel_length + dovetail_boss_margin;
+
+                    // After rotation: boss_width → Z dimension, boss_depth → Y dimension
+                    // Flush with back edge of panel
+                    translate([-0.1, panel_depth - boss_depth,
+                               back_dovetail_position - boss_width/2])
+                        cube([panel_thickness + 0.2, boss_depth + 0.1, boss_width]);
+                }
             }
         }
 
@@ -58,22 +93,37 @@ module side_panel_pico(
             // Top edge dovetails (clip - connects to top panel female clips)
             // Rails extend from top edge upward toward +Z
             for (y_pos = top_dovetail_positions) {
-                translate([panel_thickness / 2, y_pos, panel_height])
-                    rotate([-90, 0, 0])
+                translate([panel_thickness + dovetail_length / 2, y_pos, panel_height])
+                    rotate([180, 0, 90])
                         male_dovetail(with_latch = true);  // Clip for top shell connection
             }
 
-            // Back edge dovetail (female clip - EXTERNAL user-accessible release)
+            // Back edge dovetail (female clip with bottom shelf - EXTERNAL user-accessible release)
+            // Positioned with outer edge flush with panel outer face
             if (is_left) {
-                // Left side: Boss extends toward +X (into case), channel faces +Y (back panel)
-                translate([panel_thickness + dovetail_height, panel_depth, back_dovetail_position])
-                    rotate([180, 90, 0])
-                        female_dovetail(with_catch_windows = true);
+                // Left side: outer edge at X=0
+                translate([0, back_dovetail_y, back_dovetail_position])
+                    rotate([0, -90, 180])
+                        female_dovetail_pocket(with_catch_windows = true);
             } else {
-                // Right side: Boss extends toward -X (into case), channel faces +Y (back panel)
-                translate([-dovetail_height, panel_depth, back_dovetail_position])
+                // Right side: outer edge at X=panel_thickness
+                translate([panel_thickness, back_dovetail_y, back_dovetail_position])
                     rotate([0, 90, 0])
                     rotate([0, 0, 90])
+                        female_dovetail_pocket(with_catch_windows = true);
+            }
+
+            // Front edge dovetail (female clip - INTERNAL non-visible)
+            // On interior side, connects to front panel male clip
+            if (is_left) {
+                // Left side: on interior, offset inward by dovetail_height
+                translate([panel_thickness + dovetail_height, front_dovetail_y, front_dovetail_position])
+                    rotate([0, -90, 0])
+                        female_dovetail(with_catch_windows = true);
+            } else {
+                // Right side: on interior, offset inward by dovetail_height
+                translate([-dovetail_height, front_dovetail_y, front_dovetail_position])
+                    rotate([0, 90, 0])
                         female_dovetail(with_catch_windows = true);
             }
         }
