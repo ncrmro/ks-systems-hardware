@@ -87,10 +87,11 @@ module front_panel_pico(
         if (with_dovetails) {
             color("gray") {
                 // Top edge dovetails (clip - connects to top panel female clips)
-                // Rails extend from top edge upward toward +Z
+                // Rails extend outward along +Y axis (into case)
+                // Positioned beneath top edge by panel thickness
                 for (x_pos = top_dovetail_positions) {
-                    translate([x_pos, panel_thickness / 2, panel_height])
-                        rotate([-90, 0, 0])
+                    translate([x_pos, panel_thickness + dovetail_length / 2, panel_height - dovetail_height - wall_thickness])
+                        rotate([0, 0, 0])
                             male_dovetail(with_latch = true);  // Clip for top shell connection
                 }
             }
