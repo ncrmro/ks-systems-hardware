@@ -37,12 +37,14 @@ module top_panel_pico(
     front_dovetail_y = dovetail_length / 2 + dovetail_clearance;
 
     // Left edge dovetail positions (clip - internal top shell connection)
+    // Inset by wall_thickness so side panel fits flush
     left_dovetail_positions = [depth * 0.33, depth * 0.67];
-    left_dovetail_x = dovetail_length / 2 + dovetail_clearance;
+    left_dovetail_x = wall_thickness + dovetail_length / 2 + dovetail_clearance;
 
     // Right edge dovetail positions (clip - internal top shell connection)
+    // Inset by wall_thickness so side panel fits flush
     right_dovetail_positions = [depth * 0.33, depth * 0.67];
-    right_dovetail_x = width - (dovetail_length / 2 + dovetail_clearance);
+    right_dovetail_x = width - wall_thickness - (dovetail_length / 2 + dovetail_clearance);
 
     union() {
         color("gray") {
