@@ -48,28 +48,28 @@ module nas_2disk_assembly() {
             }
         }
 
-        // === CASE PANELS (base frame above NAS) ===
+        // === BASE ASSEMBLY (always visible - bottom panel + standoffs) ===
+        // NAS enclosure provides feet at ground level
+        translate([base_x, base_y, nas_top]) {
+            base_assembly();
+        }
+
+        // Frame cylinders (at standoff locations, on motherboard surface)
+        if (show_frame_cylinders) {
+            translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
+                frame_cylinders();
+            }
+        }
+
+        // Upper frame (holds frame cylinders, on motherboard surface)
+        if (show_upper_frame) {
+            translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
+                upper_frame();
+            }
+        }
+
+        // === CASE PANELS ===
         if (show_panels) {
-            // Base assembly (bottom panel + standoffs)
-            // NAS enclosure provides feet at ground level
-            translate([base_x, base_y, nas_top]) {
-                base_assembly();
-            }
-
-            // Frame cylinders (at standoff locations, on motherboard surface)
-            if (show_frame_cylinders) {
-                translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
-                    frame_cylinders();
-                }
-            }
-
-            // Upper frame (holds frame cylinders, on motherboard surface)
-            if (show_upper_frame) {
-                translate([base_x, base_y, nas_top + wall_thickness + standoff_height]) {
-                    upper_frame();
-                }
-            }
-
             // Back panel (at rear, full height starts at nas_top)
             translate([wall_thickness, mobo_depth + wall_thickness + explode, nas_top]) {
                 back_panel();

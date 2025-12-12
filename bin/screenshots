@@ -1,0 +1,288 @@
+#!/usr/bin/env python3
+"""
+Screenshot utility for Keystone Hardware OpenSCAD models.
+Generates PNG screenshots of all assemblies and components.
+
+Zero dependencies - uses only Python standard library.
+"""
+
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+# Project paths
+SCRIPT_DIR = Path(__file__).parent.resolve()
+PROJECT_ROOT = SCRIPT_DIR.parent
+OUTPUT_DIR = PROJECT_ROOT / "screenshots"
+
+
+def load_env():
+    """Load environment variables from .env file if it exists."""
+    env_file = PROJECT_ROOT / ".env"
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), value.strip())
+
+
+load_env()
+
+# R2 configuration
+R2_BUCKET = os.environ.get("R2_BUCKET_NAME", "ks-systems")
+R2_ENDPOINT = os.environ.get("R2_ENDPOINT", "")
+R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "")
+R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "")
+
+# Screenshot settings
+WIDTH = 1920
+HEIGHT = 1080
+COLORSCHEME = "Tomorrow Night"
+
+# Camera settings (translate_x,translate_y,translate_z,rot_x,rot_y,rot_z,distance)
+CAMERA_ISOMETRIC = "0,0,0,55,0,25,900"
+
+# Files to screenshot
+ASSEMBLIES = [
+    "assemblies/minimal.scad",
+    "assemblies/pico.scad",
+    "assemblies/gpu.scad",
+    "assemblies/gpu_aio.scad",
+    "assemblies/nas_2disk.scad",
+    "assemblies/nas_many.scad",
+]
+
+COMPONENTS = [
+    # Motherboard assemblies
+    "modules/components/motherboard/motherboard.scad",
+    "modules/components/motherboard/motherboard_with_ram.scad",
+    "modules/components/motherboard/motherboard_full_minitx.scad",
+    "modules/components/motherboard/motherboard_full_pico.scad",
+    # CPU coolers
+    "modules/components/cpu_cooler.scad",
+    "modules/components/cpu_cooler_nh_l9.scad",
+    # Power
+    "modules/components/power/psu_flex_atx.scad",
+    "modules/components/power/psu_sfx.scad",
+    "modules/components/power/psu_pico.scad",
+    "modules/components/power/power_inlet_c14.scad",
+    "modules/components/power/barrel_jack_5_5x2_5.scad",
+    # Storage
+    "modules/components/storage/hdd_3_5.scad",
+    # Cooling
+    "modules/components/cooling/fan_120.scad",
+    "modules/components/cooling/fan_120mm_15mm.scad",
+    "modules/components/cooling/aio_radiator_240.scad",
+    "modules/components/cooling/aio_pump.scad",
+    # Other components
+    "modules/components/gpu.scad",
+    "modules/components/pcie_riser.scad",
+    "modules/components/ram.scad",
+]
+
+
+def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None) -> bool:
+    """Take a screenshot of a single OpenSCAD file."""
+    if not scad_file.exists():
+        print(f"  Warning: {scad_file} not found, skipping")
+        return False
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"  Rendering: {scad_file.relative_to(PROJECT_ROOT)}")
+
+    env = os.environ.copy()
+    env["QT_QPA_PLATFORM"] = "offscreen"
+
+    cmd = [
+        "openscad",
+        f"--imgsize={WIDTH},{HEIGHT}",
+        f"--camera={CAMERA_ISOMETRIC}",
+        f"--colorscheme={COLORSCHEME}",
+    ]
+
+    if defines:
+        for key, value in defines.items():
+            cmd.append("-D")
+            cmd.append(f"{key}={value}")
+
+    cmd.extend(["-o", str(output_path), str(scad_file)])
+
+    try:
+        result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"    -> {output_path.relative_to(PROJECT_ROOT)}")
+            return True
+        else:
+            print(f"    Error: {result.stderr}")
+            return False
+    except FileNotFoundError:
+        print("  Error: openscad not found. Please install OpenSCAD.")
+        sys.exit(1)
+
+
+def screenshot_assemblies() -> int:
+    """Screenshot all assembly files (normal, exploded, and open views)."""
+    print("\n=== Assemblies ===\n")
+
+    count = 0
+    for rel_path in ASSEMBLIES:
+        scad_file = PROJECT_ROOT / rel_path
+        name = scad_file.stem
+
+        # Normal view
+        output_path = OUTPUT_DIR / f"assembly-{name}.png"
+        if screenshot_file(scad_file, output_path):
+            count += 1
+
+        # Exploded view
+        output_path_exploded = OUTPUT_DIR / f"assembly-{name}-exploded.png"
+        if screenshot_file(scad_file, output_path_exploded, defines={"explode": 30}):
+            count += 1
+
+        # Open view (panels hidden, bottom panel still visible)
+        output_path_open = OUTPUT_DIR / f"assembly-{name}-open.png"
+        if screenshot_file(scad_file, output_path_open, defines={"show_panels": "false"}):
+            count += 1
+
+    return count
+
+
+def screenshot_components() -> int:
+    """Screenshot all component files."""
+    print("\n=== Components ===\n")
+
+    count = 0
+    for rel_path in COMPONENTS:
+        scad_file = PROJECT_ROOT / rel_path
+        name = scad_file.stem
+        output_path = OUTPUT_DIR / f"component-{name}.png"
+
+        if screenshot_file(scad_file, output_path):
+            count += 1
+
+    return count
+
+
+def get_file_md5(file_path: Path) -> str:
+    """Calculate MD5 hash of a file."""
+    md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            md5.update(chunk)
+    return md5.hexdigest()
+
+
+def get_r2_etag(key: str, env: dict) -> str | None:
+    """Get the ETag (MD5) of an object in R2. Returns None if not found."""
+    cmd = [
+        "aws", "s3api", "head-object",
+        "--bucket", R2_BUCKET,
+        "--key", key,
+        "--endpoint-url", R2_ENDPOINT,
+    ]
+    try:
+        result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+        if result.returncode == 0:
+            data = json.loads(result.stdout)
+            # ETag is quoted, strip the quotes
+            return data.get("ETag", "").strip('"')
+    except (json.JSONDecodeError, FileNotFoundError):
+        pass
+    return None
+
+
+def upload_to_r2(pattern: str = "assembly-*-exploded.png") -> int:
+    """Upload matching screenshots to Cloudflare R2.
+
+    Only uploads files that have changed (based on MD5 hash comparison).
+
+    Requires:
+    - AWS CLI installed
+    - R2 environment variables set (R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)
+    """
+    print(f"\n=== Uploading to R2 ({R2_BUCKET}) ===\n")
+
+    if not R2_ENDPOINT:
+        print("  Error: R2_ENDPOINT environment variable not set")
+        return 0
+
+    if not R2_ACCESS_KEY_ID or not R2_SECRET_ACCESS_KEY:
+        print("  Error: R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY must be set")
+        return 0
+
+    files = list(OUTPUT_DIR.glob(pattern))
+    if not files:
+        print(f"  No files matching '{pattern}' found")
+        return 0
+
+    # Set AWS credentials for the subprocess
+    env = os.environ.copy()
+    env["AWS_ACCESS_KEY_ID"] = R2_ACCESS_KEY_ID
+    env["AWS_SECRET_ACCESS_KEY"] = R2_SECRET_ACCESS_KEY
+
+    uploaded = 0
+    skipped = 0
+    for file_path in files:
+        key = f"openscad-screenshots/{file_path.name}"
+        local_md5 = get_file_md5(file_path)
+        remote_etag = get_r2_etag(key, env)
+
+        if local_md5 == remote_etag:
+            print(f"  Skipping: {file_path.name} (unchanged)")
+            skipped += 1
+            continue
+
+        print(f"  Uploading: {file_path.name} -> s3://{R2_BUCKET}/{key}")
+
+        cmd = [
+            "aws", "s3", "cp",
+            str(file_path),
+            f"s3://{R2_BUCKET}/{key}",
+            "--endpoint-url", R2_ENDPOINT,
+        ]
+
+        try:
+            result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"    -> Uploaded")
+                uploaded += 1
+            else:
+                print(f"    Error: {result.stderr}")
+        except FileNotFoundError:
+            print("  Error: aws CLI not found. Please install AWS CLI.")
+            return uploaded
+
+    if skipped > 0:
+        print(f"\n  Skipped {skipped} unchanged files")
+
+    return uploaded
+
+
+def main():
+    print("Keystone Hardware Screenshot Generator")
+    print("=" * 40)
+    print(f"Output: {OUTPUT_DIR}")
+    print(f"Resolution: {WIDTH}x{HEIGHT}")
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    total = 0
+    total += screenshot_assemblies()
+    total += screenshot_components()
+
+    print(f"\nDone! Generated {total} screenshots in: {OUTPUT_DIR}")
+
+    # Upload exploded views to R2
+    uploaded = upload_to_r2("*-exploded.png")
+    if uploaded > 0:
+        print(f"\nUploaded {uploaded} exploded views to R2")
+
+
+if __name__ == "__main__":
+    main()

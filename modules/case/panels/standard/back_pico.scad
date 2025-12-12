@@ -10,6 +10,7 @@
 // Parametric: accepts dimensions and barrel jack position
 
 include <../../dimensions_pico.scad>
+include <../../../util/dovetail/dimensions.scad>
 use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/male_dovetail.scad>
 
@@ -63,12 +64,13 @@ module back_panel_pico(
     }
 
     // Male dovetails on bottom edge (for base assembly connection to bottom panel)
-    // Rails extend downward (-Z), positioned at Z=0 (bottom of panel)
+    // Rails extend outward from inside face (-Y direction) to engage with female channels
     if (with_dovetails) {
         color("red")
         for (x_pos = dovetail_positions) {
-            translate([x_pos, panel_thickness/2, 0])
-                rotate([180, 0, 0])  // Rotate so rail faces downward (-Z)
+            // Offset Y by half dovetail length so rail base attaches to inside face (Y=0)
+            translate([x_pos, dovetail_length/2, dovetail_height])
+                rotate([180, 0, 0])  // Rail extends -Y (toward female channel on bottom panel)
                     male_dovetail();
         }
     }

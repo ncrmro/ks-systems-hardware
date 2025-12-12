@@ -44,14 +44,14 @@ module nas_many_assembly() {
             }
         }
 
-        // === CASE PANELS (base frame above NAS) ===
-        if (show_panels) {
-            // Base assembly (bottom panel + standoffs)
-            // NAS enclosure provides feet
-            translate([base_x, base_y, nas_height]) {
-                base_assembly();
-            }
+        // === BASE ASSEMBLY (always visible - bottom panel + standoffs) ===
+        // NAS enclosure provides feet
+        translate([base_x, base_y, nas_height]) {
+            base_assembly();
+        }
 
+        // === CASE PANELS ===
+        if (show_panels) {
             // Back panel
             translate([base_x, mobo_depth + wall_thickness + explode, base_z]) {
                 back_panel();
