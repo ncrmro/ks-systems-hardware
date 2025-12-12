@@ -277,13 +277,15 @@ Overall external dimensions for each configuration:
 
 ## 9. Panel Construction & Attachment
 
-### 9.1. Two-Piece Assembly Concept
+### 9.1. Two-Shell Assembly Concept
 
-The case uses a two-piece dovetail assembly system for tool-free construction:
+The case uses a two-shell dovetail assembly system for tool-free construction with user-accessible opening:
 
-*   **Base Assembly:** Back panel + Bottom panel joined via dovetails (semi-permanent connection)
-*   **Upper Shell:** Top + Front + Left side + Right side panels interconnected via dovetails, forming a removable "hood" that lifts off as a single unit
-*   **Assembly Method:** Snap-fit dovetail latches enable tool-free assembly and disassembly
+*   **Bottom Shell (Base Assembly):** Bottom panel + Back panel joined via internal dovetails (semi-permanent connection). The back panel remains attached to the bottom when opening the case.
+*   **Top Shell (Upper Assembly):** Top + Front + Left side + Right side panels interconnected via internal dovetail clips, forming a removable shell that slides off as a single unit.
+*   **Shell Connection:** Top shell connects to bottom panel via non-locking dovetails at the front and side bottom edges. These provide structural alignment without catches.
+*   **User Access:** Back panel has male dovetail clips on its left/right edges that engage with female clips on the side panels. User pinches the back panel clips to release, then slides the top shell forward along the Y axis.
+*   **Assembly Method:** Snap-fit dovetail clips enable tool-free assembly; non-locking dovetails provide structural integrity without impeding shell separation.
 
 ### 9.2. Materials
 
@@ -341,31 +343,47 @@ The female dovetail is a trapezoidal channel cut into panel edges:
 
 ### 9.6. Panel Edge Assignments
 
-**Base Assembly (Back + Bottom):**
+**Dovetail Types:**
+*   **Clip:** Has snap-fit catches for secure locking
+*   **Non-locking:** Friction-fit only, no catches - provides structural alignment
 
-| Panel | Edge | Dovetail Type | Connects To |
-|-------|------|---------------|-------------|
-| Bottom | Back edge | Female | Back panel bottom edge |
-| Back | Bottom edge | Male | Bottom panel back edge |
+**Bottom Shell (Base Assembly):**
 
-**Upper Shell (Top + Front + Sides):**
+| Panel | Edge | Dovetail Type | Connects To | Access |
+|-------|------|---------------|-------------|--------|
+| Bottom | Back edge | Female | Back panel bottom | Internal |
+| Bottom | Left edge | Female (non-locking) | Left side bottom | Internal |
+| Bottom | Right edge | Female (non-locking) | Right side bottom | Internal |
+| Bottom | Front edge | Female (non-locking) | Front panel bottom | Internal |
+| Back | Bottom edge | Male | Bottom panel back | Internal |
+| Back | Left edge | Male (clip) | Left side back | External |
+| Back | Right edge | Male (clip) | Right side back | External |
 
-| Panel | Edge | Dovetail Type | Connects To |
-|-------|------|---------------|-------------|
-| Top | Front edge | Female | Front panel top edge |
-| Top | Left edge | Female | Left side panel top edge |
-| Top | Right edge | Female | Right side panel top edge |
-| Front | Top edge | Male | Top panel front edge |
-| Front | Left edge | Male | Left side panel front edge |
-| Front | Right edge | Male | Right side panel front edge |
-| Left Side | Top edge | Male | Top panel left edge |
-| Left Side | Front edge | Female | Front panel left edge |
-| Right Side | Top edge | Male | Top panel right edge |
-| Right Side | Front edge | Female | Front panel right edge |
+**Top Shell (Upper Assembly):**
 
-**Assembly Order (Upper Shell):**
-1. Connect front panel to both side panels (front male dovetails → side female channels)
-2. Lower top panel onto the front+sides sub-assembly (side/front male dovetails → top female channels)
+| Panel | Edge | Dovetail Type | Connects To | Access |
+|-------|------|---------------|-------------|--------|
+| Top | Front edge | Female (clip) | Front panel top | Internal |
+| Top | Left edge | Female (clip) | Left side top | Internal |
+| Top | Right edge | Female (clip) | Right side top | Internal |
+| Front | Top edge | Male (clip) | Top panel front | Internal |
+| Front | Bottom edge | Male (non-locking) | Bottom panel front | Internal |
+| Left Side | Top edge | Male (clip) | Top panel left | Internal |
+| Left Side | Bottom edge | Male (non-locking) | Bottom panel left | Internal |
+| Left Side | Back edge | Female (clip) | Back panel left | External |
+| Right Side | Top edge | Male (clip) | Top panel right | Internal |
+| Right Side | Bottom edge | Male (non-locking) | Bottom panel right | Internal |
+| Right Side | Back edge | Female (clip) | Back panel right | External |
+
+**Assembly Order (Top Shell):**
+1. Connect front panel to both side panels (front male clips → side female clips at front edges)
+2. Lower top panel onto the front+sides sub-assembly (side/front male clips → top female clips)
+
+**Full Case Assembly:**
+1. Assemble bottom shell: Insert back panel male dovetail into bottom panel female channel
+2. Assemble top shell: Connect front and sides, then attach top panel
+3. Place top shell onto bottom panel (non-locking dovetails align at front/side bottom edges)
+4. Slide top shell back until side panel female clips engage with back panel male clips (audible click)
 
 ### 9.7. Print Orientation
 
@@ -381,15 +399,28 @@ Print orientation is critical for snap-fit functionality:
 
 ### 9.8. Assembly & Disassembly
 
-**To Assemble (Insert):**
+**To Assemble Individual Joints (Insert):**
 1. Align male dovetail with female channel
 2. Slide forward - ramped catches cam inward against channel walls
 3. When catches align with recesses, they snap in (audible click)
 
-**To Disassemble (Release):**
+**To Disassemble Individual Joints (Release):**
 1. Squeeze the two flex halves of the male dovetail together (pinch at free end)
 2. Center slot compresses, catches retract from recesses
 3. Slide panels apart
+
+**To Open Case (Normal Operation):**
+1. Locate the back panel - male dovetail clips are exposed on left and right edges
+2. Pinch both male dovetail flex arms on back panel to retract catches from side panel female clips
+3. Slide top shell forward along Y axis (toward front of case)
+4. Non-locking bottom dovetails allow top shell to slide freely once back clips are released
+5. Lift top shell away for full access to internal components
+6. Back panel remains attached to bottom panel (base assembly stays intact)
+
+**To Close Case:**
+1. Position top shell above bottom panel, aligning non-locking dovetails at front and side bottom edges
+2. Lower top shell onto bottom panel
+3. Slide top shell backward along Y axis until side panel clips engage with back panel clips (audible click)
 
 ### 9.9. Ventilation
 
@@ -455,14 +486,27 @@ The case panels use the dovetail snap-fit system (see Section 9) for tool-free r
 *   **Operation:** Pinch the male dovetail flex arms to release catches, then slide apart
 *   **Security:** Friction fit provides secure hold; panels cannot accidentally detach
 
-### 12.2. Connected Shell Design
+### 12.2. Two-Shell Design
 
-The upper shell (Top + Front + Sides) forms a single interconnected assembly:
+The case consists of two interconnected shell assemblies:
 
-*   **Shell Assembly:** Front panel connects to both side panels, then top panel caps the assembly
-*   **One-Piece Removal:** Entire upper shell lifts off base assembly as a single unit
+**Bottom Shell (Base Assembly):**
+*   **Components:** Bottom panel + Back panel
+*   **Connection:** Back panel male dovetail inserts into bottom panel female channel (semi-permanent)
+*   **Stability:** Remains assembled during normal case opening/closing
+*   **Back Panel Role:** Provides the locking interface for the top shell via external male clips
+
+**Top Shell (Upper Assembly):**
+*   **Components:** Top + Front + Left side + Right side panels
+*   **Internal Connections:** All panels connected via internal dovetail clips (semi-permanent)
+*   **Shell Assembly:** Front panel connects to both side panels via clips, then top panel caps the assembly
+*   **One-Piece Removal:** Entire top shell slides off and lifts away as a single unit
 *   **Full Access:** Removing shell exposes motherboard, CPU cooler, and all internal components
-*   **No Hinges Required:** Dovetail system eliminates need for separate hinge mechanisms
+
+**Shell-to-Shell Interface:**
+*   **Structural:** Non-locking dovetails at front and side bottom edges provide alignment
+*   **Locking:** Back panel male clips engage side panel female clips (user-accessible release)
+*   **No Hinges Required:** Sliding dovetail system eliminates need for separate hinge mechanisms
 
 ### 12.3. Benefits
 
