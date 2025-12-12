@@ -1,17 +1,22 @@
 // Pico Configuration Assembly
 // Ultra-compact case with Pico ATX PSU and NH-L9 cooler
-// Dimensions: 176mm x 176mm x ~52mm
+// Dimensions: 176mm x 176mm x ~63mm
 // No PSU compartment - Pico ATX mounts on motherboard
+//
+// TWO-SHELL ASSEMBLY DESIGN:
+// - Bottom Shell: bottom panel + back panel (semi-permanent connection via dovetails)
+// - Top Shell: top + front + left side + right side panels (connected via internal clips)
+// - User opens case by pinching back panel clips and sliding top shell forward
+// - Per SPEC.md Section 9
 
 include <../modules/case/dimensions_pico.scad>
 
-// Case parts
+// Case parts - all with dovetail joints for two-shell assembly
 use <../modules/case/base/base_assembly_pico.scad>
 use <../modules/case/panels/standard/back_pico.scad>
-use <../modules/case/panels/standard/side_left.scad>
-use <../modules/case/panels/standard/side_right.scad>
-use <../modules/case/panels/standard/top.scad>
-use <../modules/case/panels/standard/front.scad>
+use <../modules/case/panels/standard/side_pico.scad>
+use <../modules/case/panels/standard/top_pico.scad>
+use <../modules/case/panels/standard/front_pico.scad>
 
 // Motherboard assembly (includes motherboard, RAM, NH-L9 cooler, Pico PSU)
 use <../modules/components/motherboard/motherboard_full_pico.scad>
@@ -22,7 +27,7 @@ use <../modules/components/power/barrel_jack_5_5x2_5.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 0;  // Set > 0 to explode view (e.g., 20)
+explode = 10;  // Set > 0 to explode view (e.g., 20)
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right
@@ -44,45 +49,33 @@ module pico_assembly() {
 
         // === CASE PANELS ===
         if (show_panels) {
-            // Back panel (shortened height, raised to sit on bottom panel)
-            // Y position at exterior_panel_depth (173mm), Z raised by wall_thickness
-            translate([wall_thickness, exterior_panel_depth + explode, wall_thickness]) {
+            // Back panel (full width, raised to sit on bottom panel)
+            // X=0 (full exterior width), Y at exterior_panel_depth (173mm), Z raised by wall_thickness
+            translate([0, exterior_panel_depth + explode, wall_thickness]) {
                 back_panel_pico();
             }
 
-            // Front panel (extended width, pico height)
+            // Front panel (extended width, pico height, with dovetails)
             translate([0, -explode, 0]) {
-                front_panel(
-                    width = front_back_panel_width + 2 * wall_thickness,
-                    height = front_back_panel_height
-                );
+                front_panel_pico();
             }
 
-            // Left side panel (shortened height, raised to sit on bottom panel)
+            // Left side panel (shortened height, raised to sit on bottom panel, with dovetails)
             // Y=wall_thickness (behind front panel)
             translate([-explode, wall_thickness, wall_thickness]) {
-                side_panel_left(
-                    depth = side_panel_depth,
-                    height = side_panel_height
-                );
+                side_panel_pico(side = "left");
             }
 
-            // Right side panel (shortened height, raised to sit on bottom panel)
+            // Right side panel (shortened height, raised to sit on bottom panel, with dovetails)
             // Y=wall_thickness (behind front panel)
             translate([pico_case_width - wall_thickness + explode, wall_thickness, wall_thickness]) {
-                side_panel_right(
-                    depth = side_panel_depth,
-                    height = side_panel_height
-                );
+                side_panel_pico(side = "right");
             }
 
-            // Top panel (full exterior width/depth, covers side panels from above)
+            // Top panel (full exterior width/depth, covers side panels from above, with dovetails)
             // Positioned at X=0, Y=wall_thickness (behind front panel)
             translate([0, wall_thickness, pico_exterior_height - wall_thickness + explode]) {
-                top_panel(
-                    width = exterior_panel_width,
-                    depth = exterior_panel_depth
-                );
+                top_panel_pico();
             }
         }
 
