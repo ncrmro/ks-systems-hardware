@@ -55,11 +55,19 @@ keystone-hardware/
 │   │   │   │   ├── bottom.scad        # ❌ Bottom panel
 │   │   │   │   └── front.scad         # ❌ Front panel (power btn)
 │   │   │   │
-│   │   │   └── gpu/                   # GPU config (vertical)
-│   │   │       ├── side_left.scad     # ❌ Extended height, vents
-│   │   │       ├── side_right.scad    # ❌ Extended height, vents
-│   │   │       ├── top.scad           # ❌ PSU above motherboard
-│   │   │       └── bottom.scad        # ❌ Mobo I/O + GPU + power inlet
+│   │   │   ├── gpu/                   # GPU config (vertical)
+│   │   │   │   ├── side_left.scad     # ❌ Extended height, vents
+│   │   │   │   ├── side_right.scad    # ❌ Extended height, vents
+│   │   │   │   ├── top.scad           # ❌ PSU above motherboard
+│   │   │   │   └── bottom.scad        # ❌ Mobo I/O + GPU + power inlet
+│   │   │   │
+│   │   │   └── pico/                  # Pico config (ultra-compact)
+│   │   │       ├── top.scad           # ❌ 176x176mm, female clips
+│   │   │       ├── bottom.scad        # ❌ 176x176mm, female non-locking
+│   │   │       ├── front.scad         # ❌ Male clip top, non-locking bottom
+│   │   │       ├── back.scad          # ❌ Male clips to side panels
+│   │   │       ├── side_left.scad     # ❌ Female clip back edge
+│   │   │       └── side_right.scad    # ❌ Female clip back edge
 │   │   │
 │   │   ├── gpu/                       # GPU mounting parts
 │   │   │   ├── bracket.scad           # ❌ Vertical GPU mount
@@ -86,6 +94,13 @@ keystone-hardware/
 │   │   │   ├── frame_cylinder.scad    # ✅ Free-floating mounting cylinder
 │   │   │   └── upper_frame.scad       # ✅ Frame structure holding cylinders
 │   │   │
+│   │   ├── dovetails/                 # Dovetail joint modules
+│   │   │   ├── male_clip.scad         # ❌ Male dovetail with snap-fit catches
+│   │   │   ├── female_clip.scad       # ❌ Female channel with catch recesses
+│   │   │   ├── male_non_locking.scad  # ❌ Male dovetail, friction-fit only
+│   │   │   ├── female_non_locking.scad # ❌ Female channel, no catches
+│   │   │   └── test_jig.scad          # ❌ Test pieces for print validation
+│   │   │
 │   │   ├── mounting/                  # Rapid panel mounting system
 │   │   │   ├── quick_release_latch.scad # ❌ Single-action panel release
 │   │   │   └── panel_hinge.scad       # ❌ Optional panel hinging
@@ -104,6 +119,7 @@ keystone-hardware/
 │       └── honeycomb.scad             # ✅ Ventilation pattern
 │
 ├── assemblies/                        # Full assembly files
+│   ├── pico.scad                      # ❌ Ultra-compact Pico config
 │   ├── minimal.scad                   # ❌ Complete barebones case
 │   ├── nas_2disk.scad                 # ❌ Base + 2-disk NAS stacked
 │   ├── nas_many.scad                  # ❌ Base + many-disk NAS stacked
@@ -155,7 +171,9 @@ Existing files need to be reorganized:
 | GPU | `gpu.scad` | ❌ TODO | Max 320mm length, 3-slot (60mm) width |
 | PCIe Riser Cable | `pcie_riser.scad` | ❌ TODO | Flexible cable representation |
 | 2.5" SSD | `ssd_2_5.scad` | ❌ TODO | 100 x 69.85 x 7mm |
-| Pico PSU | `power-supply.pico.scad` | ❌ TODO | For minimal builds |
+| Pico PSU | `power-supply.pico.scad` | ❌ TODO | ~60x50x10mm DC-DC converter PCB |
+| NH-L9 Cooler | `cpu_cooler_nhl9.scad` | ❌ TODO | 95x95x37mm, for Pico config |
+| Barrel Jack (5.5x2.5) | `barrel_jack_5_5x2_5.scad` | ❌ TODO | DC input for Pico external adapter |
 | AIO Radiator (240mm) | `aio_radiator_240.scad` | ❌ TODO | 2x 120mm fan mount |
 | AIO Radiator (280mm) | `aio_radiator_280.scad` | ❌ TODO | 2x 140mm fan mount |
 | AIO Pump Block | `aio_pump.scad` | ❌ TODO | CPU/GPU mount block |
@@ -240,6 +258,31 @@ NAS enclosures mount underneath the base frame via 4x #6-32 screw holes at corne
 | PSU Bracket (Pico) | `case-psu-bracket-pico.scad` | ❌ TODO | Mounting for Pico PSU |
 | Rubber Feet | `case-rubber-feet.scad` | ❌ TODO | 4x feet with #6-32 thread for standalone config (removed when NAS attached) |
 | Cable Management | `case-cable-routing.scad` | ❌ TODO | Clips, channels, pass-throughs |
+
+### Dovetail Joint Modules
+
+Snap-fit dovetail system for two-shell assembly (see SPEC.md Section 9):
+
+| Part | File | Status | Notes |
+|------|------|--------|-------|
+| Male Dovetail (Clip) | `dovetails/male_clip.scad` | ❌ TODO | Trapezoidal rail, flex arms, snap catches |
+| Female Dovetail (Clip) | `dovetails/female_clip.scad` | ❌ TODO | Channel with boss, catch recesses |
+| Male Dovetail (Non-locking) | `dovetails/male_non_locking.scad` | ❌ TODO | Friction-fit only, structural alignment |
+| Female Dovetail (Non-locking) | `dovetails/female_non_locking.scad` | ❌ TODO | Channel without catches |
+| Dovetail Test Jig | `dovetails/test_jig.scad` | ❌ TODO | Print test for clearance validation |
+
+### Pico Configuration Panels
+
+Ultra-compact panels for Pico config (176x176mm footprint):
+
+| Part | File | Status | Notes |
+|------|------|--------|-------|
+| Pico Top Panel | `panels/pico/top.scad` | ❌ TODO | Female clips on 3 edges, ventilation |
+| Pico Bottom Panel | `panels/pico/bottom.scad` | ❌ TODO | Female non-locking on 3 edges, standoff recesses |
+| Pico Front Panel | `panels/pico/front.scad` | ❌ TODO | Male clip (top), male non-locking (bottom) |
+| Pico Back Panel | `panels/pico/back.scad` | ❌ TODO | Male to bottom, male clips to sides |
+| Pico Left Side Panel | `panels/pico/side_left.scad` | ❌ TODO | Male clip (top), non-locking (bottom), female clip (back) |
+| Pico Right Side Panel | `panels/pico/side_right.scad` | ❌ TODO | Male clip (top), non-locking (bottom), female clip (back) |
 
 ### Frame & Mounting Parts
 
@@ -381,17 +424,70 @@ Nice-to-haves and alternative components.
 
 ---
 
-### Phase 7: Open Air Frame & Advanced Panel System
+### Phase 7: Dovetail Joint System (Two-Shell Assembly)
+
+Snap-fit dovetail system enabling tool-free case assembly and user-accessible opening. See SPEC.md Section 9 for detailed geometry.
+
+| Priority | Task | Dependency | Status | Notes |
+|----------|------|------------|--------|-------|
+| 7.1 | Male dovetail (clip) module | None | ❌ TODO | Trapezoidal rail with center slot flex arms, snap-fit catches |
+| 7.2 | Female dovetail (clip) module | None | ❌ TODO | Channel with boss, catch recesses for snap engagement |
+| 7.3 | Male dovetail (non-locking) module | None | ❌ TODO | Friction-fit only, no catches - structural alignment |
+| 7.4 | Female dovetail (non-locking) module | None | ❌ TODO | Channel without catch recesses - accepts non-locking male |
+| 7.5 | Dovetail test jig | 7.1-7.4 | ❌ TODO | Print test pieces to validate clearances and snap-fit |
+
+---
+
+### Phase 8: Pico Configuration (Ultra-Compact)
+
+Ultra-compact build with Pico ATX PSU. Smallest possible case at 176mm x 176mm x ~63mm.
+
+**Components:**
+
+| Priority | Task | Dependency | Status | Notes |
+|----------|------|------------|--------|-------|
+| 8.1 | Pico ATX PSU model | None | ❌ TODO | ~60x50x10mm DC-DC converter PCB |
+| 8.2 | NH-L9 cooler model | None | ❌ TODO | 95x95x37mm, used in Pico config |
+| 8.3 | Barrel jack (5.5x2.5mm) model | None | ❌ TODO | DC input connector for external AC adapter |
+| 8.4 | Motherboard with Pico PSU assembly | 8.1, 8.2 | ❌ TODO | mobo + RAM + NH-L9 + Pico PSU combined |
+
+**Bottom Shell (Base Assembly):**
+
+| Priority | Task | Dependency | Status | Notes |
+|----------|------|------------|--------|-------|
+| 8.5 | Pico bottom panel | 7.3-7.4 | ❌ TODO | 176x176mm, integrated standoff recesses, female non-locking dovetails on front/side edges |
+| 8.6 | Pico back panel | 7.1-7.2 | ❌ TODO | Male dovetail (bottom edge to bottom panel), male clips (left/right edges to side panels) |
+
+**Top Shell (Upper Assembly):**
+
+| Priority | Task | Dependency | Status | Notes |
+|----------|------|------------|--------|-------|
+| 8.7 | Pico top panel | 7.1-7.2 | ❌ TODO | 176x176mm, female clips on front/left/right edges, ventilation over cooler |
+| 8.8 | Pico front panel | 7.1-7.4 | ❌ TODO | Male clip (top), male non-locking (bottom), power button hole |
+| 8.9 | Pico left side panel | 7.1-7.4 | ❌ TODO | Male clip (top), male non-locking (bottom), female clip (back edge) |
+| 8.10 | Pico right side panel | 7.1-7.4 | ❌ TODO | Male clip (top), male non-locking (bottom), female clip (back edge) |
+
+**Assembly:**
+
+| Priority | Task | Dependency | Status | Notes |
+|----------|------|------------|--------|-------|
+| 8.11 | Pico bottom shell assembly | 8.5, 8.6 | ❌ TODO | Bottom + back panel joined |
+| 8.12 | Pico top shell assembly | 8.7-8.10 | ❌ TODO | Top + front + sides joined via internal clips |
+| 8.13 | Full Pico case assembly | 8.4, 8.11, 8.12 | ❌ TODO | Complete case with all components, validate opening/closing |
+
+---
+
+### Phase 9: Open Air Frame & Advanced Panel System
 
 Advanced mounting and ventilation features for improved accessibility and cooling.
 
 | Priority | Task | Dependency | Status | Notes |
 |----------|------|------------|--------|-------|
-| 7.1 | Extended standoff (M3x10+6mm) | Phase 1.6 | ✅ Done | M3 male-female standoff: 6mm female thread below, 10mm male stud above mobo |
-| 7.2 | Frame cylinder | 7.1 | ✅ Done | Free-floating cylinder, height = interior_chamber_height - standoff_height - mobo_pcb_thickness (~86mm) |
-| 7.3 | Upper frame structure | 7.2 | ✅ Done | Holds 4 frame cylinders with retention lips, foundation for panels |
-| 7.4 | Quick-release latch mechanism | Phase 1 | ❌ TODO | Single action unlocks top/side/front panels |
-| 7.5 | Panel hinge component | 7.4 | ❌ TODO | Optional hinging for clamshell-style opening |
-| 7.6 | Parameterized top panel | 7.3, Phase 1.3 | ❌ TODO | Dynamic vent placement based on CPU cooler position |
-| 7.7 | Internal air channels | 7.6 | ❌ TODO | Underside structures directing airflow over components |
-| 7.8 | Full open-air frame assembly | 7.1-7.7 | ❌ TODO | Validate tool-free assembly and airflow |
+| 9.1 | Extended standoff (M3x10+6mm) | Phase 1.6 | ✅ Done | M3 male-female standoff: 6mm female thread below, 10mm male stud above mobo |
+| 9.2 | Frame cylinder | 9.1 | ✅ Done | Free-floating cylinder, height = interior_chamber_height - standoff_height - mobo_pcb_thickness (~86mm) |
+| 9.3 | Upper frame structure | 9.2 | ✅ Done | Holds 4 frame cylinders with retention lips, foundation for panels |
+| 9.4 | Quick-release latch mechanism | Phase 1 | ❌ TODO | Single action unlocks top/side/front panels |
+| 9.5 | Panel hinge component | 9.4 | ❌ TODO | Optional hinging for clamshell-style opening |
+| 9.6 | Parameterized top panel | 9.3, Phase 1.3 | ❌ TODO | Dynamic vent placement based on CPU cooler position |
+| 9.7 | Internal air channels | 9.6 | ❌ TODO | Underside structures directing airflow over components |
+| 9.8 | Full open-air frame assembly | 9.1-9.7 | ❌ TODO | Validate tool-free assembly and airflow |
