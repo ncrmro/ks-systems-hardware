@@ -27,14 +27,14 @@ module minimal_assembly() {
     base_z = wall_thickness;
 
     union() {
+        // === BASE ASSEMBLY (always visible - bottom panel + standoffs) ===
+        // Positioned at X=0, Y=wall_thickness (behind front panel, extends to cover back)
+        translate([0, wall_thickness, -explode]) {
+            base_assembly();
+        }
+
         // === CASE PANELS ===
         if (show_panels) {
-            // Base assembly (bottom panel + standoffs)
-            // Positioned at X=0, Y=wall_thickness (behind front panel, extends to cover back)
-            translate([0, wall_thickness, -explode]) {
-                base_assembly();
-            }
-
             // Back panel (shortened height, raised to sit on bottom panel)
             // Y position at exterior_panel_depth (173mm), Z raised by wall_thickness
             translate([wall_thickness, exterior_panel_depth + explode, wall_thickness]) {
