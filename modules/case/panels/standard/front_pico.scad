@@ -3,6 +3,7 @@
 //
 // DOVETAIL JOINTS (Top Shell Assembly):
 // - Male clip dovetails on top edge connect to top panel female clips (internal)
+// - Male clip dovetails on left/right edges connect to side panels (internal)
 // - Per SPEC.md Section 9.6
 //
 // Standalone file for 3D printing - uses pico dimensions
@@ -44,6 +45,10 @@ module front_panel_pico(
     // Dovetail positions on top edge (clip - connects to top panel)
     // Adjusted X positions to account for extended panel width
     top_dovetail_positions = [width * 0.25, width * 0.75];
+
+    // Side edge dovetail positions (connects to side panels)
+    // Single dovetail centered on each side edge
+    side_dovetail_z = panel_height / 2;
 
     union() {
         color("gray") {
@@ -94,6 +99,18 @@ module front_panel_pico(
                         rotate([0, 0, 0])
                             male_dovetail(with_latch = true);  // Clip for top shell connection
                 }
+
+                // Left edge dovetail (connects to left side panel)
+                // Extends inward along +Y axis
+                translate([wall_thickness, panel_thickness + dovetail_length / 2, side_dovetail_z])
+                    rotate([0, 90, 0])
+                        male_dovetail(with_latch = true);
+
+                // Right edge dovetail (connects to right side panel)
+                // Extends inward along +Y axis
+                translate([panel_width - wall_thickness, panel_thickness + dovetail_length / 2, side_dovetail_z])
+                    rotate([0, -90, 0])
+                        male_dovetail(with_latch = true);
             }
         }
     }

@@ -38,6 +38,9 @@ Render to STL (for 3D printing):
 ```bash
 openscad -o output.stl assemblies/minimal.scad
 ```
+### Notes
+
+Avoid taking pictures unless explicitly asked as this burns tokens
 
 ## Architecture
 
