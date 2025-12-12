@@ -19,9 +19,10 @@ module top_panel(
     union() {
         // Base panel (standard thickness)
         // Raised by dovetail height so dovetails hang underneath
+        // Extended 3mm forward so front edge is flush with front panel
         // Origin at corner, panel extends in +X, +Y, +Z
-        translate([0, 0, dt_height])
-            cube([width, depth, thickness]);
+        translate([0, -thickness, dt_height])
+            cube([width, depth + thickness, thickness]);
 
         // Left female dovetail at 1/4 width
         // Position at front edge (Y offset for dovetail center)

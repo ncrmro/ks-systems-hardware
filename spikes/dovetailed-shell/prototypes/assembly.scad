@@ -16,7 +16,7 @@ module assembly() {
     // Shifted back in Y so front panel sits in front of it
     // Panel bottom face at Z = scaled_height (front panel top)
     if (show_top_panel) {
-        translate([0, scaled_wall_thickness, scaled_height + explode])
+        translate([0, 0, scaled_height + explode])
             color("LightGray")
             top_panel(
                 width = scaled_width,

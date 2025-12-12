@@ -23,7 +23,7 @@ dovetail_boss_margin = 2;                // Extra wall around dovetail channel
 // Center-slot latch parameters (integrated snap-fit retention)
 // Slot runs through center of dovetail, allowing squeeze-to-insert/release
 center_slot_width = 3;          // mm - flex gap width
-center_slot_end_margin = 2;       // mm - solid material at each end of slot
+center_slot_end_margin = 6;       // mm - solid material at each end of slot
 
 // Catch bump parameters (ramped profile on outer dovetail faces)
 catch_bump_height = 0.8;          // mm - protrusion from dovetail surface
@@ -34,7 +34,7 @@ catch_retention_length = 1;       // mm - vertical retention face length
 catch_position_from_end = 2;      // mm - catch position from free end
 
 // Female window parameters (external access for release)
-window_clearance = 0.15;          // mm - clearance around catch (reduced for tighter fit)
+window_clearance = 0.10;          // mm - clearance around catch (reduced for tighter fit)
 window_finger_depth = 5;          // mm - depth for finger access to squeeze
 
 // Scale factor for prototyping
