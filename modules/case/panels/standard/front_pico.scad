@@ -3,7 +3,6 @@
 //
 // DOVETAIL JOINTS (Top Shell Assembly):
 // - Male clip dovetails on top edge connect to top panel female clips (internal)
-// - Male non-locking dovetails on bottom edge connect to bottom panel female dovetails (internal)
 // - Per SPEC.md Section 9.6
 //
 // Standalone file for 3D printing - uses pico dimensions
@@ -45,9 +44,6 @@ module front_panel_pico(
     // Dovetail positions on top edge (clip - connects to top panel)
     // Adjusted X positions to account for extended panel width
     top_dovetail_positions = [width * 0.25, width * 0.75];
-
-    // Dovetail positions on bottom edge (non-locking - connects to bottom panel)
-    bottom_dovetail_positions = [width * 0.25, width * 0.75];
 
     union() {
         color("gray") {
@@ -96,14 +92,6 @@ module front_panel_pico(
                     translate([x_pos, panel_thickness / 2, panel_height])
                         rotate([-90, 0, 0])
                             male_dovetail(with_latch = true);  // Clip for top shell connection
-                }
-
-                // Bottom edge dovetails (non-locking - connects to bottom panel)
-                // Rails extend from bottom edge downward toward -Z
-                for (x_pos = bottom_dovetail_positions) {
-                    translate([x_pos, panel_thickness / 2, 0])
-                        rotate([90, 0, 0])
-                            male_dovetail(with_latch = false);  // Non-locking for shell separation
                 }
             }
         }
