@@ -64,13 +64,14 @@ module back_panel_pico(
     }
 
     // Male dovetails on bottom edge (for base assembly connection to bottom panel)
-    // Rails extend outward from inside face (-Y direction) to engage with female channels
+    // Rails extend from inside face (Y=0) toward -Y to engage with female channels on bottom panel
     if (with_dovetails) {
         color("red")
         for (x_pos = dovetail_positions) {
-            // Offset Y by half dovetail length so rail base attaches to inside face (Y=0)
-            translate([x_pos, dovetail_length/2, dovetail_height])
-                rotate([180, 0, 0])  // Rail extends -Y (toward female channel on bottom panel)
+            // Position so rail base is at inside face (Y=0), extending toward -Y (into case)
+            // Raise by dovetail_height to account for 180° rotation
+            translate([x_pos, -dovetail_length/2, dovetail_height])
+                rotate([180, 0, 0])
                     male_dovetail();
         }
     }
