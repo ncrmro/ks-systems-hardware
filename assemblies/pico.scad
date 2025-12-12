@@ -22,7 +22,7 @@ use <../modules/components/power/barrel_jack_5_5x2_5.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 10;  // Set > 0 to explode view (e.g., 20)
+explode = 0;  // Set > 0 to explode view (e.g., 20)
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right

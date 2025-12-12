@@ -5,7 +5,7 @@
 // Dovetail geometry parameters
 dovetail_angle = 15;              // Angle from vertical (degrees)
 dovetail_height = 3;              // Trapezoid height / engagement depth (mm)
-dovetail_length = 10;             // Length along panel edge (mm)
+dovetail_length = 20;             // Length along panel edge (mm)
 dovetail_base_width = 8;          // Width at narrow end (mm)
 dovetail_clearance = 0.15;        // Clearance per side (mm) - FDM tuned
 
@@ -13,8 +13,8 @@ dovetail_clearance = 0.15;        // Clearance per side (mm) - FDM tuned
 dovetail_boss_margin = 2;         // Extra wall around dovetail channel
 
 // Center-slot latch parameters (integrated snap-fit retention)
-center_slot_width = 5;            // Flex gap width (mm)
-center_slot_end_margin = 2;       // Solid material at base end of slot (mm)
+center_slot_width = 3;            // Flex gap width (mm)
+center_slot_end_margin = 6;       // Solid material at base end of slot (mm)
 
 // Catch bump parameters (ramped profile on outer dovetail faces)
 catch_bump_height = 0.8;          // Protrusion from dovetail surface (mm)
@@ -22,7 +22,7 @@ catch_bump_length = 3;            // Plateau length along insertion direction (m
 catch_ramp_length = 2;            // Entry/exit ramp length (mm)
 
 // Female window parameters
-window_clearance = 0.3;           // Clearance around catch in recess (mm)
+window_clearance = 0.10;          // Clearance around catch in recess (mm) - tightened for less play
 
 // Scale factor for prototyping (1.0 = actual size)
 dovetail_scale_factor = 1.0;
