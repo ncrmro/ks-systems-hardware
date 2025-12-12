@@ -14,7 +14,6 @@ include <../../dimensions_pico.scad>
 include <../../../util/dovetail/dimensions.scad>
 use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/male_dovetail.scad>
-use <../../../util/dovetail/female_dovetail.scad>
 use <../../../util/dovetail/female_dovetail_pocket.scad>
 
 module side_panel_pico(
@@ -42,10 +41,6 @@ module side_panel_pico(
     // Single clip connects to back panel male clip
     back_dovetail_position = panel_height * 0.5;
 
-    // Front edge dovetail position (female clip - INTERNAL non-visible)
-    // Connects to front panel male clip
-    front_dovetail_position = panel_height * 0.5;
-
     // Dovetail channel length (shared calculation)
     channel_length = dovetail_length + 2 * dovetail_clearance;
 
@@ -53,9 +48,6 @@ module side_panel_pico(
     // After rotation, the pocket's opening faces +Y
     // Position so opening is flush with panel back edge
     back_dovetail_y = panel_depth - channel_length/2;
-
-    // Front dovetail Y position - opening faces +Y, flush with front edge
-    front_dovetail_y = channel_length/2;
 
     // Internal module builds geometry as "left" panel
     // Right panel is created by mirroring this geometry
@@ -102,12 +94,6 @@ module side_panel_pico(
                 translate([0, back_dovetail_y, back_dovetail_position])
                     rotate([0, -90, 180])
                         female_dovetail_pocket(with_catch_windows = true);
-
-                // Front edge dovetail (female clip - INTERNAL non-visible)
-                // On interior side, offset inward by dovetail_height
-                translate([panel_thickness + dovetail_height, front_dovetail_y, front_dovetail_position])
-                    rotate([0, -90, 0])
-                        female_dovetail(with_catch_windows = true);
             }
         }
     }

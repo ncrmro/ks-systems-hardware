@@ -7,7 +7,6 @@
 //
 // DOVETAIL JOINTS (Two-Shell Assembly):
 // - Female clip dovetails on back edge (connects to back panel - internal, semi-permanent)
-// - Female non-locking dovetails on front edge (connects to front panel)
 // - Bosses extend upward (+Z) into case interior
 // - Per SPEC.md Section 9.6
 //
@@ -47,10 +46,6 @@ module bottom_panel_pico(
     back_dovetail_positions = [width * 0.25, width * 0.75];
     // Offset Y to align boss back face with panel edge (accounting for asymmetric boss geometry)
     back_dovetail_y = depth - (dovetail_length / 2 + dovetail_clearance);
-
-    // Front edge dovetail positions (non-locking, for top shell connection)
-    front_dovetail_positions = [width * 0.25, width * 0.75];
-    front_dovetail_y = dovetail_length / 2 + dovetail_clearance;
 
     union() {
         color("gray") {
@@ -105,14 +100,6 @@ module bottom_panel_pico(
                 translate([x_pos, back_dovetail_y, panel_thickness + dovetail_height])
                     rotate([180, 0, 0])  // Rotate so channel faces +Y (back panel slides in from +Y)
                         female_dovetail(with_catch_windows = true);  // Clip version for base assembly
-            }
-
-            // Female dovetails on front edge (non-locking - for top shell connection)
-            // Boss extends upward (+Z), channel faces -Y toward front panel
-            for (x_pos = front_dovetail_positions) {
-                translate([x_pos, front_dovetail_y, panel_thickness + dovetail_height])
-                    rotate([180, 0, 180])  // Rotate so channel faces -Y (front panel slides in from -Y)
-                        female_dovetail(with_catch_windows = false);  // Non-locking for easy shell separation
             }
         }
     }
