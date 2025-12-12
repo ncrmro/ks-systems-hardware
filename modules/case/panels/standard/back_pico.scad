@@ -16,7 +16,7 @@ use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/male_dovetail.scad>
 
 module back_panel_pico(
-    width = front_back_panel_width,            // 170mm
+    width = front_back_panel_width + 2 * wall_thickness,  // 176mm - flush with side walls
     height = back_panel_height,                // ~57mm - shortened to sit between top/bottom panels
     barrel_x = pico_barrel_jack_x,
     barrel_z = pico_barrel_jack_z,
@@ -35,10 +35,9 @@ module back_panel_pico(
 
     // Dovetail positions on bottom edge (match bottom panel positions)
     // Male rails extend downward (-Z), positioned to align with female channels
-    // Back panel width is 170mm (front_back_panel_width), sits inset by wall_thickness from bottom panel
+    // Back panel is full exterior width (176mm) and positioned at X=0 in assembly
     // Bottom panel positions: width * 0.25 and width * 0.75 (at 176mm: 44mm and 132mm)
-    // Back panel offset: wall_thickness (3mm) from bottom panel edge
-    bottom_dovetail_positions = [exterior_panel_width * 0.25 - wall_thickness, exterior_panel_width * 0.75 - wall_thickness];
+    bottom_dovetail_positions = [exterior_panel_width * 0.25, exterior_panel_width * 0.75];
 
     // Left/right edge dovetail position (clip - EXTERNAL user-accessible release)
     // Single clip per side - main release mechanism for the two-shell assembly
@@ -49,18 +48,18 @@ module back_panel_pico(
             // Back panel
             cube([panel_width, panel_thickness, panel_height]);
 
-            // I/O shield cutout
-            translate([io_shield_x_offset, -0.1, io_shield_z_offset]) {
+            // I/O shield cutout (offset by wall_thickness for extended panel width)
+            translate([wall_thickness + io_shield_x_offset, -0.1, io_shield_z_offset]) {
                 cube([io_shield_width, panel_thickness + 0.2, io_shield_height]);
             }
 
-            // Honeycomb ventilation
-            translate([vent_padding, 0, honeycomb_area_z_start]) {
+            // Honeycomb ventilation (offset by wall_thickness for extended panel width)
+            translate([wall_thickness + vent_padding, 0, honeycomb_area_z_start]) {
                 honeycomb_xz(honeycomb_radius, panel_thickness, honeycomb_area_width, honeycomb_area_height);
             }
 
-            // Barrel jack hole (right side, where PSU would be in other configs)
-            translate([barrel_x, -0.1, barrel_z]) {
+            // Barrel jack hole (offset by wall_thickness for extended panel width)
+            translate([wall_thickness + barrel_x, -0.1, barrel_z]) {
                 rotate([-90, 0, 0]) {
                     cylinder(h = panel_thickness + 0.2, d = barrel_diameter, $fn = 20);
                 }
@@ -82,15 +81,15 @@ module back_panel_pico(
             }
 
             // Left edge dovetail (clip - EXTERNAL user-accessible release)
-            // Rail extends from left face (X=0) toward -X
-            translate([0, panel_thickness / 2, side_dovetail_position])
-                rotate([0, 0, -90])  // Rotate so rail extends toward -X
+            // Rail faces front (-Y), positioned on inside face like bottom dovetails
+            translate([0, -dovetail_length/2, side_dovetail_position])
+                rotate([0, 90, 180])  // Rail faces -Y (front), cross-section rotated
                     male_dovetail(with_latch = true);  // Clip for snap-fit
 
             // Right edge dovetail (clip - EXTERNAL user-accessible release)
-            // Rail extends from right face (X=panel_width) toward +X
-            translate([panel_width, panel_thickness / 2, side_dovetail_position])
-                rotate([0, 0, 90])  // Rotate so rail extends toward +X
+            // Rail faces front (-Y), positioned on inside face like bottom dovetails
+            translate([panel_width, -dovetail_length/2, side_dovetail_position])
+                rotate([0, -90, 180])  // Rail faces -Y (front), mirrored orientation
                     male_dovetail(with_latch = true);  // Clip for snap-fit
         }
     }

@@ -61,13 +61,13 @@ keystone-hardware/
 │   │   │   │   ├── top.scad           # ❌ PSU above motherboard
 │   │   │   │   └── bottom.scad        # ❌ Mobo I/O + GPU + power inlet
 │   │   │   │
-│   │   │   └── pico/                  # Pico config (ultra-compact)
-│   │   │       ├── top.scad           # ❌ 176x176mm, female clips
-│   │   │       ├── bottom.scad        # ❌ 176x176mm, female non-locking
-│   │   │       ├── front.scad         # ❌ Male clip top, non-locking bottom
-│   │   │       ├── back.scad          # ❌ Male clips to side panels
-│   │   │       ├── side_left.scad     # ❌ Female clip back edge
-│   │   │       └── side_right.scad    # ❌ Female clip back edge
+│   │   │   └── pico/ (NOTE: pico panels in panels/standard/ with _pico suffix)
+│   │   │       ├── top_pico.scad           # ✅ Female clips on 3 edges
+│   │   │       ├── bottom_pico.scad        # ✅ All 4 edges with dovetails
+│   │   │       ├── front_pico.scad         # ✅ Male clip top, non-locking bottom
+│   │   │       ├── back_pico.scad          # ✅ Male clips to side panels
+│   │   │       ├── side_left_pico.scad     # ✅ All 3 edge dovetails
+│   │   │       └── side_right_pico.scad    # ✅ All 3 edge dovetails
 │   │   │
 │   │   ├── gpu/                       # GPU mounting parts
 │   │   │   ├── bracket.scad           # ❌ Vertical GPU mount
@@ -94,12 +94,11 @@ keystone-hardware/
 │   │   │   ├── frame_cylinder.scad    # ✅ Free-floating mounting cylinder
 │   │   │   └── upper_frame.scad       # ✅ Frame structure holding cylinders
 │   │   │
-│   │   ├── dovetails/                 # Dovetail joint modules
-│   │   │   ├── male_clip.scad         # ❌ Male dovetail with snap-fit catches
-│   │   │   ├── female_clip.scad       # ❌ Female channel with catch recesses
-│   │   │   ├── male_non_locking.scad  # ❌ Male dovetail, friction-fit only
-│   │   │   ├── female_non_locking.scad # ❌ Female channel, no catches
-│   │   │   └── test_jig.scad          # ❌ Test pieces for print validation
+│   │   ├── dovetails/ (NOTE: actual location is modules/util/dovetail/)
+│   │   │   ├── male_dovetail.scad     # ✅ with_latch param for clip/non-locking
+│   │   │   ├── female_dovetail.scad   # ✅ with_catch_windows param
+│   │   │   ├── dimensions.scad        # ✅ Shared dovetail parameters
+│   │   │   └── test_jig.scad          # ✅ Test pieces for print validation
 │   │   │
 │   │   ├── mounting/                  # Rapid panel mounting system
 │   │   │   ├── quick_release_latch.scad # ❌ Single-action panel release
@@ -119,7 +118,7 @@ keystone-hardware/
 │       └── honeycomb.scad             # ✅ Ventilation pattern
 │
 ├── assemblies/                        # Full assembly files
-│   ├── pico.scad                      # ❌ Ultra-compact Pico config
+│   ├── pico.scad                      # ✅ Ultra-compact Pico config (two-shell dovetail design)
 │   ├── minimal.scad                   # ❌ Complete barebones case
 │   ├── nas_2disk.scad                 # ❌ Base + 2-disk NAS stacked
 │   ├── nas_many.scad                  # ❌ Base + many-disk NAS stacked
@@ -430,11 +429,11 @@ Snap-fit dovetail system enabling tool-free case assembly and user-accessible op
 
 | Priority | Task | Dependency | Status | Notes |
 |----------|------|------------|--------|-------|
-| 7.1 | Male dovetail (clip) module | None | ❌ TODO | Trapezoidal rail with center slot flex arms, snap-fit catches |
-| 7.2 | Female dovetail (clip) module | None | ❌ TODO | Channel with boss, catch recesses for snap engagement |
-| 7.3 | Male dovetail (non-locking) module | None | ❌ TODO | Friction-fit only, no catches - structural alignment |
-| 7.4 | Female dovetail (non-locking) module | None | ❌ TODO | Channel without catch recesses - accepts non-locking male |
-| 7.5 | Dovetail test jig | 7.1-7.4 | ❌ TODO | Print test pieces to validate clearances and snap-fit |
+| 7.1 | Male dovetail (clip) module | None | ✅ Done | `male_dovetail(with_latch=true)` in `modules/util/dovetail/male_dovetail.scad` |
+| 7.2 | Female dovetail (clip) module | None | ✅ Done | `female_dovetail(with_catch_windows=true)` in `modules/util/dovetail/female_dovetail.scad` |
+| 7.3 | Male dovetail (non-locking) module | None | ✅ Done | `male_dovetail(with_latch=false)` - same module with parameter |
+| 7.4 | Female dovetail (non-locking) module | None | ✅ Done | `female_dovetail(with_catch_windows=false)` - same module with parameter |
+| 7.5 | Dovetail test jig | 7.1-7.4 | ✅ Done | `modules/util/dovetail/test_jig.scad` - all four variants for print validation |
 
 ---
 
@@ -446,34 +445,34 @@ Ultra-compact build with Pico ATX PSU. Smallest possible case at 176mm x 176mm x
 
 | Priority | Task | Dependency | Status | Notes |
 |----------|------|------------|--------|-------|
-| 8.1 | Pico ATX PSU model | None | ❌ TODO | ~60x50x10mm DC-DC converter PCB |
-| 8.2 | NH-L9 cooler model | None | ❌ TODO | 95x95x37mm, used in Pico config |
-| 8.3 | Barrel jack (5.5x2.5mm) model | None | ❌ TODO | DC input connector for external AC adapter |
-| 8.4 | Motherboard with Pico PSU assembly | 8.1, 8.2 | ❌ TODO | mobo + RAM + NH-L9 + Pico PSU combined |
+| 8.1 | Pico ATX PSU model | None | ✅ Done | `modules/components/power/psu_pico.scad` |
+| 8.2 | NH-L9 cooler model | None | ✅ Done | `modules/components/cpu_cooler_nh_l9.scad` |
+| 8.3 | Barrel jack (5.5x2.5mm) model | None | ✅ Done | `modules/components/power/barrel_jack_5_5x2_5.scad` |
+| 8.4 | Motherboard with Pico PSU assembly | 8.1, 8.2 | ✅ Done | `modules/components/motherboard/motherboard_full_pico.scad` |
 
 **Bottom Shell (Base Assembly):**
 
 | Priority | Task | Dependency | Status | Notes |
 |----------|------|------------|--------|-------|
-| 8.5 | Pico bottom panel | 7.3-7.4 | ❌ TODO | 176x176mm, integrated standoff recesses, female non-locking dovetails on front/side edges |
-| 8.6 | Pico back panel | 7.1-7.2 | ❌ TODO | Male dovetail (bottom edge to bottom panel), male clips (left/right edges to side panels) |
+| 8.5 | Pico bottom panel | 7.3-7.4 | ✅ Done | `modules/case/panels/standard/bottom_pico.scad` - all 4 edges with dovetails |
+| 8.6 | Pico back panel | 7.1-7.2 | ✅ Done | `modules/case/panels/standard/back_pico.scad` - bottom + left/right clip dovetails |
 
 **Top Shell (Upper Assembly):**
 
 | Priority | Task | Dependency | Status | Notes |
 |----------|------|------------|--------|-------|
-| 8.7 | Pico top panel | 7.1-7.2 | ❌ TODO | 176x176mm, female clips on front/left/right edges, ventilation over cooler |
-| 8.8 | Pico front panel | 7.1-7.4 | ❌ TODO | Male clip (top), male non-locking (bottom), power button hole |
-| 8.9 | Pico left side panel | 7.1-7.4 | ❌ TODO | Male clip (top), male non-locking (bottom), female clip (back edge) |
-| 8.10 | Pico right side panel | 7.1-7.4 | ❌ TODO | Male clip (top), male non-locking (bottom), female clip (back edge) |
+| 8.7 | Pico top panel | 7.1-7.2 | ✅ Done | `modules/case/panels/standard/top_pico.scad` - female clips on 3 edges |
+| 8.8 | Pico front panel | 7.1-7.4 | ✅ Done | `modules/case/panels/standard/front_pico.scad` - clip top, non-locking bottom |
+| 8.9 | Pico left side panel | 7.1-7.4 | ✅ Done | `modules/case/panels/standard/side_left_pico.scad` - all 3 edge dovetails |
+| 8.10 | Pico right side panel | 7.1-7.4 | ✅ Done | `modules/case/panels/standard/side_right_pico.scad` - all 3 edge dovetails |
 
 **Assembly:**
 
 | Priority | Task | Dependency | Status | Notes |
 |----------|------|------------|--------|-------|
-| 8.11 | Pico bottom shell assembly | 8.5, 8.6 | ❌ TODO | Bottom + back panel joined |
-| 8.12 | Pico top shell assembly | 8.7-8.10 | ❌ TODO | Top + front + sides joined via internal clips |
-| 8.13 | Full Pico case assembly | 8.4, 8.11, 8.12 | ❌ TODO | Complete case with all components, validate opening/closing |
+| 8.11 | Pico bottom shell assembly | 8.5, 8.6 | ✅ Done | Part of `assemblies/pico.scad` |
+| 8.12 | Pico top shell assembly | 8.7-8.10 | ✅ Done | Part of `assemblies/pico.scad` |
+| 8.13 | Full Pico case assembly | 8.4, 8.11, 8.12 | ✅ Done | `assemblies/pico.scad` - complete two-shell design |
 
 ---
 
