@@ -46,6 +46,11 @@ module top_panel_pico(
     right_dovetail_positions = [depth * 0.33, depth * 0.67];
     right_dovetail_x = width - wall_thickness - (dovetail_length / 2 + dovetail_clearance);
 
+    // Back edge dovetail positions (latchless - structural connection to back panel)
+    // Two dovetails at 25% and 75% of panel width
+    back_dovetail_positions = [width * 0.25, width * 0.75];
+    back_dovetail_y = depth - (dovetail_length / 2 + dovetail_clearance) - wall_thickness;
+
     union() {
         color("gray") {
             difference() {
@@ -85,6 +90,14 @@ module top_panel_pico(
                     rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
                     rotate([0, 0, 90])   // Channel faces -X (outward toward right edge)
                         female_dovetail(with_catch_windows = true);
+            }
+
+            // Back edge dovetails (latchless - structural connection to back panel)
+            // Boss extends downward (-Z), channel faces +Y (toward back panel)
+            for (x_pos = back_dovetail_positions) {
+                translate([x_pos, back_dovetail_y, 0])
+                    rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
+                        female_dovetail(with_catch_windows = false);  // Latchless for structural integrity
             }
         }
     }

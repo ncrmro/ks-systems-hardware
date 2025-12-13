@@ -4,6 +4,7 @@
 // DOVETAIL JOINTS (Top Shell Assembly):
 // - Male clip dovetails on top edge connect to top panel female clips (internal)
 // - Male clip dovetails on left/right edges connect to side panels (internal)
+// - Male latchless dovetails on bottom edge connect to bottom panel (internal)
 // - Per SPEC.md Section 9.6
 //
 // Standalone file for 3D printing - uses pico dimensions
@@ -37,10 +38,10 @@ module front_panel_pico(
     hdd_led_x = power_led_x + 10;
     hdd_led_z = power_btn_z;
 
-    // Raised lip dimensions
-    lip_height = wall_thickness;
-    lip_depth = wall_thickness;
-    lip_z_offset = wall_thickness;
+    // Retention lip dimensions
+    retention_lip_height = wall_thickness;
+    retention_lip_depth = wall_thickness;
+    retention_lip_z_offset = wall_thickness;
 
     // Dovetail positions on top edge (clip - connects to top panel)
     // Adjusted X positions to account for extended panel width
@@ -76,16 +77,6 @@ module front_panel_pico(
                     }
                 }
             }
-
-            // Bottom lip (protrudes backward into case)
-            translate([wall_thickness, panel_thickness, lip_z_offset]) {
-                cube([panel_width - 2 * wall_thickness, lip_depth, lip_height]);
-            }
-
-            // Top lip (protrudes backward into case)
-            translate([wall_thickness, panel_thickness, panel_height - wall_thickness - lip_height]) {
-                cube([panel_width - 2 * wall_thickness, lip_depth, lip_height]);
-            }
         }
 
         // Dovetails
@@ -111,6 +102,14 @@ module front_panel_pico(
                 translate([panel_width - wall_thickness, panel_thickness + dovetail_length / 2, side_dovetail_z])
                     rotate([0, -90, 0])
                         male_dovetail(with_latch = true);
+
+                // Bottom edge dovetails (latchless - connects to bottom panel)
+                // Rails extend downward toward -Z
+                for (x_pos = top_dovetail_positions) {
+                    translate([x_pos, panel_thickness + dovetail_length / 2, panel_thickness + dovetail_height])
+                        rotate([180, 0, 0])
+                            male_dovetail(with_latch = false);  // Latchless for easy shell separation
+                }
             }
         }
     }

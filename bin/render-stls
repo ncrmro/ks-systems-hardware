@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""Batch render OpenSCAD printable parts to STL files."""
+
+import argparse
+import fnmatch
+import os
+import subprocess
+import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).parent.parent
+
+PRINTABLE_PATTERNS = [
+    "modules/case/panels/standard/*.scad",
+    "modules/case/panels/gpu/*.scad",
+    "modules/case/frame/*.scad",
+    "modules/case/base/backplate_io.scad",
+    "modules/case/base/base_assembly*.scad",
+    "modules/case/gpu/*.scad",
+    "modules/case/nas_2disk/*.scad",
+    "modules/case/nas_many/*.scad",
+]
+
+EXCLUDED_FILES = {
+    "dimensions.scad",
+    "dimensions_minimal.scad",
+    "dimensions_pico.scad",
+    "case.scad",
+    "motherboard_plate.scad",
+}
+
+
+def get_printable_files() -> list[Path]:
+    """Find all printable .scad files based on PRINTABLE_PATTERNS."""
+    files = []
+    for pattern in PRINTABLE_PATTERNS:
+        for path in REPO_ROOT.glob(pattern):
+            if path.name not in EXCLUDED_FILES:
+                files.append(path)
+    return sorted(set(files))
+
+
+def filter_files(files: list[Path], pattern: str) -> list[Path]:
+    """Filter files by glob pattern or substring match."""
+    filtered = []
+    for f in files:
+        rel_path = str(f.relative_to(REPO_ROOT))
+        # Try glob match first, then substring
+        if fnmatch.fnmatch(rel_path, f"*{pattern}*") or fnmatch.fnmatch(f.name, pattern):
+            filtered.append(f)
+    return filtered
+
+
+def render_stl(scad_path: Path, output_dir: Path) -> tuple[Path, bool, str]:
+    """Render a single .scad file to STL. Returns (path, success, message)."""
+    rel_path = scad_path.relative_to(REPO_ROOT)
+    stl_name = str(rel_path).replace("/", "_").replace(".scad", ".stl")
+    output_path = output_dir / stl_name
+
+    try:
+        result = subprocess.run(
+            ["openscad", "-o", str(output_path), str(scad_path)],
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 minute timeout per file
+        )
+        if result.returncode == 0:
+            return (scad_path, True, f"OK: {rel_path}")
+        else:
+            return (scad_path, False, f"FAIL: {rel_path}\n{result.stderr}")
+    except subprocess.TimeoutExpired:
+        return (scad_path, False, f"TIMEOUT: {rel_path}")
+    except Exception as e:
+        return (scad_path, False, f"ERROR: {rel_path} - {e}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Batch render OpenSCAD printable parts to STL files."
+    )
+    parser.add_argument(
+        "-f", "--filter",
+        help="Filter files by pattern (glob or substring match)",
+    )
+    parser.add_argument(
+        "-j", "--jobs",
+        type=int,
+        default=os.cpu_count(),
+        help=f"Number of parallel workers (default: {os.cpu_count()})",
+    )
+    parser.add_argument(
+        "-o", "--output",
+        type=Path,
+        help="Output directory (default: ./tmp-stls)",
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List files that would be rendered without rendering",
+    )
+    args = parser.parse_args()
+
+    # Get and filter files
+    files = get_printable_files()
+    if args.filter:
+        files = filter_files(files, args.filter)
+
+    if not files:
+        print("No files match the filter criteria.", file=sys.stderr)
+        sys.exit(1)
+
+    # List mode
+    if args.list:
+        print(f"Files to render ({len(files)}):")
+        for f in files:
+            print(f"  {f.relative_to(REPO_ROOT)}")
+        sys.exit(0)
+
+    # Create output directory
+    if args.output:
+        output_dir = args.output
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        output_dir = Path("./tmp-stls")
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"Rendering {len(files)} files to {output_dir}")
+    print(f"Using {args.jobs} parallel workers\n")
+
+    # Render in parallel
+    success_count = 0
+    fail_count = 0
+
+    with ProcessPoolExecutor(max_workers=args.jobs) as executor:
+        futures = {
+            executor.submit(render_stl, f, output_dir): f for f in files
+        }
+
+        for future in as_completed(futures):
+            scad_path, success, message = future.result()
+            print(message)
+            if success:
+                success_count += 1
+            else:
+                fail_count += 1
+
+    # Summary
+    print(f"\nComplete: {success_count} succeeded, {fail_count} failed")
+    print(f"Output directory: {output_dir}")
+
+    sys.exit(0 if fail_count == 0 else 1)
+
+
+if __name__ == "__main__":
+    main()
