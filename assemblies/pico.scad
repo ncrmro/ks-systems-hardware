@@ -27,7 +27,19 @@ use <../modules/components/power/barrel_jack_5_5x2_5.scad>
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 10;  // Set > 0 to explode view (e.g., 20)
+explode = 0;  // Set > 0 to explode view (e.g., 20)
+
+// Individual panel visibility toggles
+show_bottom_panel = true;
+show_back_panel = true;
+show_front_panel = true;
+show_left_side_panel = false;
+show_right_side_panel = true;
+show_top_panel = true;
+
+// Individual component visibility toggles
+show_motherboard = false;
+show_barrel_jack = false;
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right
@@ -41,41 +53,53 @@ module pico_assembly() {
     base_z = wall_thickness;
 
     union() {
-        // === BASE ASSEMBLY (always visible - bottom panel + standoffs) ===
-        // Positioned at X=0, Y=wall_thickness (behind front panel, extends to cover back)
-        translate([0, wall_thickness, -explode]) {
-            base_assembly_pico();
-        }
-
         // === CASE PANELS ===
         if (show_panels) {
             // Back panel (full width, raised to sit on bottom panel)
             // X=0 (full exterior width), Y at exterior_panel_depth (173mm), Z raised by wall_thickness
-            translate([0, exterior_panel_depth + explode, wall_thickness]) {
-                back_panel_pico();
+            if (show_back_panel) {
+                translate([0, exterior_panel_depth + explode, wall_thickness]) {
+                    back_panel_pico();
+                }
             }
 
             // Front panel (extended width, pico height, with dovetails)
-            translate([0, -explode, 0]) {
-                front_panel_pico();
+            if (show_front_panel) {
+                translate([0, -explode, 0]) {
+                    front_panel_pico();
+                }
             }
 
-            // Left side panel (shortened height, raised to sit on bottom panel, with dovetails)
+            // Left side panel (flush with bottom panel, with dovetails)
             // Y=wall_thickness (behind front panel)
-            translate([-explode, wall_thickness, wall_thickness]) {
-                side_panel_pico(side = "left");
+            if (show_left_side_panel) {
+                translate([-explode, wall_thickness, wall_thickness]) {
+                    side_panel_pico(side = "left");
+                }
             }
 
-            // Right side panel (shortened height, raised to sit on bottom panel, with dovetails)
+            // Right side panel (flush with bottom panel, with dovetails)
             // Y=wall_thickness (behind front panel)
-            translate([pico_case_width - wall_thickness + explode, wall_thickness, wall_thickness]) {
-                side_panel_pico(side = "right");
+            if (show_right_side_panel) {
+                translate([pico_case_width - wall_thickness + explode, wall_thickness, wall_thickness]) {
+                    side_panel_pico(side = "right");
+                }
             }
 
             // Top panel (full exterior width/depth, covers side panels from above, with dovetails)
             // Positioned at X=0, Y=wall_thickness (behind front panel)
-            translate([0, wall_thickness, pico_exterior_height - wall_thickness + explode]) {
-                top_panel_pico();
+            if (show_top_panel) {
+                translate([0, wall_thickness, pico_exterior_height - wall_thickness + explode]) {
+                    top_panel_pico();
+                }
+            }
+        }
+
+        // Bottom panel (with standoffs)
+        // Positioned at X=0, Y=wall_thickness (behind front panel, extends to cover back)
+        if (show_bottom_panel) {
+            translate([0, wall_thickness, 0]) {
+                base_assembly_pico();
             }
         }
 
@@ -86,20 +110,24 @@ module pico_assembly() {
             // X offset: wall_thickness (to clear left side panel)
             // Y offset: wall_thickness (behind front panel, matches bottom panel positioning)
             // Z offset: wall_thickness (panel) + standoff_height (standoff)
-            translate([wall_thickness, wall_thickness, wall_thickness + standoff_height]) {
-                motherboard_full_pico();
+            if (show_motherboard) {
+                translate([wall_thickness, wall_thickness, wall_thickness + standoff_height]) {
+                    motherboard_full_pico();
+                }
             }
 
             // Barrel jack power connector (mounted in back panel)
             // Position matches the hole in back_panel_pico
             // Rotated 180° around X so barrel socket faces exterior (+Y direction)
-            translate([
-                wall_thickness + pico_barrel_jack_x,
-                exterior_panel_depth + wall_thickness + explode,
-                wall_thickness + pico_barrel_jack_z
-            ]) {
-                rotate([180, 0, 0]) {
-                    barrel_jack_5_5x2_5();
+            if (show_barrel_jack) {
+                translate([
+                    wall_thickness + pico_barrel_jack_x,
+                    exterior_panel_depth + wall_thickness + explode,
+                    wall_thickness + pico_barrel_jack_z
+                ]) {
+                    rotate([180, 0, 0]) {
+                        barrel_jack_5_5x2_5();
+                    }
                 }
             }
         }

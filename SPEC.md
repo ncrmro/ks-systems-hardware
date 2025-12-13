@@ -292,6 +292,39 @@ The case uses a two-shell dovetail assembly system for tool-free construction wi
 *   **Primary Material:** 3D printed (PLA or PETG)
 *   **Wall Thickness:** 3mm (standard panels), 6mm where dovetail boss required
 
+#### 9.2.1. Retention Lip System
+
+The front and side panels incorporate internal retention lips that extend into the case interior, providing additional structural rigidity and alignment between panels:
+
+**Retention Lip Geometry:**
+*   **Dimensions:** 3mm (width) × 3mm (height)
+*   **Position:** Bottom lip at Z=3mm, top lip at Z=(panel_height - 6mm)
+*   **Orientation:** Protrudes inward from panel interior face
+*   **Purpose:** Provides panel-to-panel alignment and prevents racking/flexing
+
+**Front Panel Retention Lips:**
+*   **Location:** Interior face along bottom and top edges
+*   **Length:** Extends across panel width minus 2×wall_thickness (excludes side edges)
+*   **Function:** Aligns with bottom panel edge, provides structural stiffness
+
+**Side Panel Retention Lips:**
+*   **Location:** Interior face running front-to-back
+*   **Length:** Full panel depth (170mm) plus extension tongues
+*   **Extension Tongues:** 3mm × 3mm × 3mm tabs extending beyond panel back edge
+*   **Function:** Tongues fit into back panel slots for precise alignment
+
+**Back Panel Retention Lip Slots:**
+*   **Location:** Left and right edges of back panel interior face
+*   **Dimensions per slot:** 6mm (width) × 3.2mm (depth) × 3mm (height)
+*   **Position:** Bottom slot at Z=3mm, top slot at Z=(panel_height - 6mm)
+*   **Width:** Extends 2×wall_thickness to accommodate side panel thickness + tongue
+*   **Function:** Receives side panel extension tongues for panel-to-panel locking
+
+**Assembly Interaction:**
+1. Side panel tongues slide into back panel slots as top shell moves backward
+2. Retention lips prevent vertical panel movement and distribute stress
+3. Tongue-and-slot connection adds mechanical interlock beyond dovetails alone
+
 ### 9.3. Dovetail Joint Geometry
 
 The dovetail joint system uses chamfered trapezoidal profiles with integrated snap-fit latches:
@@ -345,7 +378,16 @@ The female dovetail is a trapezoidal channel cut into panel edges:
 
 **Dovetail Types:**
 *   **Clip:** Has snap-fit catches for secure locking
-*   **Non-locking:** Friction-fit only, no catches - provides structural alignment
+*   **Non-locking:** Friction-fit only, no catches - provides structural alignment and rigidity
+
+**Structural Integrity via Non-Locking Dovetails:**
+
+The case uses non-locking (friction-fit) dovetails at specific panel connections to provide structural rigidity while allowing easy assembly and disassembly:
+
+*   **Front-to-Bottom Connection:** Male dovetails on the front panel's bottom edge fit into female channels on the bottom panel. These provide vertical alignment and prevent panel flex at the bottom of the front panel.
+*   **Top-to-Back Connection:** Male dovetails on the back panel's top edge fit into female channels on the top panel. These provide vertical alignment at the case's rear-top corner and prevent the back panel from racking under load.
+
+Both of these structural connections use non-locking dovetails (without snap-fit catches) to allow the panels to separate freely when needed, while providing the rigidity that a simple butt joint cannot offer. This design ensures the case remains square and rigid without requiring complex fasteners.
 
 **Bottom Shell (Base Assembly):**
 
@@ -366,6 +408,7 @@ The female dovetail is a trapezoidal channel cut into panel edges:
 | Top | Front edge | Female (clip) | Front panel top | Internal |
 | Top | Left edge | Female (clip) | Left side top | Internal |
 | Top | Right edge | Female (clip) | Right side top | Internal |
+| Top | Back edge | Female (non-locking) | Back panel top | Internal |
 | Front | Top edge | Male (clip) | Top panel front | Internal |
 | Front | Bottom edge | Male (non-locking) | Bottom panel front | Internal |
 | Left Side | Top edge | Male (clip) | Top panel left | Internal |
@@ -374,16 +417,19 @@ The female dovetail is a trapezoidal channel cut into panel edges:
 | Right Side | Top edge | Male (clip) | Top panel right | Internal |
 | Right Side | Bottom edge | Male (non-locking) | Bottom panel right | Internal |
 | Right Side | Back edge | Female (clip) | Back panel right | External |
+| Back | Top edge | Male (non-locking) | Top panel back | Internal |
 
 **Assembly Order (Top Shell):**
 1. Connect front panel to both side panels (front male clips → side female clips at front edges)
 2. Lower top panel onto the front+sides sub-assembly (side/front male clips → top female clips)
+3. Connect top panel back edge into back panel top (top female channels → back male dovetails for structural rigidity)
 
 **Full Case Assembly:**
 1. Assemble bottom shell: Insert back panel male dovetail into bottom panel female channel
-2. Assemble top shell: Connect front and sides, then attach top panel
+2. Assemble top shell: Connect front, sides, and attach top panel (including back edge connection for rigidity)
 3. Place top shell onto bottom panel (non-locking dovetails align at front/side bottom edges)
 4. Slide top shell back until side panel female clips engage with back panel male clips (audible click)
+   - This final locking action also seats the top-to-back structural dovetails
 
 ### 9.7. Print Orientation
 
