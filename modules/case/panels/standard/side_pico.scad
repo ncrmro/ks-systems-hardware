@@ -6,6 +6,7 @@
 // - Male clip dovetails on top edge connect to top panel female clips (internal)
 // - Female clip dovetails on back edge connect to back panel male clips (EXTERNAL)
 //   These are user-accessible release points
+// - Female clip dovetails on front edge connect to front panel male clips (internal)
 // - Per SPEC.md Section 9.6
 //
 // Standalone file for 3D printing - uses pico dimensions
@@ -14,25 +15,35 @@ include <../../dimensions_pico.scad>
 include <../../../util/dovetail/dimensions.scad>
 use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/male_dovetail.scad>
+use <../../../util/dovetail/female_dovetail.scad>
 use <../../../util/dovetail/female_dovetail_pocket.scad>
 
 module side_panel_pico(
     side = "left",                 // "left" or "right"
     depth = side_panel_depth,      // 176mm - extends to cover back panel
     height = side_panel_height,    // ~57mm - shortened to sit between top/bottom panels
+    ventilation = false,           // Honeycomb ventilation
+    center_cutout = true,          // Simple rectangular cutout (alternative to honeycomb)
     with_dovetails = true
 ) {
     is_left = (side == "left");
 
     // Panel dimensions (exterior, forms outer wall)
-    panel_depth = depth - wall_thickness;  // Shortened 3mm from front
-    panel_height = height;
+    panel_depth = depth - 2 * wall_thickness;  // Shortened 3mm from front and back
+    panel_height = height;  // Extended to be flush with front panel
     panel_thickness = wall_thickness;      // 3mm
 
     // Honeycomb area (leave border around edges)
-    vent_border = 10;
-    vent_width = panel_depth - 2 * vent_border;
-    vent_height = panel_height - 2 * vent_border;
+    vent_border_y = 35;  // Front/back border (depth dimension) - reduced by ~1/3
+    vent_border_z = 10;  // Top/bottom border (height dimension)
+    vent_width = panel_depth - 2 * vent_border_y;
+    vent_height = panel_height - 2 * vent_border_z;
+
+    // Center cutout dimensions (simple rectangular cutout alternative)
+    cutout_width = 90;   // Y dimension
+    cutout_height = 30;  // Z dimension
+    cutout_y = (panel_depth - cutout_width) / 2;
+    cutout_z = (panel_height - cutout_height) / 2;
 
     // Top edge dovetail positions (clip - connects to top panel)
     top_dovetail_positions = [panel_depth * 0.33, panel_depth * 0.67];
@@ -41,6 +52,9 @@ module side_panel_pico(
     // Single clip connects to back panel male clip
     back_dovetail_position = panel_height * 0.5;
 
+    // Front edge dovetail position (female clip - connects to front panel male clip)
+    front_dovetail_position = panel_height * 0.5;
+
     // Dovetail channel length (shared calculation)
     channel_length = dovetail_length + 2 * dovetail_clearance;
 
@@ -48,6 +62,13 @@ module side_panel_pico(
     // After rotation, the pocket's opening faces +Y
     // Position so opening is flush with panel back edge
     back_dovetail_y = panel_depth - channel_length/2;
+
+    // Front dovetail Y position - opening faces -Y, flush with front edge
+    front_dovetail_y = channel_length/2;
+
+    // Retention lip dimensions (matches front panel)
+    retention_lip_width = wall_thickness;  // Protrudes inward
+    retention_lip_height = wall_thickness;
 
     // Internal module builds geometry as "left" panel
     // Right panel is created by mirroring this geometry
@@ -58,8 +79,17 @@ module side_panel_pico(
                     cube([panel_thickness, panel_depth, panel_height]);
 
                     // Ventilation honeycomb
-                    translate([0, vent_border, vent_border]) {
-                        honeycomb_yz(honeycomb_radius, panel_thickness, vent_width, vent_height);
+                    if (ventilation) {
+                        translate([0, vent_border_y, vent_border_z]) {
+                            honeycomb_yz(honeycomb_radius, panel_thickness, vent_width, vent_height);
+                        }
+                    }
+
+                    // Center rectangular cutout (alternative to honeycomb)
+                    if (center_cutout) {
+                        translate([-0.1, cutout_y, cutout_z]) {
+                            cube([panel_thickness + 0.2, cutout_width, cutout_height]);
+                        }
                     }
 
                     // Cutout for back dovetail (goes through panel)
@@ -77,12 +107,13 @@ module side_panel_pico(
                             cube([panel_thickness + 0.2, boss_depth + 0.1, boss_width]);
                     }
                 }
+
             }
 
             // Dovetails (all positioned for left panel)
             if (with_dovetails) {
                 // Top edge dovetails (clip - connects to top panel female clips)
-                // Rails extend from top edge upward toward +Z
+                // Positioned flush with top edge
                 for (y_pos = top_dovetail_positions) {
                     translate([panel_thickness + dovetail_length / 2, y_pos, panel_height])
                         rotate([180, 0, 90])
@@ -94,6 +125,12 @@ module side_panel_pico(
                 translate([0, back_dovetail_y, back_dovetail_position])
                     rotate([0, -90, 180])
                         female_dovetail_pocket(with_catch_windows = true);
+
+                // Front edge dovetail (female clip - INTERNAL non-visible)
+                // On interior side, offset inward by dovetail_height
+                translate([panel_thickness + dovetail_height, front_dovetail_y, front_dovetail_position])
+                    rotate([0, -90, 0])
+                        female_dovetail(with_catch_windows = true);
             }
         }
     }
