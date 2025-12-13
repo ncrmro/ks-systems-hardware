@@ -43,6 +43,10 @@ module back_panel_pico(
     // Single clip per side - main release mechanism for the two-shell assembly
     side_dovetail_position = panel_height * 0.5;
 
+    // Top edge dovetail positions (latchless - structural connection to top panel)
+    // Two dovetails at 25% and 75% of panel width, positioned at top edge
+    top_dovetail_positions = [width * 0.25, width * 0.75];
+
     color("red") {
         difference() {
             // Back panel
@@ -59,11 +63,12 @@ module back_panel_pico(
             }
 
             // Barrel jack hole (offset by wall_thickness for extended panel width)
-            translate([wall_thickness + barrel_x, -0.1, barrel_z]) {
-                rotate([-90, 0, 0]) {
-                    cylinder(h = panel_thickness + 0.2, d = barrel_diameter, $fn = 20);
-                }
-            }
+            // translate([wall_thickness + barrel_x, -0.1, barrel_z]) {
+            //     rotate([-90, 0, 0]) {
+            //         cylinder(h = panel_thickness + 0.2, d = barrel_diameter, $fn = 20);
+            //     }
+            // }
+
         }
     }
 
@@ -81,16 +86,28 @@ module back_panel_pico(
             }
 
             // Left edge dovetail (clip - EXTERNAL user-accessible release)
-            // Rail faces front (-Y), positioned on inside face like bottom dovetails
+            // Rail faces front (-Y), positioned flush with side panel edge
             translate([0, -dovetail_length/2, side_dovetail_position])
-                rotate([0, 90, 180])  // Rail faces -Y (front), cross-section rotated
+                rotate([0, -90, 180])  // Rail faces -Y (front), cross-section rotated
                     male_dovetail(with_latch = true);  // Clip for snap-fit
 
             // Right edge dovetail (clip - EXTERNAL user-accessible release)
-            // Rail faces front (-Y), positioned on inside face like bottom dovetails
+            // Rail faces front (-Y), positioned flush with side panel edge
             translate([panel_width, -dovetail_length/2, side_dovetail_position])
-                rotate([0, -90, 180])  // Rail faces -Y (front), mirrored orientation
+                rotate([0, 90, 180])  // Rail faces -Y (front), mirrored orientation
                     male_dovetail(with_latch = true);  // Clip for snap-fit
+        }
+    }
+
+    // Male dovetails on top edge (latchless - structural connection to top panel)
+    // Rails extend upward (+Z), positioned flush with top edge of panel
+    if (with_dovetails) {
+        color("red") {
+            for (x_pos = top_dovetail_positions) {
+                translate([x_pos, -dovetail_length/2, panel_height - dovetail_height])
+                    rotate([0, 0, 0])
+                        male_dovetail(with_latch = false);  // Latchless for structural integrity
+            }
         }
     }
 }
