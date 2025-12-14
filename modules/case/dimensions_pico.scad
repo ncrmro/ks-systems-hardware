@@ -1,12 +1,12 @@
 // Pico Configuration Dimensions
 // Ultra-compact case using Pico ATX PSU and NH-L9 cooler
-// Case dimensions: 176mm x 176mm x ~63mm
+// Case dimensions: 180mm x 176mm x ~63mm
 // No PSU compartment (Pico ATX is on-board with external AC adapter)
 
 include <dimensions.scad>
 
 // --- Pico Case Dimensions ---
-pico_case_width = mobo_width + 2 * wall_thickness;   // 176mm (minimal, no PSU compartment)
+pico_case_width = mobo_width + 2 * wall_thickness + 4;   // 180mm (extra 4mm for the 24 pin atx male power supply connector clip)
 pico_case_depth = mobo_depth + 2 * wall_thickness;   // 176mm
 
 // --- CPU Cooler (Noctua NH-L9i/NH-L9a) ---

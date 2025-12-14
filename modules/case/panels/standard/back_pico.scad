@@ -16,7 +16,7 @@ use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/male_dovetail.scad>
 
 module back_panel_pico(
-    width = front_back_panel_width + 2 * wall_thickness,  // 176mm - flush with side walls
+    width = front_back_panel_width + 2 * wall_thickness,  // Derive length from shared dimensions + side walls
     height = back_panel_height,                // ~57mm - shortened to sit between top/bottom panels
     barrel_x = pico_barrel_jack_x,
     barrel_z = pico_barrel_jack_z,
@@ -35,9 +35,9 @@ module back_panel_pico(
 
     // Dovetail positions on bottom edge (match bottom panel positions)
     // Male rails extend downward (-Z), positioned to align with female channels
-    // Back panel is full exterior width (176mm) and positioned at X=0 in assembly
-    // Bottom panel positions: width * 0.25 and width * 0.75 (at 176mm: 44mm and 132mm)
-    bottom_dovetail_positions = [exterior_panel_width * 0.25, exterior_panel_width * 0.75];
+    // Back panel is full exterior width (derived from shared dimensions) and positioned at X=0 in assembly
+    // Bottom panel positions: width * 0.25 and width * 0.75
+    bottom_dovetail_positions = [panel_width * 0.25, panel_width * 0.75];
 
     // Left/right edge dovetail position (clip - EXTERNAL user-accessible release)
     // Single clip per side - main release mechanism for the two-shell assembly
@@ -45,7 +45,7 @@ module back_panel_pico(
 
     // Top edge dovetail positions (latchless - structural connection to top panel)
     // Two dovetails at 25% and 75% of panel width, positioned at top edge
-    top_dovetail_positions = [width * 0.75];
+    top_dovetail_positions = [panel_width * 0.75];
 
     color("red") {
         difference() {
