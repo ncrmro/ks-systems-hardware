@@ -6,12 +6,12 @@
 module info_embosser(
     part_name = "Unnamed Part",
     version = "DEV",
-    designer = "Nicholas Romero",
+    designer = "NCRMRO",
     year = 2025,
-    location = "houston, tx",
-    text_size = 1,
-    emboss_height = 0.6,
-    line_spacing = 1.2, // Multiplier on text_size
+    location = "HTX",
+    text_size = 3,
+    emboss_height = .4,
+    line_spacing = 2, // Multiplier on text_size
     font = "Liberation Sans:style=Bold",
     spacing = 1, // Letter spacing multiplier
     halign = "left" // Use "right" to anchor to a right margin
@@ -19,10 +19,8 @@ module info_embosser(
     version_value = is_undef(emboss_version) ? version : emboss_version;
 
     lines = [
-        str("PART: ", part_name),
-        str("VER: ", version_value),
-        str("Designed/Manufactured by ", designer),
-        str(year, " ", location)
+        str("PART: ", version_value, " ", part_name),
+        str(location, " ", designer, " ", year )
     ];
 
     y_step = text_size * line_spacing;
