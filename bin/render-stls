@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Batch render OpenSCAD printable parts to STL files."""
+"""Render STLs for Keystone Hardware, with optional release automation."""
 
 import argparse
 import fnmatch
@@ -7,9 +7,13 @@ import os
 import subprocess
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from datetime import date
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 REPO_ROOT = Path(__file__).parent.parent
+DEFAULT_OUTPUT_DIR = Path("./tmp-stls")
+EMBOSS_VERSION = f"v{date.today().isoformat()}"
 
 PRINTABLE_PATTERNS = [
     "modules/case/panels/standard/*.scad",
@@ -29,6 +33,82 @@ EXCLUDED_FILES = {
     "case.scad",
     "motherboard_plate.scad",
 }
+
+
+def load_env():
+    """Load environment variables from .env into os.environ if present."""
+    env_path = REPO_ROOT / ".env"
+    if not env_path.exists():
+        return
+    with env_path.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip())
+
+
+def run_cmd(args, cwd=None, env=None, check=True, capture=True):
+    """Run a subprocess command with consistent error handling."""
+    result = subprocess.run(
+        args,
+        cwd=cwd,
+        env=env,
+        capture_output=capture,
+        text=True,
+    )
+    if check and result.returncode != 0:
+        msg = result.stderr.strip() or result.stdout.strip()
+        raise RuntimeError(f"Command failed: {' '.join(args)}\n{msg}")
+    return result
+
+
+def ensure_clean_main_branch():
+    """Ensure git status is clean and on main branch."""
+    status = run_cmd(["git", "status", "--porcelain"]).stdout.strip()
+    if status:
+        raise RuntimeError("Release requires a clean working tree (no uncommitted changes).")
+
+    branch = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"]).stdout.strip()
+    if branch != "main":
+        raise RuntimeError("Release must be run from the main branch.")
+
+
+def latest_semver_tag() -> str:
+    """Return the latest v*.*.* tag, or v0.0.0 if none exist."""
+    result = run_cmd(["git", "tag", "--list", "v*.*.*"])
+    tags = [t.strip() for t in result.stdout.splitlines() if t.strip()]
+    if not tags:
+        return "v0.0.0"
+    tags.sort(key=lambda v: [int(x) for x in v.lstrip("v").split(".")])
+    return tags[-1]
+
+
+def bump_tag(kind: str) -> str:
+    """Bump the latest semver tag."""
+    latest = latest_semver_tag()
+    major, minor, patch = [int(x) for x in latest.lstrip("v").split(".")]
+    if kind == "major":
+        major += 1
+        minor = 0
+        patch = 0
+    elif kind == "minor":
+        minor += 1
+        patch = 0
+    elif kind == "patch":
+        patch += 1
+    else:
+        raise ValueError("release kind must be one of: major, minor, patch")
+    return f"v{major}.{minor}.{patch}"
+
+
+def create_tag(tag: str):
+    """Create an annotated git tag."""
+    existing = run_cmd(["git", "tag", "--list", tag]).stdout.strip()
+    if existing:
+        raise RuntimeError(f"Tag {tag} already exists.")
+    run_cmd(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
 
 
 def get_printable_files() -> list[Path]:
@@ -60,7 +140,14 @@ def render_stl(scad_path: Path, output_dir: Path) -> tuple[Path, bool, str]:
 
     try:
         result = subprocess.run(
-            ["openscad", "-o", str(output_path), str(scad_path)],
+            [
+                "openscad",
+                "-D",
+                f'emboss_version="{EMBOSS_VERSION}"',
+                "-o",
+                str(output_path),
+                str(scad_path),
+            ],
             capture_output=True,
             text=True,
             timeout=300,  # 5 minute timeout per file
@@ -73,6 +160,97 @@ def render_stl(scad_path: Path, output_dir: Path) -> tuple[Path, bool, str]:
         return (scad_path, False, f"TIMEOUT: {rel_path}")
     except Exception as e:
         return (scad_path, False, f"ERROR: {rel_path} - {e}")
+
+
+def render_stls(files: list[Path], output_dir: Path, jobs: int) -> tuple[int, int]:
+    """Render multiple STLs in parallel. Returns (success_count, fail_count)."""
+    print(f"Rendering {len(files)} files to {output_dir}")
+    success_count = 0
+    fail_count = 0
+
+    with ProcessPoolExecutor(max_workers=jobs) as executor:
+        futures = {executor.submit(render_stl, f, output_dir): f for f in files}
+
+        for future in as_completed(futures):
+            scad_path, success, message = future.result()
+            print(message)
+            if success:
+                success_count += 1
+            else:
+                fail_count += 1
+
+    print(f"\nComplete: {success_count} succeeded, {fail_count} failed")
+    print(f"Output directory: {output_dir}")
+    return success_count, fail_count
+
+
+def run_screenshots():
+    """Invoke screenshot script."""
+    script = REPO_ROOT / "bin" / "screenshots"
+    if not script.exists():
+        print("Warning: screenshots script not found; skipping screenshots.")
+        return []
+    print("Running screenshots script...")
+    result = run_cmd([str(script)], check=False)
+    if result.returncode != 0:
+        raise RuntimeError(f"Screenshots script failed:\n{result.stderr}")
+    print("Screenshots complete.")
+    return sorted((REPO_ROOT / "screenshots").glob("*.png"))
+
+
+def build_release_notes(tag: str, stl_paths: list[Path], screenshot_paths: list[Path]) -> str:
+    """Create Markdown notes referencing screenshots."""
+    lines = [f"# {tag}", "", "## Screenshots"]
+    for shot in sorted(screenshot_paths):
+        lines.append(f"- ![{shot.stem}]({shot.name})")
+    lines.append("")
+    lines.append("## STLs")
+    for stl in sorted(stl_paths):
+        lines.append(f"- {stl.name}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def github_release(tag: str, stl_paths: list[Path], screenshot_paths: list[Path]):
+    """Create GitHub release and upload assets via gh CLI."""
+    all_assets = stl_paths + screenshot_paths
+    if not all_assets:
+        raise RuntimeError("No assets to upload for release.")
+
+    with NamedTemporaryFile("w", delete=False, suffix=".md") as tmp:
+        tmp.write(build_release_notes(tag, stl_paths, screenshot_paths))
+        notes_path = Path(tmp.name)
+
+    print(f"Creating GitHub release {tag} with {len(all_assets)} assets...")
+    args = [
+        "gh", "release", "create", tag,
+        "--title", tag,
+        "--notes-file", str(notes_path),
+    ]
+    args += [str(p) for p in all_assets]
+    result = run_cmd(args, check=False)
+    if result.returncode != 0:
+        raise RuntimeError(f"gh release create failed:\n{result.stderr}")
+    print("GitHub release created and assets uploaded.")
+
+
+def upload_r2(tag: str, files: list[Path]):
+    """Upload files to R2 via wrangler CLI using .env credentials."""
+    load_env()
+    bucket = os.environ.get("R2_BUCKET_NAME")
+    if not bucket:
+        print("Warning: R2_BUCKET_NAME not set; skipping R2 upload.")
+        return
+
+    prefix = f"releases/{tag}/"
+    print(f"Uploading {len(files)} assets to R2 bucket {bucket} ...")
+    for f in files:
+        key = f"{bucket}/{prefix}{f.name}"
+        cmd = ["wrangler", "r2", "object", "put", key, "--file", str(f)]
+        result = run_cmd(cmd, check=False)
+        if result.returncode != 0:
+            raise RuntimeError(f"wrangler upload failed for {f.name}:\n{result.stderr}")
+    print("R2 upload complete.")
 
 
 def main():
@@ -99,7 +277,21 @@ def main():
         action="store_true",
         help="List files that would be rendered without rendering",
     )
+    parser.add_argument(
+        "--release",
+        choices=["major", "minor", "patch"],
+        help="Perform a release: ensure clean main, bump tag, render, screenshot, upload assets",
+    )
     args = parser.parse_args()
+
+    # Release preflight
+    if args.release:
+        ensure_clean_main_branch()
+        new_tag = bump_tag(args.release)
+        print(f"Preparing release {new_tag} ({args.release} bump)")
+        create_tag(new_tag)
+    else:
+        new_tag = None
 
     # Get and filter files
     files = get_printable_files()
@@ -122,34 +314,28 @@ def main():
         output_dir = args.output
         output_dir.mkdir(parents=True, exist_ok=True)
     else:
-        output_dir = Path("./tmp-stls")
+        output_dir = DEFAULT_OUTPUT_DIR
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Rendering {len(files)} files to {output_dir}")
+    # Render STLs
     print(f"Using {args.jobs} parallel workers\n")
+    success_count, fail_count = render_stls(files, output_dir, args.jobs)
+    if fail_count > 0:
+        sys.exit(1)
 
-    # Render in parallel
-    success_count = 0
-    fail_count = 0
+    # Non-release path exits here
+    if not args.release:
+        sys.exit(0)
 
-    with ProcessPoolExecutor(max_workers=args.jobs) as executor:
-        futures = {
-            executor.submit(render_stl, f, output_dir): f for f in files
-        }
+    # Release steps
+    screenshot_paths = run_screenshots()
+    stl_paths = sorted(output_dir.glob("*.stl"))
 
-        for future in as_completed(futures):
-            scad_path, success, message = future.result()
-            print(message)
-            if success:
-                success_count += 1
-            else:
-                fail_count += 1
+    github_release(new_tag, stl_paths, screenshot_paths)
+    upload_r2(new_tag, stl_paths)
 
-    # Summary
-    print(f"\nComplete: {success_count} succeeded, {fail_count} failed")
-    print(f"Output directory: {output_dir}")
-
-    sys.exit(0 if fail_count == 0 else 1)
+    print(f"Release {new_tag} complete.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
