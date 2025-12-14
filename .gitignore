@@ -7,3 +7,4 @@ tmp-stls/
 # Environment variables (contains secrets)
 .env
 !.env.example
+worktrees
