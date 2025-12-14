@@ -14,32 +14,32 @@ include <../modules/case/dimensions_pico.scad>
 // Case parts - all with dovetail joints for two-shell assembly
 use <../modules/case/base/base_assembly_pico.scad>
 use <../modules/case/panels/standard/back_pico.scad>
-use <../modules/case/panels/standard/side_pico.scad>
-use <../modules/case/panels/standard/top_pico.scad>
-use <../modules/case/panels/standard/front_pico.scad>
+use <pico_topshell.scad>  // Top shell sub-assembly (top + front + sides)
 
 // Motherboard assembly (includes motherboard, RAM, NH-L9 cooler, Pico PSU)
 use <../modules/components/motherboard/motherboard_full_pico.scad>
 
 // Power connector
 use <../modules/components/power/barrel_jack_5_5x2_5.scad>
+// Note: SSDs rendered via pico_topshell sub-assembly
 
 // Toggle visibility for debugging
 show_panels = true;
 show_components = true;
-explode = 0;  // Set > 0 to explode view (e.g., 20)
+explode = 5;  // Set > 0 to explode view (e.g., 20)
 
 // Individual panel visibility toggles
 show_bottom_panel = true;
 show_back_panel = true;
 show_front_panel = true;
-show_left_side_panel = false;
+show_left_side_panel = true;
 show_right_side_panel = true;
 show_top_panel = true;
 
 // Individual component visibility toggles
-show_motherboard = false;
+show_motherboard = true;
 show_barrel_jack = false;
+show_ssd = true;
 
 // === COORDINATE SYSTEM ===
 // X-axis: 0 = left side (front panel left edge), increases toward right
@@ -63,36 +63,17 @@ module pico_assembly() {
                 }
             }
 
-            // Front panel (extended width, pico height, with dovetails)
-            if (show_front_panel) {
-                translate([0, -explode, 0]) {
-                    front_panel_pico();
-                }
-            }
-
-            // Left side panel (flush with bottom panel, with dovetails)
-            // Y=wall_thickness (behind front panel)
-            if (show_left_side_panel) {
-                translate([-explode, wall_thickness, wall_thickness]) {
-                    side_panel_pico(side = "left");
-                }
-            }
-
-            // Right side panel (flush with bottom panel, with dovetails)
-            // Y=wall_thickness (behind front panel)
-            if (show_right_side_panel) {
-                translate([pico_case_width - wall_thickness + explode, wall_thickness, wall_thickness]) {
-                    side_panel_pico(side = "right");
-                }
-            }
-
-            // Top panel (full exterior width/depth, covers side panels from above, with dovetails)
-            // Positioned at X=0, Y=wall_thickness (behind front panel)
-            if (show_top_panel) {
-                translate([0, wall_thickness, pico_exterior_height - wall_thickness + explode]) {
-                    top_panel_pico();
-                }
-            }
+            // === TOP SHELL (front + sides + top panels + SSDs) ===
+            // Uses pico_topshell sub-assembly in "assembly" mode
+            pico_topshell(
+                explode_distance = explode,
+                with_ssd = show_ssd,
+                with_front = show_front_panel,
+                with_left_side = show_left_side_panel,
+                with_right_side = show_right_side_panel,
+                with_top = show_top_panel,
+                mode = "assembly"
+            );
         }
 
         // Bottom panel (with standoffs)
@@ -130,6 +111,8 @@ module pico_assembly() {
                     }
                 }
             }
+
+            // SSDs are now rendered by pico_topshell (mounted to top panel interior)
         }
     }
 }
