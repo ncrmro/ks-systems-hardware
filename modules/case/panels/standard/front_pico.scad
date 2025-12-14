@@ -44,6 +44,7 @@ module front_panel_pico(
     retention_lip_height = wall_thickness;
     retention_lip_depth = wall_thickness;
     retention_lip_z_offset = wall_thickness;
+    bottom_retention_lip_height = retention_lip_height + wall_thickness;  // Extend to brace bottom panel
 
     // Top edge dovetail positions (latchless - connects to top panel)
     // Adjusted X positions to account for extended panel width
@@ -52,6 +53,10 @@ module front_panel_pico(
     top_dovetail_positions = with_ssd_harness
         ? [width * 0.25]
         : [width * 0.25, width * 0.75];
+
+    // Bottom edge dovetail positions (always two - connects to bottom panel)
+    bottom_edge_dovetail_length = 9;  // Used for both position and module call
+    bottom_dovetail_positions = [width * 0.25, width * 0.75];
 
     // Side edge dovetail positions (connects to side panels)
     // Single dovetail centered on each side edge
@@ -86,12 +91,32 @@ module front_panel_pico(
 
             // Interior embossed label (top-right, inside face)
             text_inset_x = panel_width - wall_thickness - 6;
-            text_inset_z = panel_height - wall_thickness - 6;
+            text_inset_z = 21;
             translate([text_inset_x, panel_thickness, text_inset_z]) {
                 info_embosser(
-                    part_name = "Front Panel Pico"
+                    part_name = "CASE-FP-PICO"
                 );
             }
+
+            // Retention lips (panel stops) to brace side panels at top and bottom
+            // These extend inward from the left and right edges
+            // Inset by wall_thickness on X, 2*wall_thickness on Z
+
+            // Left side retention lip (top)
+            translate([wall_thickness, panel_thickness, panel_height - 2 * wall_thickness])
+                cube([wall_thickness, retention_lip_depth, retention_lip_height]);
+
+            // Left side retention lip (bottom)
+            translate([wall_thickness, panel_thickness, wall_thickness])
+                cube([wall_thickness, retention_lip_depth, bottom_retention_lip_height]);
+
+            // Right side retention lip (top)
+            translate([panel_width - 2 * wall_thickness, panel_thickness, panel_height - 2 * wall_thickness])
+                cube([wall_thickness, retention_lip_depth, retention_lip_height]);
+
+            // Right side retention lip (bottom)
+            translate([panel_width - 2 * wall_thickness, panel_thickness, wall_thickness])
+                cube([wall_thickness, retention_lip_depth, bottom_retention_lip_height]);
         }
 
         // Dovetails
@@ -108,22 +133,22 @@ module front_panel_pico(
 
                 // Left edge dovetail (connects to left side panel)
                 // Extends inward along +Y axis
-                translate([wall_thickness, panel_thickness + dovetail_length / 2, side_dovetail_z])
-                    rotate([0, 90, 0])
+                translate([wall_thickness * 2, panel_thickness + dovetail_length / 2, side_dovetail_z])
+                    rotate([0, -90, 0])
                         male_dovetail(with_latch = true);
 
                 // Right edge dovetail (connects to right side panel)
                 // Extends inward along +Y axis
-                translate([panel_width - wall_thickness, panel_thickness + dovetail_length / 2, side_dovetail_z])
-                    rotate([0, -90, 0])
+                translate([panel_width - wall_thickness * 2, panel_thickness + dovetail_length / 2, side_dovetail_z])
+                    rotate([0, 90, 0])
                         male_dovetail(with_latch = true);
 
                 // Bottom edge dovetails (latchless - connects to bottom panel)
                 // Rails extend downward toward -Z
-                for (x_pos = top_dovetail_positions) {
-                    translate([x_pos, panel_thickness + dovetail_length / 2, panel_thickness + dovetail_height])
+                for (x_pos = bottom_dovetail_positions) {
+                    translate([x_pos, panel_thickness + bottom_edge_dovetail_length / 2, panel_thickness + dovetail_height])
                         rotate([180, 0, 0])
-                            male_dovetail(with_latch = false);  // Latchless for easy shell separation
+                            male_dovetail(length = bottom_edge_dovetail_length, with_latch = false);
                 }
             }
         }

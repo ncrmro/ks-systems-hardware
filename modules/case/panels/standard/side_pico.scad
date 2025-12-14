@@ -24,7 +24,8 @@ module side_panel_pico(
     height = side_panel_height,    // ~57mm - shortened to sit between top/bottom panels
     ventilation = false,           // Honeycomb ventilation
     center_cutout = true,          // Simple rectangular cutout (alternative to honeycomb)
-    with_dovetails = true
+    with_dovetails = true,
+    with_ssd_harness = false       // When true, hides dovetails that conflict with SSDs
 ) {
     is_left = (side == "left");
 
@@ -46,7 +47,14 @@ module side_panel_pico(
     cutout_z = (panel_height - cutout_height) / 2;
 
     // Top edge dovetail positions (clip - connects to top panel)
-    top_dovetail_positions = [panel_depth * 0.33, panel_depth * 0.67];
+    // When SSD harness enabled:
+    //   - Left panel: hide back dovetail (back-left SSD clearance)
+    //   - Right panel: hide front dovetail (front-right SSD clearance)
+    top_dovetail_front = panel_depth * 0.33;
+    top_dovetail_back = panel_depth * 0.67;
+    top_dovetail_positions = with_ssd_harness
+        ? (is_left ? [top_dovetail_front] : [top_dovetail_back])
+        : [top_dovetail_front, top_dovetail_back];
 
     // Back edge dovetail position (female clip - EXTERNAL user-accessible release)
     // Single clip connects to back panel male clip
@@ -112,12 +120,13 @@ module side_panel_pico(
 
             // Dovetails (all positioned for left panel)
             if (with_dovetails) {
-                // Top edge dovetails (clip - connects to top panel female clips)
-                // Positioned flush with top edge
+                // Top edge dovetails (latchless - connects to top panel female clips)
+                // Positioned flush with top edge, 9mm length to match top panel
+                top_dovetail_length = 9;
                 for (y_pos = top_dovetail_positions) {
-                    translate([panel_thickness + dovetail_length / 2, y_pos, panel_height])
-                        rotate([180, 0, 90])
-                            male_dovetail(with_latch = true);
+                    translate([panel_thickness + top_dovetail_length / 2, y_pos, panel_height - dovetail_height])
+                        rotate([0, 0, 90])
+                            male_dovetail(length = top_dovetail_length, with_latch = false);
                 }
 
                 // Back edge dovetail (female clip with shelf - EXTERNAL user-accessible release)

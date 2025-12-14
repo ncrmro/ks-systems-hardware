@@ -38,8 +38,8 @@ module top_panel_pico(
     // When SSD divider enabled: hide right dovetail (front-right SSD clearance)
     front_edge_dovetail_length = 9;  // Used for both position and module call - keeps them in sync
     front_dovetail_positions = with_ssd_divider
-        ? [width * 0.25]
-        : [width * 0.25, width * 0.75];
+        ? [width * 0.25 + wall_thickness]  // Shift inward by one wall thickness
+        : [width * 0.25 + wall_thickness, width * 0.75 - wall_thickness];
     front_dovetail_y = front_edge_dovetail_length / 2 + dovetail_clearance;
 
     // Left edge dovetail positions (clip - internal top shell connection)
@@ -85,37 +85,33 @@ module top_panel_pico(
         // Bosses extend downward from inside face (Z=0) into case interior
         if (with_dovetails) {
             // Front edge dovetails (latchless - connects to front panel top edge)
-            // Boss extends downward (-Z), channel faces -Y (toward front panel)
+            // Boss extends upward (+Z), channel faces -Y (toward front panel)
             for (x_pos = front_dovetail_positions) {
-                translate([x_pos, front_dovetail_y, 0])
-                    rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
-                    rotate([0, 0, 180])  // Channel faces -Y (toward front edge)
-                        female_dovetail(length = front_edge_dovetail_length, with_catch_windows = false);
+                translate([x_pos, front_dovetail_y, -2 * panel_thickness])
+                    female_dovetail(length = front_edge_dovetail_length, with_catch_windows = false);
             }
 
             // Left edge dovetails (latchless - connects to left side panel top edge)
-            // Boss extends downward (-Z), channel faces +X (outward from panel center)
+            // Boss extends upward (+Z), channel faces -X (toward left edge)
             for (y_pos = left_dovetail_positions) {
-                translate([left_dovetail_x, y_pos, 0])
-                    rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
-                    rotate([0, 0, -90])  // Channel faces +X (outward toward left edge)
+                translate([left_dovetail_x, y_pos, -panel_thickness])
+                    rotate([0, 0, -90])  // Channel faces -X (toward left edge)
                         female_dovetail(length = side_edge_dovetail_length, with_catch_windows = false);
             }
 
             // Right edge dovetails (latchless - connects to right side panel top edge)
-            // Boss extends downward (-Z), channel faces -X (outward from panel center)
+            // Boss extends upward (+Z), channel faces +X (toward right edge)
             for (y_pos = right_dovetail_positions) {
-                translate([right_dovetail_x, y_pos, 0])
-                    rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
-                    rotate([0, 0, 90])   // Channel faces -X (outward toward right edge)
+                translate([right_dovetail_x, y_pos, -panel_thickness])
+                    rotate([0, 0, 90])   // Channel faces +X (toward right edge)
                         female_dovetail(length = side_edge_dovetail_length, with_catch_windows = false);
             }
 
             // Back edge dovetails (latchless - structural connection to back panel)
-            // Boss extends downward (-Z), channel faces +Y (toward back panel)
+            // Boss extends upward (+Z), channel faces +Y (toward back panel)
             for (x_pos = back_dovetail_positions) {
-                translate([x_pos, back_dovetail_y, 0])
-                    rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
+                translate([x_pos, back_dovetail_y, -panel_thickness])
+                    rotate([0, 0, 180])  // Channel faces +Y (toward back edge)
                         female_dovetail(length = back_edge_dovetail_length, with_catch_windows = false);
             }
         }
@@ -133,8 +129,8 @@ module top_panel_pico(
 
             // Horizontal lip along front edge of SSD 1 (back-left SSD)
             // SSD 1 origin is near back edge, extends 69.85mm in -Y (width after rotation)
-            // This lip runs along X at the front edge of SSD 1, inset 3 wall thicknesses
-            ssd1_front_y = panel_depth - ssd_2_5_width - 3 * wall_thickness;
+            // This lip runs along X at the front edge of SSD 1, inset 2 wall thicknesses
+            ssd1_front_y = panel_depth - ssd_2_5_width - 2 * wall_thickness;
 
             // Screw channel positions along the lip (SSD hole positions from SFF-8201)
             ssd1_lip_start_x = wall_thickness;
@@ -159,8 +155,7 @@ module top_panel_pico(
             // Vertical divider (separates back-left and front-right SSD zones)
             // Position after SSD 1's length (rotated -90°, so length runs along X)
             // SSD 1 starts at X=wall_thickness, extends 100mm in +X
-            // Ends 20mm past the inside edge of back SSD
-            // Also serves as mounting lip for SSD 2 (front-right, length along Y)
+            // Also serves as left mounting lip for SSD 2 (front-right, length along Y)
             divider_x = ssd_2_5_length + wall_thickness;
             divider_length = ssd1_front_y + 20;
 
@@ -170,14 +165,30 @@ module top_panel_pico(
                 ssd_2_5_hole_rear    // Rear hole: 90.6mm from front
             ];
 
+            // Left lip for SSD 2
             color("gray")
             difference() {
                 translate([divider_x, 0, -divider_height])
                     cube([divider_thickness, divider_length, divider_height]);
 
-                // Screw channels for SSD 2 (vertical slots with 3mm bridge at bottom)
+                // Screw channels for SSD 2 left side (vertical slots with 3mm bridge at bottom)
                 for (y_pos = ssd2_channel_positions) {
                     translate([divider_x - 0.1, y_pos - channel_width/2, -divider_height + channel_bridge])
+                        cube([channel_depth, channel_width, divider_height - channel_bridge + 0.1]);
+                }
+            }
+
+            // Right lip for SSD 2 (button head screws on right side)
+            ssd2_right_lip_x = divider_x + divider_thickness + ssd_2_5_width + 2;  // 2mm gap for button screws
+            ssd2_right_lip_length = ssd_2_5_length;  // Match SSD length along Y
+            color("gray")
+            difference() {
+                translate([ssd2_right_lip_x, 0, -divider_height])
+                    cube([divider_thickness, ssd2_right_lip_length, divider_height]);
+
+                // Screw channels for SSD 2 right side
+                for (y_pos = ssd2_channel_positions) {
+                    translate([ssd2_right_lip_x - 0.1, y_pos - channel_width/2, -divider_height + channel_bridge])
                         cube([channel_depth, channel_width, divider_height - channel_bridge + 0.1]);
                 }
             }
