@@ -12,11 +12,13 @@
 include <../../dimensions_pico.scad>
 include <../../../util/dovetail/dimensions.scad>
 use <../../../util/dovetail/male_dovetail.scad>
+use <../../../util/info_embosser.scad>
 
 module front_panel_pico(
     width = front_back_panel_width + 2 * wall_thickness,  // Extended width to cover side panel edges
     height = front_back_panel_height,                      // ~63mm (full height)
-    with_dovetails = true
+    with_dovetails = true,
+    with_ssd_harness = false       // When true, hides top-right dovetail for SSD clearance
 ) {
     // Panel dimensions
     panel_width = width;
@@ -43,9 +45,13 @@ module front_panel_pico(
     retention_lip_depth = wall_thickness;
     retention_lip_z_offset = wall_thickness;
 
-    // Dovetail positions on top edge (clip - connects to top panel)
+    // Top edge dovetail positions (latchless - connects to top panel)
     // Adjusted X positions to account for extended panel width
-    top_dovetail_positions = [width * 0.25, width * 0.75];
+    // When SSD harness enabled: hide right dovetail (front-right SSD clearance)
+    top_edge_dovetail_length = 9;  // Used for both position and module call - keeps them in sync
+    top_dovetail_positions = with_ssd_harness
+        ? [width * 0.25]
+        : [width * 0.25, width * 0.75];
 
     // Side edge dovetail positions (connects to side panels)
     // Single dovetail centered on each side edge
@@ -77,18 +83,27 @@ module front_panel_pico(
                     }
                 }
             }
+
+            // Interior embossed label (top-right, inside face)
+            text_inset_x = panel_width - wall_thickness - 6;
+            text_inset_z = panel_height - wall_thickness - 6;
+            translate([text_inset_x, panel_thickness, text_inset_z]) {
+                info_embosser(
+                    part_name = "Front Panel Pico"
+                );
+            }
         }
 
         // Dovetails
         if (with_dovetails) {
             color("gray") {
-                // Top edge dovetails (clip - connects to top panel female clips)
+                // Top edge dovetails (latchless - connects to top panel female clips)
                 // Rails extend outward along +Y axis (into case)
                 // Positioned beneath top edge by panel thickness
                 for (x_pos = top_dovetail_positions) {
-                    translate([x_pos, panel_thickness + dovetail_length / 2, panel_height - dovetail_height - wall_thickness])
+                    translate([x_pos, panel_thickness + top_edge_dovetail_length / 2, panel_height - dovetail_height - wall_thickness])
                         rotate([0, 0, 0])
-                            male_dovetail(with_latch = true);  // Clip for top shell connection
+                            male_dovetail(length = top_edge_dovetail_length, with_latch = false);
                 }
 
                 // Left edge dovetail (connects to left side panel)
