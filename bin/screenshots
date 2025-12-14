@@ -74,6 +74,7 @@ COMPONENTS = [
     "modules/components/power/barrel_jack_5_5x2_5.scad",
     # Storage
     "modules/components/storage/hdd_3_5.scad",
+    "modules/components/storage/ssd_2_5.scad",
     # Cooling
     "modules/components/cooling/fan_120.scad",
     "modules/components/cooling/fan_120mm_15mm.scad",
