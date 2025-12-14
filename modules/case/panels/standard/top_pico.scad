@@ -10,6 +10,7 @@
 
 include <../../dimensions_pico.scad>
 include <../../../util/dovetail/dimensions.scad>
+include <../../../components/storage/ssd_2_5.scad>  // For SSD dimensions
 use <../../../util/honeycomb.scad>
 use <../../../util/dovetail/female_dovetail.scad>
 use <top.scad>  // For honeycomb_xy module
@@ -18,7 +19,8 @@ module top_panel_pico(
     width = exterior_panel_width,
     depth = exterior_panel_depth,         // 173mm - extends to cover back panel
     vent_x_offset_extra = wall_thickness, // Offset vent to center over motherboard
-    with_dovetails = true
+    with_dovetails = true,
+    with_ssd_divider = false              // SSD harness divider wall
 ) {
     // Panel dimensions
     panel_width = width;
@@ -48,7 +50,7 @@ module top_panel_pico(
 
     // Back edge dovetail positions (latchless - structural connection to back panel)
     // Two dovetails at 25% and 75% of panel width
-    back_dovetail_positions = [width * 0.25, width * 0.75];
+    back_dovetail_positions = [width * 0.75];
     back_dovetail_y = depth - (dovetail_length / 2 + dovetail_clearance) - wall_thickness;
 
     union() {
@@ -98,6 +100,68 @@ module top_panel_pico(
                 translate([x_pos, back_dovetail_y, 0])
                     rotate([180, 0, 0])  // Flip so boss extends -Z (into case)
                         female_dovetail(with_catch_windows = false);  // Latchless for structural integrity
+            }
+        }
+
+        // SSD divider walls with screw channels
+        if (with_ssd_divider) {
+            divider_height = 9;    // 9mm tall to support SSD height
+            divider_thickness = wall_thickness; // 3mm
+
+            // Screw channel dimensions (vertical slots for M3 screws)
+            // Channels allow screws to slide to accommodate different SSD heights
+            channel_width = ssd_2_5_hole_diameter + 0.5;  // M3 + clearance
+            channel_depth = divider_thickness + 0.2;      // Through the lip
+
+            // Horizontal lip along front edge of SSD 1 (back-left SSD)
+            // SSD 1 origin is near back edge, extends 69.85mm in -Y (width after rotation)
+            // This lip runs along X at the front edge of SSD 1, inset 3 wall thicknesses
+            ssd1_front_y = panel_depth - ssd_2_5_width - 3 * wall_thickness;
+
+            // Screw channel positions along the lip (SSD hole positions from SFF-8201)
+            ssd1_lip_start_x = wall_thickness;
+            channel_positions = [
+                ssd1_lip_start_x + ssd_2_5_hole_front,  // Front hole: 14mm from SSD front
+                ssd1_lip_start_x + ssd_2_5_hole_rear    // Rear hole: 90.6mm from SSD front
+            ];
+
+            color("gray")
+            difference() {
+                // The lip itself
+                translate([wall_thickness, ssd1_front_y, -divider_height])
+                    cube([ssd_2_5_length, divider_thickness, divider_height]);
+
+                // Screw channels (vertical slots through the lip)
+                for (x_pos = channel_positions) {
+                    translate([x_pos - channel_width/2, ssd1_front_y - 0.1, -divider_height - 0.1])
+                        cube([channel_width, channel_depth, divider_height + 0.2]);
+                }
+            }
+
+            // Vertical divider (separates back-left and front-right SSD zones)
+            // Position after SSD 1's length (rotated -90°, so length runs along X)
+            // SSD 1 starts at X=wall_thickness, extends 100mm in +X
+            // Ends 20mm past the inside edge of back SSD
+            // Also serves as mounting lip for SSD 2 (front-right, length along Y)
+            divider_x = ssd_2_5_length + wall_thickness;
+            divider_length = ssd1_front_y + 20;
+
+            // Screw channel positions for SSD 2 (along Y axis, from front edge)
+            ssd2_channel_positions = [
+                ssd_2_5_hole_front,  // Front hole: 14mm from front
+                ssd_2_5_hole_rear    // Rear hole: 90.6mm from front
+            ];
+
+            color("gray")
+            difference() {
+                translate([divider_x, 0, -divider_height])
+                    cube([divider_thickness, divider_length, divider_height]);
+
+                // Screw channels for SSD 2 (vertical slots through the divider)
+                for (y_pos = ssd2_channel_positions) {
+                    translate([divider_x - 0.1, y_pos - channel_width/2, -divider_height - 0.1])
+                        cube([channel_depth, channel_width, divider_height + 0.2]);
+                }
             }
         }
     }

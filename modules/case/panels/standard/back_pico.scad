@@ -45,7 +45,7 @@ module back_panel_pico(
 
     // Top edge dovetail positions (latchless - structural connection to top panel)
     // Two dovetails at 25% and 75% of panel width, positioned at top edge
-    top_dovetail_positions = [width * 0.25, width * 0.75];
+    top_dovetail_positions = [width * 0.75];
 
     color("red") {
         difference() {
