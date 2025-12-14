@@ -169,7 +169,7 @@ Existing files need to be reorganized:
 |-----------|------|--------|-------|
 | GPU | `gpu.scad` | ❌ TODO | Max 320mm length, 3-slot (60mm) width |
 | PCIe Riser Cable | `pcie_riser.scad` | ❌ TODO | Flexible cable representation |
-| 2.5" SSD | `ssd_2_5.scad` | ❌ TODO | 100 x 69.85 x 7mm |
+| 2.5" SSD | `ssd_2_5.scad` | ✅ Done | 100 x 69.85 x 7mm |
 | Pico PSU | `power-supply.pico.scad` | ❌ TODO | ~60x50x10mm DC-DC converter PCB |
 | NH-L9 Cooler | `cpu_cooler_nhl9.scad` | ❌ TODO | 95x95x37mm, for Pico config |
 | Barrel Jack (5.5x2.5) | `barrel_jack_5_5x2_5.scad` | ❌ TODO | DC input for Pico external adapter |

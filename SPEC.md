@@ -28,6 +28,25 @@ The case supports multiple cooling strategies to match the configuration:
 *   **Clearance Requirements:** TODO
 *   **Tubing Routing:** TODO - Path for AIO tubing
 
+### 1.4. Labeling / Embossed Metadata
+
+*   **info_embosser Utility:** Embossed metadata block for part name/version/designer (Nicholas Romero, 2025, Houston, TX by default).
+*   **Default Orientation:** Text is oriented upright when dropped directly onto an interior face of a front panel (normal pointing +Y into the case) with no extra rotations required. The emboss extends into the interior (+Y).
+*   **Front Panel Placement:** Intended to sit near the top-right corner on the interior face of the front panels; adjust inset values only (not rotation) when positioning.
+*   **Automated Version Stamp:** `bin/render-stls` injects `emboss_version="vYYYY-MM-DD"` (current date) via `-D` when rendering, so printed parts automatically carry the build date unless overridden.
+
+### 1.5. Release and Asset Generation
+
+*   **Release Command:** `bin/render-stls --release {major|minor|patch}` performs a full release:
+    * Ensures a clean working tree and enforces the `main` branch.
+    * Bumps a new semver git tag and annotates it.
+    * Renders all STLs (passing the date-based `emboss_version` define).
+    * Runs `bin/screenshots` to generate assembly/component PNGs.
+    * Creates a GitHub release via `gh release create`, attaching STLs and screenshots, and includes screenshots in the release notes.
+    * Uploads STLs to the configured R2 bucket via `wrangler r2 object put` using `.env` credentials.
+*   **Prereqs:** `gh` and `wrangler` CLIs installed and authenticated; `.env` populated with R2 credentials and bucket info; OpenSCAD available in PATH.
+*   **Non-release Mode:** Running without `--release` preserves prior behavior (render STLs only).
+
 ## 2. Core Components
 
 The case is designed around the following core components:
@@ -41,7 +60,14 @@ The case is designed around the following core components:
     *   **Noctua NH-L9:** 37mm height, 95mm x 95mm footprint. Used in Pico configuration for ultra-compact builds.
     *   **Noctua NH-L12S:** 70mm height, 128mm x 146mm footprint. Used in Minimal and NAS configurations.
 *   **3.5" HDD:** 146mm x 101.6mm x 26.1mm (L x W x H). Used in NAS configurations.
-*   **2.5" SSD:** 100mm x 69.85mm x 7mm (L x W x H). Optional storage expansion.
+*   **2.5" SSD:** Per SFF-8201 specification. Optional storage expansion.
+    *   **Dimensions:** 100mm x 69.85mm x 9.5mm (L x W x H typical, heights vary: 7mm, 9.5mm, 15mm)
+    *   **Side Mounting Holes (SFF-8201):**
+        *   Front hole: 14mm from front edge
+        *   Rear hole: 90.6mm from front edge
+        *   Height from bottom: 4.07mm
+        *   Thread: M3
+    *   Pico configuration includes interior SSD harness on top panel (see Section 2.2)
 
 ### 2.1. Motherboard Mounting - Integrated Bottom Panel
 
@@ -70,6 +96,32 @@ The motherboard mounting system uses an integrated design where the bottom panel
 **Configuration Heights:**
 *   **All Configurations:** Standoff height = 6mm female thread portion + 2.5mm boss height = 8.5mm from bottom panel surface to motherboard mounting surface
 *   This applies to: Minimal, NAS 2-disk, NAS many-disk, and GPU configurations
+
+### 2.2. Pico SSD Harness (Top Panel Interior)
+
+The Pico configuration includes an interior SSD harness system on the top panel that holds two 2.5" drives in diagonal corners without interfering with the CPU cooler or motherboard components.
+
+**SSD Positions:**
+*   **SSD 1 (Back-Left):** Oriented lengthwise along X axis (left-right), positioned in back-left corner
+*   **SSD 2 (Front-Right):** Oriented lengthwise along Y axis (front-back), positioned in front-right corner
+
+**Harness Lip Geometry:**
+*   **Lip Height:** 9mm (extends downward from top panel interior face)
+*   **Lip Thickness:** 3mm (wall_thickness)
+*   **Horizontal Lip:** Runs along X axis at front edge of SSD 1
+*   **Vertical Divider:** Runs along Y axis, separating the two SSD zones; ends 20mm past SSD 1's inside edge
+
+**Screw Channel System:**
+*   **Purpose:** Vertical slots in harness lips allow M3 screws to secure SSDs of varying heights (7mm, 9.5mm, 15mm)
+*   **Channel Width:** 3.5mm (M3 + 0.5mm clearance)
+*   **Channel Positions:** Aligned with SFF-8201 side mounting holes (14mm and 90.6mm from SSD front edge)
+*   **Mounting Method:** M3 screws pass through channels into SSD side mounting holes; screw position adjusts based on SSD height
+
+**Dovetail Modifications for SSD Clearance:**
+*   **Top Panel:** Back-left dovetail removed (only back-right at 75% width retained)
+*   **Back Panel:** Top-left dovetail removed (only top-right at 75% width retained)
+*   **Front Panel:** Top-right dovetail removed (only top-left at 25% width retained)
+*   **Side Panels:** Back top dovetail removed (only front at 33% depth retained)
 
 ## 3. Base Configuration
 
