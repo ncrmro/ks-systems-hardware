@@ -10,7 +10,7 @@ dovetail_base_width = 8;          // Width at narrow end (mm)
 dovetail_clearance = 0.15;        // Clearance per side (mm) - FDM tuned
 
 // Boss parameters (raised sections for female dovetails)
-dovetail_boss_margin = 1;         // Extra wall around dovetail channel
+dovetail_boss_margin = 3;         // Extra wall around dovetail channel
 
 // Center-slot latch parameters (integrated snap-fit retention)
 center_slot_width = 3;            // Flex gap width (mm)

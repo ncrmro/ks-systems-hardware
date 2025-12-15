@@ -22,6 +22,7 @@ cooler_nh_l9_total_height = cooler_nh_l9_base_height + cooler_nh_l9_heatsink_hei
 pico_min_height_for_cooler = standoff_height + mobo_pcb_thickness + cooler_nh_l9_total_height;  // ~45.6mm
 pico_min_height_for_io = standoff_height + mobo_pcb_thickness + io_shield_z_offset + io_shield_height;  // ~57mm
 pico_interior_chamber_height = pico_min_height_for_io;  // Use I/O shield as controlling dimension (~57mm)
+pico_interior_chamber_height = 60;
 pico_exterior_height = pico_interior_chamber_height + 2 * wall_thickness;  // ~63mm
 
 // --- Panel Dimensions (standard variable names for panels to use) ---
