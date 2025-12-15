@@ -19,7 +19,7 @@ module top_panel_pico(
     width = exterior_panel_width,
     depth = exterior_panel_depth,         // 173mm - extends to cover back panel
     with_dovetails = true,
-    with_ssd_divider = false              // SSD harness divider wall
+    with_ssd_divider = true              // SSD harness divider wall
 ) {
     // Panel dimensions
     panel_width = width;
@@ -34,31 +34,38 @@ module top_panel_pico(
     vent_x_offset = 25;  // Clears left edge dovetail boss (~2 hex rows removed)
     vent_y_offset = 22;  // Clears front edge dovetail (~1 hex row removed)
 
+    // Dovetail placement ratios (spread along depth for even load)
+    dovetail_front_ratio = 1/3;   // ~33% of depth from front edge
+    dovetail_back_ratio  = 2/3;   // ~67% of depth from front edge
+
     // Front edge dovetail positions (latchless - internal top shell connection)
-    // When SSD divider enabled: hide right dovetail (front-right SSD clearance)
     front_edge_dovetail_length = 9;  // Used for both position and module call - keeps them in sync
+    front_dovetail_left = width * 0.25;
+    front_dovetail_right = width * 0.75;  // Hidden when SSD divider present
     front_dovetail_positions = with_ssd_divider
-        ? [width * 0.25 + wall_thickness]  // Shift inward by one wall thickness
-        : [width * 0.25 + wall_thickness, width * 0.75 - wall_thickness];
+        ? [front_dovetail_left]
+        : [front_dovetail_left, front_dovetail_right];
     front_dovetail_y = front_edge_dovetail_length / 2 + dovetail_clearance;
 
     // Left edge dovetail positions (clip - internal top shell connection)
     // Inset by wall_thickness so side panel fits flush
     // Use (depth - wall_thickness) to match side panel's shortened panel_depth
-    // When SSD divider enabled: hide back dovetail (back-left SSD clearance)
     side_dovetail_depth = depth - wall_thickness;  // Match side panel's effective depth
     side_edge_dovetail_length = 9;  // Used for both position and module call - keeps them in sync
+    left_dovetail_front = side_dovetail_depth * dovetail_front_ratio;
+    left_dovetail_back = side_dovetail_depth * dovetail_back_ratio;  // Hidden when SSD divider is present
     left_dovetail_positions = with_ssd_divider
-        ? [side_dovetail_depth * 0.33]
-        : [side_dovetail_depth * 0.33, side_dovetail_depth * 0.67];
+        ? [left_dovetail_front]
+        : [left_dovetail_front, left_dovetail_back];
     left_dovetail_x = wall_thickness + side_edge_dovetail_length / 2 + dovetail_clearance;
 
     // Right edge dovetail positions (clip - internal top shell connection)
     // Inset by wall_thickness so side panel fits flush
-    // When SSD divider enabled: hide front dovetail (front-right SSD clearance)
+    right_dovetail_front = side_dovetail_depth * dovetail_front_ratio;  // Hidden when SSD divider is present
+    right_dovetail_back = side_dovetail_depth * dovetail_back_ratio;
     right_dovetail_positions = with_ssd_divider
-        ? [side_dovetail_depth * 0.67]
-        : [side_dovetail_depth * 0.33, side_dovetail_depth * 0.67];
+        ? [right_dovetail_back]
+        : [right_dovetail_front, right_dovetail_back];
     right_dovetail_x = width - wall_thickness - (side_edge_dovetail_length / 2 + dovetail_clearance);
 
     // Back edge dovetail positions (latchless - structural connection to back panel)
@@ -87,7 +94,7 @@ module top_panel_pico(
             // Front edge dovetails (latchless - connects to front panel top edge)
             // Boss extends upward (+Z), channel faces -Y (toward front panel)
             for (x_pos = front_dovetail_positions) {
-                translate([x_pos, front_dovetail_y, -2 * panel_thickness])
+                translate([x_pos, front_dovetail_y, -panel_thickness])
                     female_dovetail(length = front_edge_dovetail_length, with_catch_windows = false);
             }
 
@@ -178,20 +185,7 @@ module top_panel_pico(
                 }
             }
 
-            // Right lip for SSD 2 (button head screws on right side)
-            ssd2_right_lip_x = divider_x + divider_thickness + ssd_2_5_width + 2;  // 2mm gap for button screws
-            ssd2_right_lip_length = ssd_2_5_length;  // Match SSD length along Y
-            color("gray")
-            difference() {
-                translate([ssd2_right_lip_x, 0, -divider_height])
-                    cube([divider_thickness, ssd2_right_lip_length, divider_height]);
-
-                // Screw channels for SSD 2 right side
-                for (y_pos = ssd2_channel_positions) {
-                    translate([ssd2_right_lip_x - 0.1, y_pos - channel_width/2, -divider_height + channel_bridge])
-                        cube([channel_depth, channel_width, divider_height - channel_bridge + 0.1]);
-                }
-            }
+      
         }
     }
 }
