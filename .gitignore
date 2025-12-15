@@ -7,4 +7,23 @@ tmp-stls/
 # Environment variables (contains secrets)
 .env
 !.env.example
+
 worktrees
+
+# Python
+__pycache__/
+*.pyc
+
+# Build artifacts
+build/
+dist/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Temporary/Debug files
+ad_dir.txt
+inspect_*.py
+
