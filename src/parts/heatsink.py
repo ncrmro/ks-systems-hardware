@@ -5,7 +5,7 @@ from config import CommonDimensions
 from registry import register_part
 from lib.cooling import CoolingDimensions
 
-@register_part("noctua_l12s")
+@register_part("lib_noctua_l12s")
 def create_noctua_l12s() -> ad.Shape:
     """Creates a Noctua NH-L12S heatsink for rendering."""
     return NoctuaL12S()
