@@ -1,0 +1,28 @@
+#!/usr/bin/env -S uv run python
+import sys
+import pytest
+from types import ModuleType
+from unittest.mock import MagicMock # Re-add this import
+
+# Mock OpenGL to bypass "AttributeError: 'NoneType' object has no attribute 'glGetError'"
+# This happens because pythonopenscad imports viewer logic by default, which requires a display.
+# We don't need the viewer for generating SCAD or testing geometry logic.
+# Creating a dummy module object to satisfy imports.
+class DummyOpenGLModule(ModuleType):
+    def __getattr__(self, name):
+        # Return a MagicMock for any attribute access to prevent AttributeError
+        return MagicMock()
+    def __setattr__(self, name, value):
+        # Allow setting attributes like __file__, etc.
+        super().__setattr__(name, value)
+
+sys.modules["OpenGL"] = DummyOpenGLModule("OpenGL")
+sys.modules["OpenGL.GL"] = DummyOpenGLModule("OpenGL.GL")
+sys.modules["OpenGL.GL.shaders"] = DummyOpenGLModule("OpenGL.GL.shaders")
+
+# This script runs INSIDE the project environment provided by 'uv run'.
+# 'uv run' automatically loads dependencies from pyproject.toml.
+
+if __name__ == "__main__":
+    print("Running tests in project environment...")
+    sys.exit(pytest.main(sys.argv[1:]))
