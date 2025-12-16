@@ -14,7 +14,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # Setup path to find the 'keystone' package in src/
 REPO_ROOT = Path(__file__).resolve().parent.parent
-# sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 # MOCK OpenGL to prevent crash in headless environments
 # AnchorSCAD imports pythonopenscad, which imports OpenGL.GL, which crashes if no display.
@@ -23,16 +23,17 @@ sys.modules["OpenGL"] = MagicMock()
 sys.modules["OpenGL.GL"] = MagicMock()
 
 import anchorscad as ad
-import keystone
+import registry
 # Trigger imports of all parts to populate registry
-import keystone.parts
+import parts
 
 def load_all_parts():
-    """Recursively import all modules in keystone.parts to trigger decorators."""
-    path = list(keystone.parts.__path__)
-    prefix = keystone.parts.__name__ + "."
+    """Recursively import all modules in parts to trigger decorators."""
+    path = list(parts.__path__)
+    prefix = parts.__name__ + "."
     for _, name, _ in pkgutil.walk_packages(path, prefix):
         importlib.import_module(name)
+
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "build"
 
@@ -93,13 +94,13 @@ def main():
     
     # 1. Load Registry
     load_all_parts()
-    registry = keystone.get_registry()
+    reg = registry.get_registry()
     
     # 2. Filter
     if args.filter:
-        parts = {k: v for k, v in registry.items() if args.filter in k}
+        parts = {k: v for k, v in reg.items() if args.filter in k}
     else:
-        parts = registry
+        parts = reg
 
     if not parts:
         print("No parts found.")

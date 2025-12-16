@@ -1,0 +1,81 @@
+#!/usr/bin/env -S uv run python
+import sys
+import time
+import subprocess
+import os
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
+class BuildHandler(FileSystemEventHandler):
+    def __init__(self, args):
+        self.args = args
+        self.last_run = 0
+        self.cooldown = 1.0  # seconds
+
+    def on_modified(self, event):
+        if event.is_directory:
+            return
+        if not event.src_path.endswith(".py"):
+            return
+        
+        self.trigger(event.src_path)
+
+    def on_created(self, event):
+        if event.is_directory:
+            return
+        if not event.src_path.endswith(".py"):
+            return
+        self.trigger(event.src_path)
+
+    def trigger(self, path):
+        now = time.time()
+        if now - self.last_run < self.cooldown:
+            return
+        self.last_run = now
+        
+        print(f"\nChange detected: {path}")
+        self.run_build()
+
+    # Removed on_any_event to prevent loops from access events
+
+
+    def run_build(self):
+        print("Running tests...")
+        try:
+            # Run tests first
+            # We assume bin/test is executable and in the root
+            res = subprocess.run(["bin/test"], check=False)
+            if res.returncode != 0:
+                print("\nTests FAILED. Skipping render.")
+                return
+            
+            print("\nTests PASSED. Running build...")
+            # Assumes bin/render is in the same directory as this script (bin/)
+            # We need to call it from the project root
+            cmd = ["bin/render"] + self.args
+            subprocess.run(cmd)
+        except Exception as e:
+            print(f"Build failed: {e}")
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    
+    # Watch 'src' directory
+    path = "src"
+    
+    event_handler = BuildHandler(args)
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    observer.start()
+    
+    print(f"Watching '{path}' for changes. Press Ctrl+C to stop.")
+    
+    # Run once on start
+    event_handler.run_build()
+    
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()

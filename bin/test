@@ -1,5 +1,6 @@
 #!/usr/bin/env -S uv run python
 import sys
+import os
 import pytest
 from types import ModuleType
 from unittest.mock import MagicMock # Re-add this import
@@ -24,5 +25,11 @@ sys.modules["OpenGL.GL.shaders"] = DummyOpenGLModule("OpenGL.GL.shaders")
 # 'uv run' automatically loads dependencies from pyproject.toml.
 
 if __name__ == "__main__":
+    # Add 'src' to sys.path to allow imports from the source root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(script_dir, os.pardir))
+    src_path = os.path.join(project_root, "src")
+    sys.path.insert(0, src_path)
+
     print("Running tests in project environment...")
     sys.exit(pytest.main(sys.argv[1:]))
