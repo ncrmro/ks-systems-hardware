@@ -6,10 +6,10 @@ to determine the minimum size allowed for the interior of a case given these dim
 import anchorscad as ad
 import pytest
 import numpy as np
-from keystone.config import CommonDimensions, MinimalDimensions
-from keystone.parts.frame import Standoff
-from keystone.lib.motherboard import MiniItxMotherboard
-from keystone.lib.cooling import CoolingDimensions
+from config import CommonDimensions, MinimalDimensions
+from parts.frame import Standoff
+from lib.motherboard import MiniItxMotherboard
+from lib.cooling import CoolingDimensions
 
 # --- Tests from test_basic_parts.py ---
 

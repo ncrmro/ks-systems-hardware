@@ -1,6 +1,12 @@
 import anchorscad as ad
 from anchorscad import datatree
-from keystone.config import CommonDimensions
+from config import CommonDimensions
+from registry import register_part
+
+@register_part("standoff")
+def create_standoff() -> ad.Shape:
+    """Creates a standard standoff for rendering."""
+    return Standoff(dim=CommonDimensions())
 
 @ad.shape
 @datatree

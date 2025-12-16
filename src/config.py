@@ -3,9 +3,9 @@ from typing import Tuple, List
 from dataclasses import field
 
 # Import component dimensions
-from .lib.motherboard import MiniItxDimensions
-from .lib.psu import FlexAtxDimensions, SfxDimensions, PicoPsuDimensions
-from .lib.cooling import CoolingDimensions
+from lib.motherboard import MiniItxDimensions
+from lib.psu import FlexAtxDimensions, SfxDimensions, PicoPsuDimensions
+from lib.cooling import CoolingDimensions
 
 @datatree
 class CommonDimensions:
