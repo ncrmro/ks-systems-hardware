@@ -46,9 +46,15 @@ This is the active development area for new features and migration.
     - Run `bin/render [part_name]` to manually generate SCAD/STL.
 
 3.  **Testing:**
-    - Run `bin/test` to execute pytest suite.
+    - **PREFERRED:** Run `bin/test` to execute the project's verification suite (pytest). This is the standard way to ensure all tests pass.
     - Tests are located in `tests/`.
     - `tests/hardware_components_dimensions_test.py` verifies core dimensions.
+
+4.  **Committing:**
+    - Always use **Semantic Commit Messages** with a clear subject line.
+    - Format: `<type>(<scope>): <subject>`
+    - Example: `feat(mobo): add ATX connector to MiniITX motherboard`
+    - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`.
 
 ## AnchorSCAD Patterns & Gotchas
 
