@@ -1,7 +1,7 @@
 # Keystone Hardware - AI Agent Context
 
 ## Project Overview
-Keystone Hardware is a modular, expandable computer case. The project is currently **migrating from legacy OpenSCAD (`modules/*.scad`) to Python-generated OpenSCAD (`src/keystone`)** using the `anchorscad` library.
+Keystone Hardware is a modular, expandable computer case. The project is currently **migrating from legacy OpenSCAD (`modules/*.scad`) to Python-generated OpenSCAD (`src/`)** using the `anchorscad` library.
 
 **Key Documentation:**
 - `SPEC.md`: Full design specification, dimensions, and requirements.
@@ -12,60 +12,77 @@ Keystone Hardware is a modular, expandable computer case. The project is current
 
 ### Python/AnchorSCAD (Active Development)
 This is the active development area for new features and migration.
-- **Source:** `src/keystone/` package.
+- **Source:** `src/` (Root package directory).
 - **Library:** Uses `anchorscad` for geometry generation.
-- **Registry:** Parts are registered using `@keystone.register_part("name")` (defined in `src/keystone/__init__.py`).
-- **Configuration:** `src/keystone/config.py` uses `@anchorscad.datatree` to define parametric dimensions (`CommonDimensions`, `PicoDimensions`, etc.).
+- **Registry:** Parts are registered using `@registry.register_part("name")` (defined in `src/registry.py`).
+- **Configuration:** `src/config.py` uses `@anchorscad.datatree` to define parametric dimensions (`CommonDimensions`, `PicoDimensions`, etc.).
 - **Organization:**
-  - `src/keystone/lib/`: **Vitamins** (Off-the-shelf parts like Motherboards, PSUs). These define their own dimensions.
-  - `src/keystone/parts/`: **Fabricated Parts** (3D printed/machined). These derive dimensions from `config.py`.
+  - `src/lib/`: **Vitamins** (Off-the-shelf parts like Motherboards, PSUs). These define their own dimensions.
+  - `src/parts/`: **Fabricated Parts** (3D printed/machined). These derive dimensions from `config.py`.
 - **Build System:** `bin/render`
-  - **Discovery:** Recursively imports `keystone.parts` to trigger registration.
+  - **Discovery:** Recursively imports `parts` package to trigger registration.
   - **Output:** Generates `.scad` and `.stl` files in `build/`.
   - **Usage:**
     - `bin/render`: Build all registered parts.
     - `bin/render [filter]`: Build parts matching the filter string.
     - `bin/render --list`: List all registered parts.
     - `bin/render --scad-only`: Skip STL generation (faster).
+    - `bin/watch`: Watch for changes in `src/`, run tests, then build.
 
 ### Legacy OpenSCAD (Reference)
 - **Source:** `modules/` and `assemblies/`.
-- **Status:** Reference only. Currently being ported to Python.
+- **Status:** Reference only. **Do not import these files.** Recreate geometry in pure Python.
 - **Context:** See `CLAUDE.md` for detailed structure of this legacy code.
-- **Screenshots:** `bin/screenshots` is currently hardcoded to generate images from these legacy files.
 
 ## Development Workflow
 
 1.  **Create/Edit Part:**
     - Define a class decorated with `@ad.shape`.
     - Use `@ad.anchor` to define connection points.
-    - For fabricated parts, accept a `dimensions` object (from `config.py`) in `__init__`.
-    - Register the part with `@keystone.register_part("part_name")`.
+    - Register the part with `@registry.register_part("part_name")`.
 
 2.  **Verify/Render:**
-    - Run `bin/render [part_name] --scad-only` to generate the SCAD file in `build/`.
-    - Open `build/[part_name].scad` in OpenSCAD to inspect.
-    - Run `bin/render [part_name]` to generate the STL.
+    - Run `bin/watch` to automatically test and render on file save.
+    - Run `bin/render [part_name]` to manually generate SCAD/STL.
 
-3.  **Assemblies:**
-    - Use `ad.Maker()` to create assemblies.
-    - Use `maker.add_at(shape, anchor=..., post=...)` to position parts.
-    - Avoid raw matrix multiplication; use anchors.
+3.  **Testing:**
+    - Run `bin/test` to execute pytest suite.
+    - Tests are located in `tests/`.
+    - `tests/hardware_components_dimensions_test.py` verifies core dimensions.
+
+## AnchorSCAD Patterns & Gotchas
+
+- **Composites:** `ad.CompositeMaker` does not exist. Use the "first component as root" pattern:
+  ```python
+  maker = first_shape.solid().at(...)
+  maker.add_at(second_shape.solid().at(...))
+  return maker
+  ```
+- **Boolean Operations:** `Maker` objects do NOT support `-` operator. Use `HoleMode`:
+  ```python
+  body = shape.solid().at(...)
+  hole = other_shape.hole().at(...)
+  body.add_at(hole) # Subtraction
+  ```
+- **Coloring:** Apply `.colour()` to the `SolidMode` **before** `.at()`:
+  ```python
+  # CORRECT:
+  shape.solid("name").colour("red").at("centre")
+  # INCORRECT:
+  shape.solid("name").at("centre").colour("red") # AttributeError
+  ```
+- **Matrices:** Use `ad.IDENTITY` (constant), not `ad.identity()`.
+- **Dataclasses:** Import `field` from `dataclasses`, not `anchorscad.datatree`.
+- **Headless Rendering:** `ad.render` may fail with internal errors (`AttributeError: 'str' object has no attribute 'A'`) in the headless test environment. Avoid full geometry intersection tests; rely on logic/dimension tests.
 
 ## Dependencies
-- **Python:** Requires `anchorscad` and standard libraries.
-- **System:** Requires `openscad` CLI to be in the PATH for STL generation.
-- **Environment:** Project uses `uv` for dependency management. `pyproject.toml` and `uv.lock` are tracked.
-  - Run `uv sync` to install dependencies.
-  - Run `bin/render` (which uses `uv run`) to build.
+- **Python:** `anchorscad`, `numpy`, `watchdog`, `pytest`.
+- **System:** `openscad` CLI required for STL generation.
+- **Environment:** Managed via `uv`.
+- **Imports:** Source root is `src/`. Imports should be absolute (e.g., `from lib.motherboard import ...`).
 
 ## Key Files
-- `src/keystone/__init__.py`: Registry logic.
-- `src/keystone/config.py`: Global configuration and dimensions.
-- `bin/render`: Main build script.
-- `bin/screenshots`: Legacy screenshot tool.
-
-## Common Issues & Notes
-- **OpenGL Mocking:** `bin/render` mocks `OpenGL` to prevent crashes in headless environments (AnchorSCAD imports it).
-- **Anchors:** `shape.at()` returns a matrix, not a transformed shape. Use `Maker.add_at` to apply transformations.
-- **Datatrees:** Use `field(default_factory=...)` for mutable defaults in datatree classes.
+- `src/registry.py`: Registry logic.
+- `src/config.py`: Global configuration and dimensions.
+- `bin/render`: Main build script (mocks OpenGL).
+- `bin/watch`: Watcher hook (runs tests before build).
