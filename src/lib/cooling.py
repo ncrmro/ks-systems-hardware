@@ -11,6 +11,15 @@ class CoolingDimensions:
     nh_l12s_total_height: float = 70.0
     nh_l12s_width: float = 128.0
     nh_l12s_depth: float = 146.0
+
+    # Noctua NH-L9
+    nh_l9_total_height: float = 37.0
+    nh_l9_width: float = 95.0
+    nh_l9_depth: float = 95.0
+    nh_l9_base_height: float = 5.0
+    nh_l9_heatsink_height: float = 18.0
+    nh_l9_fan_height: float = 14.0
+    nh_l9_fan_size: float = 92.0
     
     # Generic Fans
     fan_120_25_thickness: float = 25.0

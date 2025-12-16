@@ -1,14 +1,18 @@
 import anchorscad as ad
 from anchorscad import datatree
 from dataclasses import field
-from config import CommonDimensions
 from registry import register_part
-from lib.cooling import CoolingDimensions
+from lib.cooling import CoolingDimensions, Fan, FanDimensions
 
 @register_part("lib_noctua_l12s")
 def create_noctua_l12s() -> ad.Shape:
     """Creates a Noctua NH-L12S heatsink for rendering."""
     return NoctuaL12S()
+
+@register_part("lib_noctua_l9")
+def create_noctua_l9() -> ad.Shape:
+    """Creates a Noctua NH-L9 low-profile heatsink for rendering."""
+    return NoctuaL9()
 
 @ad.shape
 @datatree
@@ -102,6 +106,45 @@ class HeatsinkFins(ad.CompositeShape):
         m_block.add_at(m_cutout)
         
         return m_block
+
+@ad.shape
+@datatree
+class NoctuaL9(ad.CompositeShape):
+    """Noctua NH-L9 Low Profile Cooler."""
+    dim: CoolingDimensions = field(default_factory=CoolingDimensions)
+
+    def build(self) -> ad.Maker:
+        base_h = self.dim.nh_l9_base_height
+        fins_h = self.dim.nh_l9_heatsink_height
+        fan_h = self.dim.nh_l9_fan_height
+        fan_size = self.dim.nh_l9_fan_size
+
+        cooler_w = self.dim.nh_l9_width
+        cooler_d = self.dim.nh_l9_depth
+
+        # Base sits on the CPU surface; anchor base at Z=0.
+        base = CpuBase(h=base_h)
+        assembly = base.solid("base").at("centre", post=ad.translate([0, 0, base_h / 2]))
+
+        fins_shape = ad.Box([cooler_w, cooler_d, fins_h])
+        assembly.add_at(
+            fins_shape.solid("fins").colour("silver").at("centre"),
+            post=ad.translate([0, 0, base_h + fins_h / 2])
+        )
+
+        fan_dim = FanDimensions(size=fan_size, thickness=fan_h)
+        fan = Fan(dim=fan_dim)
+        assembly.add_at(
+            fan.solid("fan").at("centre"),
+            post=ad.translate([0, 0, base_h + fins_h + fan_h / 2])
+        )
+
+        return assembly
+
+    @ad.anchor("base")
+    def base(self):
+        """Base contact point (CPU surface)."""
+        return ad.IDENTITY
 
 @ad.shape
 @datatree

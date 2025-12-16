@@ -3,16 +3,16 @@ from anchorscad import datatree
 from typing import Optional
 from dataclasses import field
 
-from config import CommonDimensions
+from config import PicoDimensions
 from registry import register_part
 from lib.motherboard import MiniItxMotherboard
 from lib.ram import RamStick
 from lib.psu import PicoPsu
-from parts.heatsink import NoctuaL12S
+from parts.heatsink import NoctuaL9
 
 @register_part("motherboard_assembly_pico")
 def create_motherboard_assembly_pico() -> ad.Shape:
-    return MotherboardAssemblyPico(dim=CommonDimensions())
+    return MotherboardAssemblyPico(dim=PicoDimensions())
 
 @ad.shape
 @datatree
@@ -21,7 +21,7 @@ class MotherboardAssemblyPico(ad.CompositeShape):
     Assembly of Motherboard + RAM + Cooler + PicoPSU.
     Used for the Pico case configuration.
     """
-    dim: CommonDimensions
+    dim: PicoDimensions
     
     def build(self) -> ad.Maker:
         # 1. Motherboard
@@ -52,14 +52,14 @@ class MotherboardAssemblyPico(ad.CompositeShape):
             post=ad.translate([ram_x, ram_y, ram_z])
         )
         
-        # 3. Cooler (Noctua NH-L12S)
+        # 3. Cooler (Noctua NH-L9)
         # Centered on CPU socket.
         # Socket pos from corner: ~85mm, ~85mm (Center of board).
         # So CPU is at (0,0).
         # Cooler sits on top of CPU (on top of PCB).
         # We need to rotate it? "Rotated 90 deg CCW" in legacy scad.
         
-        cooler = NoctuaL12S(dim=self.dim.cooling)
+        cooler = NoctuaL9(dim=self.dim.cooling)
         cooler_z = self.dim.mobo.pcb_thickness / 2
         
         assembly.add_at(
@@ -82,13 +82,17 @@ class MotherboardAssemblyPico(ad.CompositeShape):
         # Let's place it centered on the ATX connector for now, shifted up.
         
         psu = PicoPsu(dim=self.dim.psu)
-        psu_x = 80.0
-        psu_y = -34.2
-        psu_z = self.dim.mobo.pcb_thickness / 2 + 13.0 + psu.dim.height / 2 
+        # Align to the actual ATX connector on the motherboard model.
+        atx_x = self.dim.mobo.width / 2 - 5.0  # matches MiniItxMotherboard placement
+        atx_y = -self.dim.mobo.depth / 2 + 25.0 + 51.6 / 2
+        psu_x = atx_x
+        psu_y = atx_y
+        # Seat the male connector so its bottom sits on top of the PCB surface.
+        psu_z = self.dim.mobo.pcb_thickness + psu.dim.connector_height / 2
         
         assembly.add_at(
             psu.solid("pico_psu").at("centre"),
-            post=ad.translate([psu_x, psu_y, psu_z])
+            post=ad.translate([psu_x, psu_y, psu_z]) * ad.rotZ(90)
         )
         
         return assembly

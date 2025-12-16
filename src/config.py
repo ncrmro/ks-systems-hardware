@@ -58,9 +58,9 @@ class PicoDimensions(CommonDimensions):
         
     @property
     def pico_interior_chamber_height(self) -> float:
-        # Controlled by I/O shield height in this config
-        # Accessing nested mobo dims
-        return self.standoff_height + self.mobo.pcb_thickness + self.mobo.io_shield_z_offset + self.mobo.io_shield_height
+        cooler_stack = self.standoff_height + self.mobo.pcb_thickness + self.cooling.nh_l9_total_height
+        io_stack = self.standoff_height + self.mobo.pcb_thickness + self.mobo.io_shield_z_offset + self.mobo.io_shield_height
+        return max(cooler_stack, io_stack)
 
     @property
     def pico_exterior_height(self) -> float:
