@@ -24,15 +24,26 @@ sys.modules["OpenGL.GL"] = MagicMock()
 
 import anchorscad as ad
 import registry
+import lib
 # Trigger imports of all parts to populate registry
 import parts
 
 def load_all_parts():
-    """Recursively import all modules in parts to trigger decorators."""
+    """Recursively import all modules in parts and lib to trigger decorators and auto-discovery."""
+    
+    # Scan lib (Vitamins)
+    path = list(lib.__path__)
+    prefix = lib.__name__ + "."
+    for _, name, _ in pkgutil.walk_packages(path, prefix):
+        mod = importlib.import_module(name)
+        registry.auto_register_module(mod, prefix="lib_")
+
+    # Scan parts (Assemblies/Fabricated)
     path = list(parts.__path__)
     prefix = parts.__name__ + "."
     for _, name, _ in pkgutil.walk_packages(path, prefix):
-        importlib.import_module(name)
+        mod = importlib.import_module(name)
+        registry.auto_register_module(mod, prefix="")
 
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "build"
