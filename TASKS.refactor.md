@@ -18,3 +18,13 @@ This document tracks the migration of OpenSCAD modules to Python-based generator
 - **Source:** `modules/components/ram.scad`
 - **Target:** `src/lib/ram.py` (New file needed)
 - **Goal:** Define RAM stick dimensions and possibly slot mechanisms.
+
+### 4. Cooling (Fans)
+- **Source:** `modules/components/cooling/fan_120.scad`, `fan_120mm_15mm.scad`
+- **Target:** `src/lib/cooling.py`
+- **Goal:** Parametric fan generator (size, thickness).
+
+### 5. Power Supply (PSU)
+- **Source:** `modules/components/power/psu_sfx.scad`, `psu_flex_atx.scad`
+- **Target:** `src/lib/psu.py`
+- **Goal:** SFX and FlexATX definitions.
