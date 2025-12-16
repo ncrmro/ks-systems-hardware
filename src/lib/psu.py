@@ -67,12 +67,20 @@ class FlexAtxPsu(ad.CompositeShape):
 @datatree
 class PicoPsuDimensions:
     """Dimensions for PicoPSU (minimal footprint)."""
-    # Usually just connects to ATX, so dims are minimal/negligible for the PSU body itself
-    # but we might track the barrel jack hole size here.
+    # Overall envelope derived from legacy OpenSCAD model
+    # Connector: 50 (w) x 7 (d) x 13 (h)
+    # PCB: 50 (w) x 1.6 (d) x 19 (h) sitting on top of connector
+    # Components: 40 (w) x 4 (d) x 9 (h) on PCB face
     barrel_jack_diameter: float = 8.0 # Standard 5.5mm/2.5mm jack needs ~8mm hole?
     width: float = 50.0
-    depth: float = 30.0
-    height: float = 35.0
+    depth: float = 7.0
+    height: float = 32.0  # 13 connector + 19 PCB stack
+    connector_depth: float = 7.0
+    connector_height: float = 13.0
+    pcb_thickness: float = 1.6
+    pcb_height: float = 19.0
+    component_depth: float = 4.0
+    component_inset: float = 5.0
 
 @ad.shape
 @datatree
@@ -80,4 +88,25 @@ class PicoPsu(ad.CompositeShape):
     dim: PicoPsuDimensions = field(default_factory=PicoPsuDimensions)
     
     def build(self) -> ad.Maker:
-        return ad.Box([self.dim.width, self.dim.depth, self.dim.height]).solid("pico_psu").colour("blue").at("centre")
+        connector = ad.Box([self.dim.width, self.dim.connector_depth, self.dim.connector_height])
+        pcb = ad.Box([self.dim.width, self.dim.pcb_thickness, self.dim.pcb_height])
+
+        shape = connector.solid("atx_male").colour("yellow").at("centre")
+
+        pcb_z = self.dim.connector_height/2 + self.dim.pcb_height/2
+        pcb_y = 0  # center align; component depth stays within connector depth
+        shape.add_at(
+            pcb.solid("pcb").colour("green").at("centre"),
+            post=ad.translate([0, pcb_y, pcb_z])
+        )
+
+        components_w = self.dim.width - 2 * self.dim.component_inset
+        components = ad.Box([components_w, self.dim.component_depth, self.dim.pcb_height - 10.0])
+        comp_z = pcb_z  # same center as PCB, offset handled by height
+        comp_y = self.dim.pcb_thickness/2 + self.dim.component_depth/2
+        shape.add_at(
+            components.solid("components").colour([0.2, 0.2, 0.2]).at("centre"),
+            post=ad.translate([0, comp_y, comp_z])
+        )
+
+        return shape

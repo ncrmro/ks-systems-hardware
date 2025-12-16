@@ -4,12 +4,13 @@ to determine the minimum size allowed for the interior of a case given these dim
 """
 
 import anchorscad as ad
-import pytest
 import numpy as np
-from config import CommonDimensions, MinimalDimensions
+import pytest
+from config import CommonDimensions, MinimalDimensions, PicoDimensions
 from parts.frame import Standoff
 from lib.motherboard import MiniItxMotherboard
 from lib.cooling import CoolingDimensions
+from lib.psu import PicoPsuDimensions
 
 # --- Tests from test_basic_parts.py ---
 
@@ -104,6 +105,19 @@ def test_nh_l12s_dimensions():
     assert cooling_dim.nh_l12s_width == 128.0
     assert cooling_dim.nh_l12s_depth == 146.0
 
+def test_nh_l9_dimensions():
+    """
+    Verifies the dimensions of the Noctua NH-L9 low-profile cooler.
+    """
+    cooling_dim = CoolingDimensions()
+
+    assert cooling_dim.nh_l9_total_height == 37.0
+    assert cooling_dim.nh_l9_width == 95.0
+    assert cooling_dim.nh_l9_depth == 95.0
+    assert cooling_dim.nh_l9_base_height == 5.0
+    assert cooling_dim.nh_l9_heatsink_height == 18.0
+    assert cooling_dim.nh_l9_fan_height == 14.0
+
 def test_minimal_interior_height_calculation():
     """
     Verifies that the Minimal configuration's interior chamber height
@@ -127,6 +141,18 @@ def test_minimal_interior_height_calculation():
     # 6.0 + 1.6 + 70.0 = 77.6 mm
     assert np.isclose(dim.interior_chamber_height, 77.6)
 
+def test_pico_interior_height_uses_taller_stack():
+    """
+    Pico interior height should accommodate whichever is taller:
+    the cooler stack or the I/O shield stack.
+    """
+    dim = PicoDimensions()
+
+    cooler_stack = dim.standoff_height + dim.mobo.pcb_thickness + dim.cooling.nh_l9_total_height
+    io_stack = dim.standoff_height + dim.mobo.pcb_thickness + dim.mobo.io_shield_z_offset + dim.mobo.io_shield_height
+
+    assert np.isclose(dim.pico_interior_chamber_height, max(cooler_stack, io_stack))
+
 def test_interior_height_updates_with_params():
     """
     Verifies that changing a component dimension updates the total chamber height.
@@ -138,3 +164,17 @@ def test_interior_height_updates_with_params():
     
     # Expected: 10.0 + 1.6 + 70.0 = 81.6
     assert np.isclose(dim.interior_chamber_height, 81.6)
+
+def test_pico_psu_dimensions_match_legacy():
+    """
+    Validates PicoPSU dimensions mirror the legacy OpenSCAD model.
+    """
+    psu = PicoPsuDimensions()
+
+    assert np.isclose(psu.width, 50.0)
+    assert np.isclose(psu.depth, 7.0)
+    assert np.isclose(psu.height, 32.0)
+    assert np.isclose(psu.connector_depth, 7.0)
+    assert np.isclose(psu.connector_height, 13.0)
+    assert np.isclose(psu.pcb_thickness, 1.6)
+    assert np.isclose(psu.pcb_height, 19.0)
