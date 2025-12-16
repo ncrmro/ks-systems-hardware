@@ -70,3 +70,14 @@ class PicoPsuDimensions:
     # Usually just connects to ATX, so dims are minimal/negligible for the PSU body itself
     # but we might track the barrel jack hole size here.
     barrel_jack_diameter: float = 8.0 # Standard 5.5mm/2.5mm jack needs ~8mm hole?
+    width: float = 50.0
+    depth: float = 30.0
+    height: float = 35.0
+
+@ad.shape
+@datatree
+class PicoPsu(ad.CompositeShape):
+    dim: PicoPsuDimensions = field(default_factory=PicoPsuDimensions)
+    
+    def build(self) -> ad.Maker:
+        return ad.Box([self.dim.width, self.dim.depth, self.dim.height]).solid("pico_psu").colour("blue").at("centre")
