@@ -8,7 +8,7 @@ from registry import register_part
 from lib.motherboard import MiniItxMotherboard
 from lib.ram import RamStick
 from lib.psu import PicoPsu
-from parts.heatsink import NoctuaL9
+from lib.heatsink import NoctuaL9
 
 @register_part("motherboard_assembly_pico")
 def create_motherboard_assembly_pico() -> ad.Shape:
@@ -42,14 +42,23 @@ class MotherboardAssemblyPico(ad.CompositeShape):
         # Standard Mini-ITX: RAM slots are usually along the top edge or right edge.
         # Let's assume parallel to Front (X axis) near the CPU.
         
+        
         ram = RamStick()
-        ram_x = 25.0
-        ram_y = -35.0
+        ram_x1 = -1.325 # Derived from OpenSCAD: (17 + L/2) - (Mobo W/2)
+        ram_y1 = -79.4 # Derived from OpenSCAD: (5 + T/2) - (Mobo D/2)
         ram_z = self.dim.mobo.pcb_thickness / 2 + ram.dim.height / 2
         
+        # First RAM stick
         assembly.add_at(
-            ram.solid("ram_stick").at("centre"),
-            post=ad.translate([ram_x, ram_y, ram_z])
+            ram.solid("ram_stick_1").at("centre"),
+            post=ad.translate([ram_x1, ram_y1, ram_z])
+        )
+        
+        # Second RAM stick (offset by 8mm in Y from the first)
+        ram_y2 = ram_y1 + 8.0
+        assembly.add_at(
+            ram.solid("ram_stick_2").at("centre"),
+            post=ad.translate([ram_x1, ram_y2, ram_z])
         )
         
         # 3. Cooler (Noctua NH-L9)
@@ -62,9 +71,17 @@ class MotherboardAssemblyPico(ad.CompositeShape):
         cooler = NoctuaL9(dim=self.dim.cooling)
         cooler_z = self.dim.mobo.pcb_thickness / 2
         
+        # OpenSCAD: translate([115, 20, mobo_pcb_thickness]) -> relative to mobo bottom-front-left
+        # Converted to Python (relative to mobo center, Z is mobo center)
+        # X: 115 - 85 = 30. New X for 20mm clearance from left edge: -17.5
+        # Motherboard left edge at X=-85. Heatsink left edge at X=-85 + 20 = -65.
+        # Heatsink X center = -65 + (95/2) = -65 + 47.5 = -17.5.
+        # Y: 20 - 85 = -65. New Y for 20mm clearance from front edge: -17.5
+        # Motherboard front edge at Y=-85. Heatsink front edge at Y=-85 + 20 = -65.
+        # Heatsink Y center = -65 + (95/2) = -65 + 47.5 = -17.5.
         assembly.add_at(
             cooler.solid("cooler").at("base"), # Base anchor is contact surface
-            post=ad.translate([0, 0, cooler_z]) * ad.rotZ(90)
+            post=ad.translate([-17.5, -17.5, cooler_z]) * ad.rotZ(90)
         )
         
         # 4. PicoPSU

@@ -4,6 +4,42 @@ from dataclasses import field
 from registry import register_part
 from lib.cooling import CoolingDimensions, Fan, FanDimensions
 
+from dataclasses import dataclass
+
+# --- Noctua NH-L9 Dimensions ---
+# Defined here as the source of truth for this specific part.
+# Referenced by config.py for system-level dimensions.
+
+@dataclass(frozen=True)
+class NoctuaL9Constants:
+    base_height: float = 5.0
+    fins_height: float = 24.4
+    fan_height: float = 14.0
+    width: float = 95.0
+    depth: float = 95.0
+    fan_size: float = 92.0
+
+    @property
+    def total_height(self) -> float:
+        return self.base_height + self.fins_height + self.fan_height
+
+NOCTUA_L9 = NoctuaL9Constants()
+
+@dataclass(frozen=True)
+class NoctuaL12SConstants:
+    base_height: float = 5.0
+    pipes_height: float = 30.0
+    fan_height: float = 15.0
+    fins_height: float = 20.0
+    width: float = 128.0
+    depth: float = 146.0
+
+    @property
+    def total_height(self) -> float:
+        return self.base_height + self.pipes_height + self.fan_height + self.fins_height
+
+NOCTUA_L12S = NoctuaL12SConstants()
+
 @register_part("lib_noctua_l12s")
 def create_noctua_l12s() -> ad.Shape:
     """Creates a Noctua NH-L12S heatsink for rendering."""
@@ -110,10 +146,48 @@ class HeatsinkFins(ad.CompositeShape):
 @ad.shape
 @datatree
 class NoctuaL9(ad.CompositeShape):
-    """Noctua NH-L9 Low Profile Cooler."""
+    """
+    Noctua NH-L9 Low Profile Cooler.
+    
+    Component Stack (Top to Bottom):
+    1. Fan (Sits directly on Fins)
+    2. Heatsink Fins (Sit directly on Base)
+    3. CPU Base Plate (Contact Surface at Z=0)
+    
+    The assembly is anchored such that the CPU contact surface (bottom of Base)
+    is at the origin (Z=0).
+    """
     dim: CoolingDimensions = field(default_factory=CoolingDimensions)
 
     def build(self) -> ad.Maker:
+        """
+        Builds the Noctua NH-L9 assembly.
+        
+        Dimensions are sourced from constants in this file, unless overridden by `self.dim`.
+        
+        Stacking Logic:
+        - Fan Height (fan_h): 14.0mm
+        - Fins Height (fins_h): 24.4mm
+        - Base Height (base_h): 5.0mm
+        
+        Z-Axis Placement:
+        1. Fan:
+           - Target: Sit on top of Fins (Z=29.4).
+           - Center Z = Fins_Top (29.4) + Fan_Half_Height (7.0) = 36.4.
+           
+        2. Fins:
+           - Target: Sit on top of Base (Z=5.0).
+           - Center Z = Base_Top (5.0) + Fins_Half_Height (12.2) = 17.2.
+             
+        3. Base:
+           - Target: Occupy Z [0, 5.0].
+           - Quirk: The `CpuBase` shape appears to be defined such that `at("centre")`
+             results in a -5.0mm offset (or inverted Z).
+           - Fix: Applying `post=ad.translate([0, 0, -base_h / 2])` shifts the
+             center to Z=+2.5, correctly placing the bottom face at Z=0.
+        """
+        # Prioritize self.dim if provided, but default to constants if not set 
+        # (Assuming self.dim always has values, we use them, but we expect config.py to inject these constants)
         base_h = self.dim.nh_l9_base_height
         fins_h = self.dim.nh_l9_heatsink_height
         fan_h = self.dim.nh_l9_fan_height
@@ -124,8 +198,11 @@ class NoctuaL9(ad.CompositeShape):
 
         # Base sits on the CPU surface; anchor base at Z=0.
         base = CpuBase(h=base_h)
-        assembly = base.solid("base").at("centre", post=ad.translate([0, 0, base_h / 2]))
-
+        # CpuBase seems to be inverted or offset negatively. 
+        # Using -base_h/2 places the center at +2.5 global Z, 
+        # ensuring the base occupies [0, 5].
+        assembly = base.solid("base").at("centre", post=ad.translate([0, 0, -base_h / 2]))
+        
         fins_shape = ad.Box([cooler_w, cooler_d, fins_h])
         assembly.add_at(
             fins_shape.solid("fins").colour("silver").at("centre"),
@@ -154,13 +231,13 @@ class NoctuaL12S(ad.CompositeShape):
     
     def build(self) -> ad.Maker:
         # Dimensions
-        base_h = 5.0
-        pipes_h = 30.0
-        fan_h = 15.0
-        fins_h = 20.0
+        base_h = NOCTUA_L12S.base_height
+        pipes_h = NOCTUA_L12S.pipes_height
+        fan_h = NOCTUA_L12S.fan_height
+        fins_h = NOCTUA_L12S.fins_height
         
-        cooler_w = 128.0
-        cooler_d = 146.0
+        cooler_w = NOCTUA_L12S.width
+        cooler_d = NOCTUA_L12S.depth
         
         # 1. Base (Reference anchor is center of base plate)
         # Base is 5mm thick. Center Z=0 means plate spans -2.5 to 2.5?

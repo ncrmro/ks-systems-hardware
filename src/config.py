@@ -6,6 +6,7 @@ from dataclasses import field
 from lib.motherboard import MiniItxDimensions
 from lib.psu import FlexAtxDimensions, SfxDimensions, PicoPsuDimensions
 from lib.cooling import CoolingDimensions
+from lib.heatsink import NOCTUA_L9, NOCTUA_L12S
 
 @datatree
 class CommonDimensions:
@@ -46,7 +47,15 @@ class PicoDimensions(CommonDimensions):
     """Configuration for Pico ITX case."""
     
     psu: PicoPsuDimensions = field(default_factory=PicoPsuDimensions)
-    cooling: CoolingDimensions = field(default_factory=CoolingDimensions)
+    cooling: CoolingDimensions = field(default_factory=lambda: CoolingDimensions(
+        nh_l9_total_height=NOCTUA_L9.total_height,
+        nh_l9_base_height=NOCTUA_L9.base_height,
+        nh_l9_heatsink_height=NOCTUA_L9.fins_height,
+        nh_l9_fan_height=NOCTUA_L9.fan_height,
+        nh_l9_width=NOCTUA_L9.width,
+        nh_l9_depth=NOCTUA_L9.depth,
+        nh_l9_fan_size=NOCTUA_L9.fan_size
+    ))
 
     @property
     def pico_case_width(self) -> float:
@@ -55,12 +64,22 @@ class PicoDimensions(CommonDimensions):
     @property
     def pico_case_depth(self) -> float:
         return self.mobo.depth + (2 * self.wall_thickness)
+
+    # Variation: "normal" or "server"
+    variation: str = "normal"
+
+    @property
+    def extra_interior_height(self) -> float:
+        # Server variation adds height for 2.5" drives
+        return 15.0 if self.variation == "server" else 0.0
         
     @property
     def pico_interior_chamber_height(self) -> float:
         cooler_stack = self.standoff_height + self.mobo.pcb_thickness + self.cooling.nh_l9_total_height
         io_stack = self.standoff_height + self.mobo.pcb_thickness + self.mobo.io_shield_z_offset + self.mobo.io_shield_height
-        return max(cooler_stack, io_stack)
+        
+        base_height = max(cooler_stack, io_stack)
+        return base_height + self.extra_interior_height
 
     @property
     def pico_exterior_height(self) -> float:
@@ -72,7 +91,11 @@ class MinimalDimensions(CommonDimensions):
     """Configuration for Minimal/NAS case."""
     
     psu: FlexAtxDimensions = field(default_factory=FlexAtxDimensions)
-    cooling: CoolingDimensions = field(default_factory=CoolingDimensions)
+    cooling: CoolingDimensions = field(default_factory=lambda: CoolingDimensions(
+        nh_l12s_total_height=NOCTUA_L12S.total_height,
+        nh_l12s_width=NOCTUA_L12S.width,
+        nh_l12s_depth=NOCTUA_L12S.depth
+    ))
     
     nas_2disk_rail_width: float = 2.0
     nas_2disk_gap: float = 5.0

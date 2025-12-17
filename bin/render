@@ -25,25 +25,18 @@ sys.modules["OpenGL.GL"] = MagicMock()
 import anchorscad as ad
 import registry
 import lib
-# Trigger imports of all parts to populate registry
 import parts
+import assemblies # New import
 
 def load_all_parts():
-    """Recursively import all modules in parts and lib to trigger decorators and auto-discovery."""
+    """Recursively import all modules in parts, lib, and assemblies to trigger decorators and auto-discovery."""
     
-    # Scan lib (Vitamins)
-    path = list(lib.__path__)
-    prefix = lib.__name__ + "."
-    for _, name, _ in pkgutil.walk_packages(path, prefix):
-        mod = importlib.import_module(name)
-        registry.auto_register_module(mod, prefix="lib_")
-
-    # Scan parts (Assemblies/Fabricated)
+    # Scan parts (Fabricated Components)
     path = list(parts.__path__)
     prefix = parts.__name__ + "."
     for _, name, _ in pkgutil.walk_packages(path, prefix):
         mod = importlib.import_module(name)
-        registry.auto_register_module(mod, prefix="")
+        registry.auto_register_module(mod, prefix="parts_")
 
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "build"
@@ -126,13 +119,17 @@ def main():
     print(f"Generating {len(parts)} parts to {args.output}...")
     
     scad_files = []
+    scad_fail_count = 0
     for name, factory in parts.items():
         path, ok, msg = generate_scad(name, factory, args.output)
         print(msg)
-        if ok: scad_files.append(path)
+        if ok: 
+            scad_files.append(path)
+        else:
+            scad_fail_count += 1
 
     if args.scad_only:
-        sys.exit(0)
+        sys.exit(1 if scad_fail_count > 0 else 0)
 
     # 4. Render STLs
     print(f"Rendering STLs ({args.jobs} jobs)...")

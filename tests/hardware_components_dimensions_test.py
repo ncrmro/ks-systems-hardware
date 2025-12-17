@@ -111,11 +111,11 @@ def test_nh_l9_dimensions():
     """
     cooling_dim = CoolingDimensions()
 
-    assert cooling_dim.nh_l9_total_height == 37.0
+    assert cooling_dim.nh_l9_total_height == 43.4
     assert cooling_dim.nh_l9_width == 95.0
     assert cooling_dim.nh_l9_depth == 95.0
     assert cooling_dim.nh_l9_base_height == 5.0
-    assert cooling_dim.nh_l9_heatsink_height == 18.0
+    assert cooling_dim.nh_l9_heatsink_height == 24.4
     assert cooling_dim.nh_l9_fan_height == 14.0
 
 def test_minimal_interior_height_calculation():
