@@ -17,10 +17,11 @@ This is the active development area for new features and migration.
 - **Registry:** Parts are registered using `@registry.register_part("name")` (defined in `src/registry.py`).
 - **Configuration:** `src/config.py` uses `@anchorscad.datatree` to define parametric dimensions (`CommonDimensions`, `PicoDimensions`, etc.).
 - **Organization:**
-  - `src/lib/`: **Vitamins** (Off-the-shelf parts like Motherboards, PSUs). These define their own dimensions.
-  - `src/parts/`: **Fabricated Parts** (3D printed/machined). These derive dimensions from `config.py`.
+  - `src/lib/`: **Vitamins** (Off-the-shelf parts). Things you buy (Motherboards, PSUs, Heatsinks). These define the fixed interfaces.
+  - `src/parts/`: **Fabricated Parts** (3D printed/machined). Things you make (Shells, Frames, Brackets). These derive dimensions from `config.py`.
+  - `src/assemblies/`: **System Builds**. Top-level compositions of Parts + Vitamins (e.g., `PicoAssembly`).
 - **Build System:** `bin/render`
-  - **Discovery:** Recursively imports `parts` package to trigger registration.
+  - **Discovery:** Recursively imports `lib`, `parts`, and `assemblies` packages to trigger registration.
   - **Output:** Generates `.scad` and `.stl` files in `build/`.
   - **Usage:**
     - `bin/render`: Build all registered parts.
@@ -45,9 +46,13 @@ This is the active development area for new features and migration.
     - Run `bin/watch` to automatically test and render on file save.
     - Run `bin/render [part_name]` to manually generate SCAD/STL.
 
-3.  **Testing:**
-    - **PREFERRED:** Run `bin/test` to execute the project's verification suite (pytest). This is the standard way to ensure all tests pass.
-    - Tests are located in `tests/`.
+3.  **Testing (Strict Requirement):**
+    - **Methodology:** Utilize the existing test infrastructure (`pytest` via `bin/test`) to verify geometry and logic. **Do not create one-off debugging scripts.** This ensures reproducible verification and prevents regression.
+    - **Recommended Workflow:**
+        1. **Isolate:** Create a focused unit test (e.g., in `tests/`) that asserts the specific geometric condition (e.g., "Part A top must equal Part B bottom").
+        2. **Verify Failure:** Run the test with `bin/test <test_file>` to confirm it fails (demonstrating the bug).
+        3. **Fix:** Modify the source code.
+        4. **Verify Success:** Run the test again to confirm it passes.
     - `tests/hardware_components_dimensions_test.py` verifies core dimensions.
 
 4.  **Committing:**

@@ -27,6 +27,10 @@ def auto_register_module(module, prefix: str = ""):
     """
     for name, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and issubclass(obj, ad.Shape) and obj is not ad.Shape and obj is not ad.CompositeShape:
+            # Only register classes defined in this module
+            if obj.__module__ != module.__name__:
+                continue
+
             # Check if it's already registered (by name or object equality logic?)
             # We don't have reverse lookup easily.
             

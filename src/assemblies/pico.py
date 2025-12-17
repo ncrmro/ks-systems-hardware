@@ -5,8 +5,8 @@ from dataclasses import field
 
 from config import PicoDimensions
 from registry import register_part
-from parts.motherboard_assembly import MotherboardAssemblyPico
-from parts.pico_shell import PicoBottomShell, PicoTopShell
+from lib.motherboard_assembly import MotherboardAssemblyPico
+from parts.case_pico import PicoBottomShell, PicoTopShell
 
 @register_part("pico_assembly")
 def create_pico_assembly() -> ad.Shape:

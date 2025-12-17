@@ -24,6 +24,8 @@ sys.modules["OpenGL.GL.shaders"] = DummyOpenGLModule("OpenGL.GL.shaders")
 # This script runs INSIDE the project environment provided by 'uv run'.
 # 'uv run' automatically loads dependencies from pyproject.toml.
 
+import subprocess
+
 if __name__ == "__main__":
     # Add 'src' to sys.path to allow imports from the source root
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,4 +34,16 @@ if __name__ == "__main__":
     sys.path.insert(0, src_path)
 
     print("Running tests in project environment...")
-    sys.exit(pytest.main(sys.argv[1:]))
+    retcode = pytest.main(sys.argv[1:])
+    
+    if retcode == 0:
+        print("\nTests passed. Verifying render (SCAD generation)...")
+        render_script = os.path.join(script_dir, "render")
+        # Run render script, assuming it's executable. 
+        # Pass --scad-only to check generation without heavy STL export.
+        render_retcode = subprocess.call([render_script, "--scad-only"])
+        if render_retcode != 0:
+            print("Render verification failed.")
+            sys.exit(render_retcode)
+    
+    sys.exit(retcode)
