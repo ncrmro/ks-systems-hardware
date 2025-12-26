@@ -4,7 +4,7 @@ from dataclasses import field
 
 # Import component dimensions
 from lib.motherboard import MiniItxDimensions
-from lib.psu import FlexAtxDimensions, SfxDimensions, PicoPsuDimensions
+from lib.psu import FlexAtxDimensions, SfxDimensions as SfxPsuDimensions, PicoPsuDimensions
 from lib.cooling import CoolingDimensions
 from lib.heatsink import NOCTUA_L9, NOCTUA_L12S
 
@@ -89,18 +89,18 @@ class PicoDimensions(CommonDimensions):
 @datatree
 class MinimalDimensions(CommonDimensions):
     """Configuration for Minimal/NAS case."""
-    
+
     psu: FlexAtxDimensions = field(default_factory=FlexAtxDimensions)
     cooling: CoolingDimensions = field(default_factory=lambda: CoolingDimensions(
         nh_l12s_total_height=NOCTUA_L12S.total_height,
         nh_l12s_width=NOCTUA_L12S.width,
         nh_l12s_depth=NOCTUA_L12S.depth
     ))
-    
+
     nas_2disk_rail_width: float = 2.0
     nas_2disk_gap: float = 5.0
     nas_2disk_padding: float = 2.0
-    
+
     hdd_width: float = 101.6 # Could be moved to storage.py lib
 
     @property
@@ -116,7 +116,69 @@ class MinimalDimensions(CommonDimensions):
     @property
     def minimal_exterior_height(self) -> float:
         return self.interior_chamber_height + 2 * self.wall_thickness
-    
+
     @property
     def minimal_with_psu_width(self) -> float:
         return self.nas_2disk_width
+
+
+@datatree
+class SfxCaseDimensions(CommonDimensions):
+    """
+    Configuration for SFX PSU-based GPU tower case.
+
+    This is a tall vertical tower with:
+    - Motherboard on one side, IO ports facing down
+    - GPU on the other side, IO ports also facing down
+    - SFX PSU mounted above motherboard
+    - Ventilation on side panels
+
+    Case dimensions from SPEC.md section 8.4:
+    - Width: 171mm
+    - Depth: 378mm
+    - Height: 190mm
+    """
+
+    psu: SfxPsuDimensions = field(default_factory=SfxPsuDimensions)
+    cooling: CoolingDimensions = field(default_factory=lambda: CoolingDimensions(
+        nh_l12s_total_height=NOCTUA_L12S.total_height,
+        nh_l12s_width=NOCTUA_L12S.width,
+        nh_l12s_depth=NOCTUA_L12S.depth
+    ))
+
+    # Case exterior dimensions (from SPEC.md section 8.4)
+    sfx_case_width: float = 171.0
+    sfx_case_depth: float = 378.0
+    sfx_case_height: float = 190.0
+
+    # GPU dimensions
+    gpu_max_length: float = 320.0
+    gpu_max_width: float = 60.0  # 3 slots
+    gpu_slot_width: float = 20.0  # Per slot
+
+    # Chamber layout (vertical tower orientation)
+    # Motherboard chamber is on one side, GPU chamber on the other
+    mobo_chamber_depth: float = 170.0  # Mini-ITX depth
+    gpu_chamber_depth: float = 170.0   # Remaining depth for GPU
+    divider_thickness: float = 3.0     # Internal divider between chambers
+
+    # I/O panel (bottom when vertical) - houses both mobo I/O and GPU I/O
+    io_panel_height: float = 60.0  # Height for I/O ports area
+
+    # PSU mounting (above motherboard in mobo chamber)
+    psu_clearance: float = 10.0  # Clearance around PSU
+
+    @property
+    def interior_width(self) -> float:
+        """Interior width (excluding walls)."""
+        return self.sfx_case_width - 2 * self.wall_thickness
+
+    @property
+    def interior_depth(self) -> float:
+        """Interior depth (excluding walls)."""
+        return self.sfx_case_depth - 2 * self.wall_thickness
+
+    @property
+    def interior_height(self) -> float:
+        """Interior height (excluding walls)."""
+        return self.sfx_case_height - 2 * self.wall_thickness
