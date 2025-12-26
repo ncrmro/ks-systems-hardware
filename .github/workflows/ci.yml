@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Run tests
+        run: |
+          nix develop --command bash -c "
+            # Sync dependencies
+            uv sync
+
+            # Run pytest with OpenGL mocking for headless environment
+            uv run python -c \"
+            import sys
+            import unittest.mock as mock
+
+            # Mock OpenGL to prevent display-related failures
+            sys.modules['OpenGL'] = mock.MagicMock()
+            sys.modules['OpenGL.GL'] = mock.MagicMock()
+            sys.modules['OpenGL.GLU'] = mock.MagicMock()
+            sys.modules['OpenGL.GLUT'] = mock.MagicMock()
+
+            import pytest
+            sys.exit(pytest.main(['-v', 'tests/', 'src/']))
+            \"
+          "
