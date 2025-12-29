@@ -31,12 +31,26 @@ import assemblies # New import
 def load_all_parts():
     """Recursively import all modules in parts, lib, and assemblies to trigger decorators and auto-discovery."""
     
+    # Scan lib (Vitamins - off-the-shelf components)
+    lib_path = list(lib.__path__)
+    lib_prefix = lib.__name__ + "."
+    for _, name, _ in pkgutil.walk_packages(lib_path, lib_prefix):
+        mod = importlib.import_module(name)
+        registry.auto_register_module(mod, prefix="lib_")
+    
     # Scan parts (Fabricated Components)
-    path = list(parts.__path__)
-    prefix = parts.__name__ + "."
-    for _, name, _ in pkgutil.walk_packages(path, prefix):
+    parts_path = list(parts.__path__)
+    parts_prefix = parts.__name__ + "."
+    for _, name, _ in pkgutil.walk_packages(parts_path, parts_prefix):
         mod = importlib.import_module(name)
         registry.auto_register_module(mod, prefix="parts_")
+    
+    # Scan assemblies (System Builds)
+    assemblies_path = list(assemblies.__path__)
+    assemblies_prefix = assemblies.__name__ + "."
+    for _, name, _ in pkgutil.walk_packages(assemblies_path, assemblies_prefix):
+        mod = importlib.import_module(name)
+        registry.auto_register_module(mod, prefix="assemblies_")
 
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "build"
