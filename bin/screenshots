@@ -87,7 +87,7 @@ COMPONENTS = [
 ]
 
 
-def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None) -> bool:
+def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, extra_args: list = None) -> bool:
     """Take a screenshot of a single OpenSCAD file."""
     if not scad_file.exists():
         print(f"  Warning: {scad_file} not found, skipping")
@@ -95,7 +95,7 @@ def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None) ->
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"  Rendering: {scad_file.relative_to(PROJECT_ROOT)}")
+    print(f"  Rendering: {scad_file.relative_to(PROJECT_ROOT) if scad_file.is_relative_to(PROJECT_ROOT) else scad_file.name}")
 
     env = os.environ.copy()
     env["QT_QPA_PLATFORM"] = "offscreen"
@@ -111,6 +111,9 @@ def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None) ->
         for key, value in defines.items():
             cmd.append("-D")
             cmd.append(f"{key}={value}")
+
+    if extra_args:
+        cmd.extend(extra_args)
 
     cmd.extend(["-o", str(output_path), str(scad_file)])
 
@@ -266,6 +269,13 @@ def upload_to_r2(pattern: str = "assembly-*-exploded.png") -> int:
 
 
 def main():
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Keystone Hardware Screenshot Generator")
+    parser.add_argument("--scan-dir", type=Path, help="Directory to scan for .scad files")
+    parser.add_argument("--upload", action="store_true", help="Upload to R2")
+    args = parser.parse_args()
+
     print("Keystone Hardware Screenshot Generator")
     print("=" * 40)
     print(f"Output: {OUTPUT_DIR}")
@@ -274,16 +284,38 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     total = 0
-    total += screenshot_assemblies()
-    total += screenshot_components()
+    
+    if args.scan_dir:
+        if not args.scan_dir.exists():
+             print(f"Error: {args.scan_dir} does not exist.")
+             sys.exit(1)
+        
+        print(f"\n=== Scanning {args.scan_dir} ===\n")
+        for scad_file in args.scan_dir.glob("*.scad"):
+            name = scad_file.stem
+            output_path = OUTPUT_DIR / f"build-{name}.png"
+            # Use autocenter/viewall for scanned files
+            if screenshot_file(scad_file, output_path, extra_args=["--autocenter", "--viewall"]):
+                total += 1
+    else:
+        # Default behavior: screenshot hardcoded lists
+        total += screenshot_assemblies()
+        total += screenshot_components()
 
     print(f"\nDone! Generated {total} screenshots in: {OUTPUT_DIR}")
 
-    # Upload exploded views to R2
-    uploaded = upload_to_r2("*-exploded.png")
-    if uploaded > 0:
-        print(f"\nUploaded {uploaded} exploded views to R2")
-
+    # Upload exploded views to R2 if requested or legacy behavior (only if env vars set?)
+    # Let's make it explicit via flag OR if previously it was automatic.
+    # Previous code: upload_to_r2() was called at end.
+    # Let's keep it automatic if env vars are set, but respectful of the flag if we want to force it?
+    # Actually, let's just use the flag to ENABLE it, to avoid accidental uploads in CI if env vars happened to be there (unlikely).
+    # But to preserve backward compat for whoever runs this locally:
+    # If args.upload is True, do it. 
+    
+    if args.upload:
+        uploaded = upload_to_r2("*-exploded.png")
+        if uploaded > 0:
+            print(f"\nUploaded {uploaded} exploded views to R2")
 
 if __name__ == "__main__":
     main()
