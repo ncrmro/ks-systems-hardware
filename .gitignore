@@ -27,3 +27,7 @@ ENV/
 ad_dir.txt
 inspect_*.py
 
+# Nix/direnv
+.direnv/
+result
+
