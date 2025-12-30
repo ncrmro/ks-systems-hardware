@@ -45,6 +45,7 @@ This is the active development area for new features and migration.
 2.  **Verify/Render:**
     - Run `bin/watch` to automatically test and render on file save.
     - Run `bin/render [part_name]` to manually generate SCAD/STL.
+    - **Visual Verification:** Run `bin/screenshots --scan-dir build/` to generate screenshots of the built parts in `screenshots/`. Verify these images to ensure the geometry is correct.
 
 3.  **Testing (Strict Requirement):**
     - **Methodology:** Utilize the existing test infrastructure (`pytest` via `bin/test`) to verify geometry and logic. **Do not create one-off debugging scripts.** This ensures reproducible verification and prevents regression.
