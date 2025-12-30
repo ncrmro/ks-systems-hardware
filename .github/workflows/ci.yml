@@ -20,24 +20,15 @@ jobs:
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
 
+      - name: Build devShell
+        run: nix develop --command echo "DevShell built"
+
       - name: Run tests
         run: |
           nix develop --command bash -c "
             # Sync dependencies
             uv sync
 
-            # Run pytest with OpenGL mocking for headless environment
-            uv run python -c \"
-            import sys
-            import unittest.mock as mock
-
-            # Mock OpenGL to prevent display-related failures
-            sys.modules['OpenGL'] = mock.MagicMock()
-            sys.modules['OpenGL.GL'] = mock.MagicMock()
-            sys.modules['OpenGL.GLU'] = mock.MagicMock()
-            sys.modules['OpenGL.GLUT'] = mock.MagicMock()
-
-            import pytest
-            sys.exit(pytest.main(['-v', 'tests/', 'src/']))
-            \"
+            # Run standard tests and render verification
+            ./bin/test -v tests/ src/
           "
