@@ -23,7 +23,7 @@ jobs:
       - name: Build devShell
         run: nix develop --command echo "DevShell built"
 
-      - name: Run tests
+      - name: Build and Test
         run: |
           nix develop --command bash -c "
             # Sync dependencies
@@ -31,4 +31,16 @@ jobs:
 
             # Run standard tests and render verification
             ./bin/test -v tests/ src/
+            
+            # Generate SCAD files for all parts
+            ./bin/render --scad-only
+            
+            # Generate screenshots for the built parts
+            ./bin/screenshots --scan-dir build
           "
+
+      - name: Upload Screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: scad-screenshots
+          path: screenshots/
