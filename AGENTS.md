@@ -45,7 +45,9 @@ This is the active development area for new features and migration.
 2.  **Verify/Render:**
     - Run `bin/watch` to automatically test and render on file save.
     - Run `bin/render [part_name]` to manually generate SCAD/STL.
-    - **Visual Verification:** Run `bin/screenshots --scan-dir build/` to generate screenshots of the built parts in `screenshots/`. Verify these images to ensure the geometry is correct.
+    - **Important:** Use `nix develop --command ./bin/render [part_name]` for STL generation (requires OpenSCAD).
+    - **Visual Verification:** Run `nix develop --command ./bin/screenshots --scan-dir build/` to generate screenshots of the built parts in `screenshots/`. Verify these images to ensure the geometry is correct.
+    - **Note:** Screenshots require a local environment with display/GPU access. Not available in headless CI environments.
 
 3.  **Testing (Strict Requirement):**
     - **Methodology:** Utilize the existing test infrastructure (`pytest` via `bin/test`) to verify geometry and logic. **Do not create one-off debugging scripts.** This ensures reproducible verification and prevents regression.
@@ -88,8 +90,22 @@ This is the active development area for new features and migration.
 - **Headless Rendering:** `ad.render` may fail with internal errors (`AttributeError: 'str' object has no attribute 'A'`) in the headless test environment. Avoid full geometry intersection tests; rely on logic/dimension tests.
 
 ## Dependencies
+
+### Nix Development Shell (Recommended)
+The project uses Nix flakes for reproducible development environments:
+- **Enter shell:** `nix develop`
+- **Included tools:** Python 3.13, `uv`, `openscad-unstable`, Git, and all required system libraries
+- **Auto-setup:** Automatically creates `.venv` and syncs dependencies via `uv`
+- **Use for:**
+  - Running `bin/render` with STL generation (requires OpenSCAD)
+  - Generating screenshots with `bin/screenshots` (requires OpenSCAD with display/EGL context)
+  - Consistent development environment across systems
+
+**Note:** Screenshot generation requires a display or EGL context. In headless CI environments (GitHub Actions), OpenSCAD cannot render images even with `QT_QPA_PLATFORM=offscreen`. Screenshots must be generated locally or in environments with GPU/display access.
+
+### Manual Setup (Alternative)
 - **Python:** `anchorscad`, `numpy`, `watchdog`, `pytest`.
-- **System:** `openscad` CLI required for STL generation.
+- **System:** `openscad` CLI required for STL generation and screenshots.
 - **Environment:** Managed via `uv`.
 - **Imports:** Source root is `src/`. Imports should be absolute (e.g., `from lib.motherboard import ...`).
 
