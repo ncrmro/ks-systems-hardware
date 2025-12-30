@@ -87,8 +87,81 @@ COMPONENTS = [
 ]
 
 
-def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, extra_args: list = None) -> bool:
-    """Take a screenshot of a single OpenSCAD file."""
+def check_docker_available() -> bool:
+    """Check if Docker is available."""
+    try:
+        result = subprocess.run(["docker", "--version"], capture_output=True, text=True)
+        return result.returncode == 0
+    except FileNotFoundError:
+        return False
+
+
+def screenshot_file_docker(scad_file: Path, output_path: Path, defines: dict = None, extra_args: list = None) -> bool:
+    """Take a screenshot using Docker with OpenSCAD container (fallback method)."""
+    if not scad_file.exists():
+        print(f"  Warning: {scad_file} not found, skipping")
+        return False
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Get relative paths from project root for mounting
+    scad_rel = scad_file.relative_to(PROJECT_ROOT) if scad_file.is_relative_to(PROJECT_ROOT) else scad_file
+    output_rel = output_path.relative_to(PROJECT_ROOT) if output_path.is_relative_to(PROJECT_ROOT) else output_path
+
+    # Build OpenSCAD command
+    openscad_cmd = [
+        "openscad",
+        f"--imgsize={WIDTH},{HEIGHT}",
+        f"--camera={CAMERA_ISOMETRIC}",
+        f"--colorscheme={COLORSCHEME}",
+    ]
+
+    if defines:
+        for key, value in defines.items():
+            openscad_cmd.extend(["-D", f"{key}={value}"])
+
+    if extra_args:
+        openscad_cmd.extend(extra_args)
+
+    openscad_cmd.extend(["-o", f"/openscad/{output_rel}", f"/openscad/{scad_rel}"])
+
+    # Build Docker command
+    docker_cmd = [
+        "docker", "run",
+        "--rm",
+        "--init",
+        "-v", f"{PROJECT_ROOT}:/openscad",
+        "-u", f"{os.getuid()}:{os.getgid()}",
+        "openscad/openscad:latest",
+        "xvfb-run", "-a"
+    ] + openscad_cmd
+
+    try:
+        result = subprocess.run(docker_cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"    -> {output_path.relative_to(PROJECT_ROOT)} (via Docker)")
+            return True
+        else:
+            print(f"    Error (Docker): {result.stderr}")
+            return False
+    except Exception as e:
+        print(f"    Error running Docker: {e}")
+        return False
+
+
+def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, extra_args: list = None, use_docker: bool = False) -> bool:
+    """Take a screenshot of a single OpenSCAD file.
+    
+    Args:
+        scad_file: Path to the SCAD file to render
+        output_path: Path where the PNG should be saved
+        defines: Dictionary of OpenSCAD defines (-D parameters)
+        extra_args: Additional command-line arguments
+        use_docker: Force using Docker (useful for headless environments)
+    
+    Returns:
+        True if successful, False otherwise
+    """
     if not scad_file.exists():
         print(f"  Warning: {scad_file} not found, skipping")
         return False
@@ -97,6 +170,14 @@ def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, ex
 
     print(f"  Rendering: {scad_file.relative_to(PROJECT_ROOT) if scad_file.is_relative_to(PROJECT_ROOT) else scad_file.name}")
 
+    # Try Docker first if explicitly requested or if native OpenSCAD fails
+    if use_docker:
+        if check_docker_available():
+            return screenshot_file_docker(scad_file, output_path, defines, extra_args)
+        else:
+            print("    Warning: Docker not available, falling back to native OpenSCAD")
+
+    # Try native OpenSCAD
     env = os.environ.copy()
     env["QT_QPA_PLATFORM"] = "offscreen"
 
@@ -118,19 +199,41 @@ def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, ex
     cmd.extend(["-o", str(output_path), str(scad_file)])
 
     try:
-        result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+        result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=60)
         if result.returncode == 0:
             print(f"    -> {output_path.relative_to(PROJECT_ROOT)}")
             return True
         else:
-            print(f"    Error: {result.stderr}")
-            return False
+            # Check if error is related to display/GL context
+            stderr_lower = result.stderr.lower()
+            if any(keyword in stderr_lower for keyword in ["egl", "display", "gl context", "offscreenview"]):
+                print("    Native OpenSCAD failed (display/GL issue), trying Docker fallback...")
+                if check_docker_available():
+                    return screenshot_file_docker(scad_file, output_path, defines, extra_args)
+                else:
+                    print(f"    Error: {result.stderr}")
+                    return False
+            else:
+                print(f"    Error: {result.stderr}")
+                return False
     except FileNotFoundError:
-        print("  Error: openscad not found. Please install OpenSCAD.")
-        sys.exit(1)
+        # OpenSCAD not found, try Docker as fallback
+        print("    OpenSCAD not found locally, trying Docker fallback...")
+        if check_docker_available():
+            return screenshot_file_docker(scad_file, output_path, defines, extra_args)
+        else:
+            print("  Error: Neither OpenSCAD nor Docker is available.")
+            return False
+    except subprocess.TimeoutExpired:
+        print("    Timeout: Rendering took too long, trying Docker fallback...")
+        if check_docker_available():
+            return screenshot_file_docker(scad_file, output_path, defines, extra_args)
+        else:
+            print("    Error: Rendering timed out and Docker not available")
+            return False
 
 
-def screenshot_assemblies() -> int:
+def screenshot_assemblies(use_docker: bool = False) -> int:
     """Screenshot all assembly files (normal, exploded, and open views)."""
     print("\n=== Assemblies ===\n")
 
@@ -141,23 +244,23 @@ def screenshot_assemblies() -> int:
 
         # Normal view
         output_path = OUTPUT_DIR / f"assembly-{name}.png"
-        if screenshot_file(scad_file, output_path):
+        if screenshot_file(scad_file, output_path, use_docker=use_docker):
             count += 1
 
         # Exploded view
         output_path_exploded = OUTPUT_DIR / f"assembly-{name}-exploded.png"
-        if screenshot_file(scad_file, output_path_exploded, defines={"explode": 30}):
+        if screenshot_file(scad_file, output_path_exploded, defines={"explode": 30}, use_docker=use_docker):
             count += 1
 
         # Open view (panels hidden, bottom panel still visible)
         output_path_open = OUTPUT_DIR / f"assembly-{name}-open.png"
-        if screenshot_file(scad_file, output_path_open, defines={"show_panels": "false"}):
+        if screenshot_file(scad_file, output_path_open, defines={"show_panels": "false"}, use_docker=use_docker):
             count += 1
 
     return count
 
 
-def screenshot_components() -> int:
+def screenshot_components(use_docker: bool = False) -> int:
     """Screenshot all component files."""
     print("\n=== Components ===\n")
 
@@ -167,7 +270,7 @@ def screenshot_components() -> int:
         name = scad_file.stem
         output_path = OUTPUT_DIR / f"component-{name}.png"
 
-        if screenshot_file(scad_file, output_path):
+        if screenshot_file(scad_file, output_path, use_docker=use_docker):
             count += 1
 
     return count
@@ -274,12 +377,19 @@ def main():
     parser = argparse.ArgumentParser(description="Keystone Hardware Screenshot Generator")
     parser.add_argument("--scan-dir", type=Path, help="Directory to scan for .scad files")
     parser.add_argument("--upload", action="store_true", help="Upload to R2")
+    parser.add_argument("--use-docker", action="store_true", help="Use Docker with xvfb-run for rendering (fallback for headless environments)")
     args = parser.parse_args()
 
     print("Keystone Hardware Screenshot Generator")
     print("=" * 40)
     print(f"Output: {OUTPUT_DIR}")
     print(f"Resolution: {WIDTH}x{HEIGHT}")
+    if args.use_docker:
+        print("Rendering mode: Docker (xvfb-run)")
+    elif check_docker_available():
+        print("Rendering mode: Native OpenSCAD (Docker fallback available)")
+    else:
+        print("Rendering mode: Native OpenSCAD (Docker not available)")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -295,12 +405,12 @@ def main():
             name = scad_file.stem
             output_path = OUTPUT_DIR / f"build-{name}.png"
             # Use autocenter/viewall for scanned files
-            if screenshot_file(scad_file, output_path, extra_args=["--autocenter", "--viewall"]):
+            if screenshot_file(scad_file, output_path, extra_args=["--autocenter", "--viewall"], use_docker=args.use_docker):
                 total += 1
     else:
         # Default behavior: screenshot hardcoded lists
-        total += screenshot_assemblies()
-        total += screenshot_components()
+        total += screenshot_assemblies(use_docker=args.use_docker)
+        total += screenshot_components(use_docker=args.use_docker)
 
     print(f"\nDone! Generated {total} screenshots in: {OUTPUT_DIR}")
 

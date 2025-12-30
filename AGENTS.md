@@ -46,8 +46,10 @@ This is the active development area for new features and migration.
     - Run `bin/watch` to automatically test and render on file save.
     - Run `bin/render [part_name]` to manually generate SCAD/STL.
     - **Important:** Use `nix develop --command ./bin/render [part_name]` for STL generation (requires OpenSCAD).
-    - **Visual Verification:** Run `nix develop --command ./bin/screenshots --scan-dir build/` to generate screenshots of the built parts in `screenshots/`. Verify these images to ensure the geometry is correct.
-    - **Note:** Screenshots require a local environment with display/GPU access. Not available in headless CI environments.
+    - **Visual Verification:** 
+      - Local with display: `nix develop --command ./bin/screenshots --scan-dir build/`
+      - Headless/CI: `./bin/screenshots --scan-dir build/ --use-docker` (automatic fallback to Docker)
+    - **Note:** The screenshot script automatically falls back to Docker when native OpenSCAD fails due to display/GL context issues.
 
 3.  **Testing (Strict Requirement):**
     - **Methodology:** Utilize the existing test infrastructure (`pytest` via `bin/test`) to verify geometry and logic. **Do not create one-off debugging scripts.** This ensures reproducible verification and prevents regression.
@@ -98,10 +100,13 @@ The project uses Nix flakes for reproducible development environments:
 - **Auto-setup:** Automatically creates `.venv` and syncs dependencies via `uv`
 - **Use for:**
   - Running `bin/render` with STL generation (requires OpenSCAD)
-  - Generating screenshots with `bin/screenshots` (requires OpenSCAD with display/EGL context)
+  - Generating screenshots with `bin/screenshots` (with display access)
   - Consistent development environment across systems
 
-**Note:** Screenshot generation requires a display or EGL context. In headless CI environments (GitHub Actions), OpenSCAD cannot render images even with `QT_QPA_PLATFORM=offscreen`. Screenshots must be generated locally or in environments with GPU/display access.
+**Screenshot Generation:**
+- **With display/GPU:** `nix develop --command ./bin/screenshots --scan-dir build/`
+- **Headless/CI:** `./bin/screenshots --scan-dir build/ --use-docker` (uses Docker with xvfb-run)
+- **Automatic fallback:** The script automatically falls back to Docker when native OpenSCAD fails due to display/GL context issues
 
 ### Manual Setup (Alternative)
 - **Python:** `anchorscad`, `numpy`, `watchdog`, `pytest`.
