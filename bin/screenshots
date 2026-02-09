@@ -44,8 +44,16 @@ WIDTH = 1920
 HEIGHT = 1080
 COLORSCHEME = "Tomorrow Night"
 
-# Camera settings (translate_x,translate_y,translate_z,rot_x,rot_y,rot_z,distance)
-CAMERA_ISOMETRIC = "0,0,0,55,0,25,900"
+# Camera angles (translate_x,translate_y,translate_z,rot_x,rot_y,rot_z,distance)
+# Distance=0 because --viewall handles framing.
+CAMERAS = {
+    "iso":   "0,0,0,55,0,25,0",
+    "front": "0,0,0,0,0,0,0",
+    "back":  "0,0,0,0,0,180,0",
+    "top":   "0,0,0,90,0,0,0",
+    "right": "0,0,0,0,0,270,0",
+    "left":  "0,0,0,0,0,90,0",
+}
 
 # Files to screenshot
 ASSEMBLIES = [
@@ -87,7 +95,7 @@ COMPONENTS = [
 ]
 
 
-def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, extra_args: list = None) -> bool:
+def screenshot_file(scad_file: Path, output_path: Path, camera: str = "iso", defines: dict = None, extra_args: list = None) -> bool:
     """Take a screenshot of a single OpenSCAD file."""
     if not scad_file.exists():
         print(f"  Warning: {scad_file} not found, skipping")
@@ -103,8 +111,10 @@ def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, ex
     cmd = [
         "openscad",
         f"--imgsize={WIDTH},{HEIGHT}",
-        f"--camera={CAMERA_ISOMETRIC}",
+        f"--camera={CAMERAS[camera]}",
         f"--colorscheme={COLORSCHEME}",
+        "--autocenter",
+        "--viewall",
     ]
 
     if defines:
@@ -130,7 +140,7 @@ def screenshot_file(scad_file: Path, output_path: Path, defines: dict = None, ex
         sys.exit(1)
 
 
-def screenshot_assemblies() -> int:
+def screenshot_assemblies(angles: list[str]) -> int:
     """Screenshot all assembly files (normal, exploded, and open views)."""
     print("\n=== Assemblies ===\n")
 
@@ -139,25 +149,26 @@ def screenshot_assemblies() -> int:
         scad_file = PROJECT_ROOT / rel_path
         name = scad_file.stem
 
-        # Normal view
-        output_path = OUTPUT_DIR / f"assembly-{name}.png"
-        if screenshot_file(scad_file, output_path):
-            count += 1
+        for angle in angles:
+            # Normal view
+            output_path = OUTPUT_DIR / f"assembly-{name}-{angle}.png"
+            if screenshot_file(scad_file, output_path, camera=angle):
+                count += 1
 
-        # Exploded view
-        output_path_exploded = OUTPUT_DIR / f"assembly-{name}-exploded.png"
-        if screenshot_file(scad_file, output_path_exploded, defines={"explode": 30}):
-            count += 1
+            # Exploded view
+            output_path_exploded = OUTPUT_DIR / f"assembly-{name}-exploded-{angle}.png"
+            if screenshot_file(scad_file, output_path_exploded, camera=angle, defines={"explode": 30}):
+                count += 1
 
-        # Open view (panels hidden, bottom panel still visible)
-        output_path_open = OUTPUT_DIR / f"assembly-{name}-open.png"
-        if screenshot_file(scad_file, output_path_open, defines={"show_panels": "false"}):
-            count += 1
+            # Open view (panels hidden, bottom panel still visible)
+            output_path_open = OUTPUT_DIR / f"assembly-{name}-open-{angle}.png"
+            if screenshot_file(scad_file, output_path_open, camera=angle, defines={"show_panels": "false"}):
+                count += 1
 
     return count
 
 
-def screenshot_components() -> int:
+def screenshot_components(angles: list[str]) -> int:
     """Screenshot all component files."""
     print("\n=== Components ===\n")
 
@@ -165,10 +176,11 @@ def screenshot_components() -> int:
     for rel_path in COMPONENTS:
         scad_file = PROJECT_ROOT / rel_path
         name = scad_file.stem
-        output_path = OUTPUT_DIR / f"component-{name}.png"
 
-        if screenshot_file(scad_file, output_path):
-            count += 1
+        for angle in angles:
+            output_path = OUTPUT_DIR / f"component-{name}-{angle}.png"
+            if screenshot_file(scad_file, output_path, camera=angle):
+                count += 1
 
     return count
 
@@ -201,7 +213,7 @@ def get_r2_etag(key: str, env: dict) -> str | None:
     return None
 
 
-def upload_to_r2(pattern: str = "assembly-*-exploded.png") -> int:
+def upload_to_r2(pattern: str = "assembly-*-exploded-iso.png") -> int:
     """Upload matching screenshots to Cloudflare R2.
 
     Only uploads files that have changed (based on MD5 hash comparison).
@@ -270,50 +282,103 @@ def upload_to_r2(pattern: str = "assembly-*-exploded.png") -> int:
 
 def main():
     import argparse
-    
-    parser = argparse.ArgumentParser(description="Keystone Hardware Screenshot Generator")
+
+    all_angles = list(CAMERAS.keys())
+
+    parser = argparse.ArgumentParser(
+        description="Keystone Hardware Screenshot Generator",
+        epilog=f"Available angles: {', '.join(all_angles)}",
+    )
+    parser.add_argument("filter", nargs="?", help="Substring to match against assembly/component paths")
+    parser.add_argument("--all", action="store_true", help="Render all assemblies and components")
     parser.add_argument("--scan-dir", type=Path, help="Directory to scan for .scad files")
+    parser.add_argument("--angles", type=str, default=None,
+                        help=f"Comma-separated angle names (default: all). Available: {','.join(all_angles)}")
     parser.add_argument("--upload", action="store_true", help="Upload to R2")
     args = parser.parse_args()
+
+    # Parse angles
+    if args.angles:
+        angles = [a.strip() for a in args.angles.split(",")]
+        for a in angles:
+            if a not in CAMERAS:
+                print(f"Error: unknown angle '{a}'. Available: {', '.join(all_angles)}")
+                sys.exit(1)
+    else:
+        angles = all_angles
+
+    # Validate args: need at least one mode
+    if not args.scan_dir and not args.all and not args.filter:
+        parser.print_help()
+        sys.exit(1)
 
     print("Keystone Hardware Screenshot Generator")
     print("=" * 40)
     print(f"Output: {OUTPUT_DIR}")
     print(f"Resolution: {WIDTH}x{HEIGHT}")
+    print(f"Angles: {', '.join(angles)}")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     total = 0
-    
+
     if args.scan_dir:
         if not args.scan_dir.exists():
-             print(f"Error: {args.scan_dir} does not exist.")
-             sys.exit(1)
-        
+            print(f"Error: {args.scan_dir} does not exist.")
+            sys.exit(1)
+
         print(f"\n=== Scanning {args.scan_dir} ===\n")
         for scad_file in args.scan_dir.glob("*.scad"):
             name = scad_file.stem
-            output_path = OUTPUT_DIR / f"build-{name}.png"
-            # Use autocenter/viewall for scanned files
-            if screenshot_file(scad_file, output_path, extra_args=["--autocenter", "--viewall"]):
-                total += 1
-    else:
-        # Default behavior: screenshot hardcoded lists
-        total += screenshot_assemblies()
-        total += screenshot_components()
+            for angle in angles:
+                output_path = OUTPUT_DIR / f"build-{name}-{angle}.png"
+                if screenshot_file(scad_file, output_path, camera=angle):
+                    total += 1
+
+    elif args.all:
+        total += screenshot_assemblies(angles)
+        total += screenshot_components(angles)
+
+    elif args.filter:
+        # Match filter against assembly paths
+        matched = False
+        for rel_path in ASSEMBLIES:
+            if args.filter in rel_path:
+                matched = True
+                scad_file = PROJECT_ROOT / rel_path
+                name = scad_file.stem
+                for angle in angles:
+                    output_path = OUTPUT_DIR / f"assembly-{name}-{angle}.png"
+                    if screenshot_file(scad_file, output_path, camera=angle):
+                        total += 1
+
+                    output_path_exploded = OUTPUT_DIR / f"assembly-{name}-exploded-{angle}.png"
+                    if screenshot_file(scad_file, output_path_exploded, camera=angle, defines={"explode": 30}):
+                        total += 1
+
+                    output_path_open = OUTPUT_DIR / f"assembly-{name}-open-{angle}.png"
+                    if screenshot_file(scad_file, output_path_open, camera=angle, defines={"show_panels": "false"}):
+                        total += 1
+
+        # Match filter against component paths
+        for rel_path in COMPONENTS:
+            if args.filter in rel_path:
+                matched = True
+                scad_file = PROJECT_ROOT / rel_path
+                name = scad_file.stem
+                for angle in angles:
+                    output_path = OUTPUT_DIR / f"component-{name}-{angle}.png"
+                    if screenshot_file(scad_file, output_path, camera=angle):
+                        total += 1
+
+        if not matched:
+            print(f"\nNo assemblies or components matching '{args.filter}'")
+            sys.exit(1)
 
     print(f"\nDone! Generated {total} screenshots in: {OUTPUT_DIR}")
 
-    # Upload exploded views to R2 if requested or legacy behavior (only if env vars set?)
-    # Let's make it explicit via flag OR if previously it was automatic.
-    # Previous code: upload_to_r2() was called at end.
-    # Let's keep it automatic if env vars are set, but respectful of the flag if we want to force it?
-    # Actually, let's just use the flag to ENABLE it, to avoid accidental uploads in CI if env vars happened to be there (unlikely).
-    # But to preserve backward compat for whoever runs this locally:
-    # If args.upload is True, do it. 
-    
     if args.upload:
-        uploaded = upload_to_r2("*-exploded.png")
+        uploaded = upload_to_r2("assembly-*-exploded-iso.png")
         if uploaded > 0:
             print(f"\nUploaded {uploaded} exploded views to R2")
 
