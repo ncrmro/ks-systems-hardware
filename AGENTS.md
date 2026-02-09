@@ -45,7 +45,7 @@ This is the active development area for new features and migration.
 2.  **Verify/Render:**
     - Run `bin/watch` to automatically test and render on file save.
     - Run `bin/render [part_name]` to manually generate SCAD/STL.
-    - **Visual Verification:** `bin/screenshots pico` to screenshot a single model from all angles. Use `bin/screenshots --all` for everything. Use `bin/screenshots --scan-dir build/` for arbitrary .scad files. Screenshots saved to `screenshots/` with angle encoded in filename (e.g., `assembly-pico-iso.png`, `assembly-pico-exploded-front.png`).
+    - **Visual Verification:** `bin/screenshots pico` to screenshot all models whose assembly/component path contains `pico` from all angles (this may include multiple pico-related models). Use `bin/screenshots --all` for everything. Use `bin/screenshots --scan-dir build/` for arbitrary .scad files. Screenshots are saved to `screenshots/` with the angle encoded in the filename (e.g., `assembly-pico-iso.png`, `assembly-pico-exploded-front.png`).
 
 3.  **Testing (Strict Requirement):**
     - **Methodology:** Utilize the existing test infrastructure (`pytest` via `bin/test`) to verify geometry and logic. **Do not create one-off debugging scripts.** This ensures reproducible verification and prevents regression.
