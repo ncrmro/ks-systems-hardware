@@ -23,12 +23,12 @@ This is the active development area for new features and migration.
 - **Build System:** `bin/render`
   - **Discovery:** Recursively imports `lib`, `parts`, and `assemblies` packages to trigger registration.
   - **Output:** Generates `.scad` and `.stl` files in `build/`.
-  - **Usage:**
-    - `bin/render`: Build all registered parts.
-    - `bin/render [filter]`: Build parts matching the filter string.
-    - `bin/render --list`: List all registered parts.
-    - `bin/render --scad-only`: Skip STL generation (faster).
-    - `bin/watch`: Watch for changes in `src/`, run tests, then build.
+  - **Usage** (all commands require `nix develop --command` prefix):
+    - `nix develop --command bin/render`: Build all registered parts.
+    - `nix develop --command bin/render [filter]`: Build parts matching the filter string.
+    - `nix develop --command bin/render --list`: List all registered parts.
+    - `nix develop --command bin/render --scad-only`: Skip STL generation (faster).
+    - `nix develop --command bin/watch`: Watch for changes in `src/`, run tests, then build.
 
 ### Legacy OpenSCAD (Reference)
 - **Source:** `modules/` and `assemblies/`.
@@ -87,10 +87,26 @@ This is the active development area for new features and migration.
 - **Dataclasses:** Import `field` from `dataclasses`, not `anchorscad.datatree`.
 - **Headless Rendering:** `ad.render` may fail with internal errors (`AttributeError: 'str' object has no attribute 'A'`) in the headless test environment. Avoid full geometry intersection tests; rely on logic/dimension tests.
 
+## Environment
+
+**All commands must be run inside the Nix dev shell.** The project uses a Nix flake (`flake.nix`) to provide `anchorscad`, `numpy`, `openscad`, and all other dependencies. Running commands outside the dev shell will fail with missing library errors (`libz.so.1`, `ModuleNotFoundError: anchorscad`).
+
+```bash
+# Interactive shell
+nix develop
+
+# One-off commands (preferred for CI/agents)
+nix develop --command bin/render --list
+nix develop --command bin/test
+nix develop --command bin/screenshots pico
+```
+
+**Do NOT** run `python3 bin/render` or `pytest` directly — always prefix with `nix develop --command` or enter the shell first.
+
 ## Dependencies
 - **Python:** `anchorscad`, `numpy`, `watchdog`, `pytest`.
 - **System:** `openscad` CLI required for STL generation.
-- **Environment:** Managed via `uv`.
+- **Environment:** Managed via Nix flake (`flake.nix`) + `uv` for Python packages. **Always use `nix develop`** to get the correct environment.
 - **Imports:** Source root is `src/`. Imports should be absolute (e.g., `from lib.motherboard import ...`).
 
 ## Key Files

@@ -6,6 +6,7 @@ from dataclasses import field
 from config import PicoDimensions
 from registry import register_part
 from parts.dovetail import FemaleDovetail
+from util.honeycomb import Honeycomb
 
 @register_part("parts_case_pico_base_panel")
 def create_pico_base_panel() -> ad.Shape:
@@ -15,13 +16,78 @@ def create_pico_base_panel() -> ad.Shape:
 def create_pico_back_panel() -> ad.Shape:
     return PicoBackPanel(dim=PicoDimensions())
 
-@register_part("parts_case_pico_side_panel_left")
-def create_pico_side_panel_left() -> ad.Shape:
-    return PicoSidePanel(dim=PicoDimensions(), side="left")
+@register_part("parts_case_pico_side_flap_left")
+def create_pico_side_flap_left() -> ad.Shape:
+    return PicoSideFlap(dim=PicoDimensions(), side="left")
 
-@register_part("parts_case_pico_side_panel_right")
-def create_pico_side_panel_right() -> ad.Shape:
-    return PicoSidePanel(dim=PicoDimensions(), side="right")
+@register_part("parts_case_pico_side_flap_right")
+def create_pico_side_flap_right() -> ad.Shape:
+    return PicoSideFlap(dim=PicoDimensions(), side="right")
+
+@ad.shape
+@datatree
+class PicoSideFlap(ad.CompositeShape):
+    """
+    Side flap for Pico configuration.
+    Hinges to the top hat and hooks into the bottom tray.
+    """
+    dim: PicoDimensions
+    side: Literal["left", "right"] = "left"
+    
+    def build(self) -> ad.Maker:
+        from parts.hinge import HingeLine, HingeDimensions
+
+        d = self.dim.pico_case_depth
+        wall = self.dim.wall_thickness
+        # Height = bottom tray side wall height + main chamber height
+        h = self.dim.side_wall_height + self.dim.pico_interior_chamber_height
+        
+        # Main Panel
+        panel = ad.Box([d, h, wall])
+        shape = panel.solid("panel").colour("gray").at("centre")
+        
+        # Honeycomb Ventilation
+        vent_w = d - 20
+        vent_h = h - 20
+        vent = Honeycomb(width=vent_w, height=vent_h, thickness=wall, radius=self.dim.honeycomb_radius)
+        shape.add_at(
+            vent.hole("ventilation").at("centre"),
+            post=ad.translate([0, 0, 0])
+        )
+        
+        # Top hinge (Male)
+        hd_side = HingeDimensions(barrel_diameter=self.dim.hinge_barrel_diameter,
+                                  clearance=self.dim.hinge_clearance,
+                                  knuckle_width=self.dim.hinge_knuckle_width,
+                                  knuckle_count=5)
+        
+        # Side flap gets 3 knuckles (0, 2, 4) of 5
+        hinge_top = HingeLine(dim=hd_side, length=d, indices=[0, 2, 4], total_count=5, mode="male")
+        shape.add_at(
+            hinge_top.solid("hinge_top").at("centre"),
+            post=ad.translate([0, h/2, wall/2]) * ad.rotZ(90) * ad.rotX(90)
+        )
+        
+        # Bottom ledge (inward, hooks under lip)
+        ledge_w = self.dim.side_ledge_width
+        ledge_h = self.dim.side_ledge_height
+        ledge = ad.Box([d, ledge_h, ledge_w])
+        
+        # Position at bottom edge, extending inwards (-Z in panel local if panel is XY)
+        # Wait, if panel is Box([d, h, wall]), it's in XY plane with thickness Z.
+        # Bottom edge is Y = -h/2.
+        # Inward is -Z? Or +Z? 
+        # If we want it to hook UNDER the bottom tray lip.
+        # Side flap sits OUTSIDE. 
+        # Ledge should extend from the INNER face of the side flap.
+        # Inner face is at Z = -wall/2.
+        
+        shape.add_at(
+            ledge.solid("ledge").at("centre"),
+            post=ad.translate([0, -h/2 + ledge_h/2, -wall/2 - ledge_w/2])
+        )
+        
+        return shape
 
 
 @ad.shape
@@ -257,7 +323,7 @@ class PicoBackPanel(ad.CompositeShape):
     Back panel for Pico configuration.
     Corresponds to modules/case/panels/standard/back_pico.scad
     
-    Includes hole for barrel jack.
+    Includes hole for barrel jack and I/O shield cutout.
     """
     dim: PicoDimensions
     
@@ -271,16 +337,28 @@ class PicoBackPanel(ad.CompositeShape):
         panel = ad.Box([width, thickness, height])
         shape = panel.solid("panel").colour("gray").at("centre")
         
+        # I/O Shield Cutout
+        io_w = self.dim.mobo.io_shield_width
+        io_h = self.dim.mobo.io_shield_height
+        io_z_abs = self.dim.standoff_height + self.dim.mobo.pcb_thickness + self.dim.mobo.io_shield_z_offset + io_h / 2
+        # Back panel bottom is at Z_abs = 0 (in PicoBottomTray)
+        # Back panel center is at height / 2.
+        io_z_rel = io_z_abs - (height / 2)
+        
+        io_cutout = ad.Box([io_w, thickness + 0.2, io_h])
+        shape.add_at(
+            io_cutout.hole("io_shield_cutout").at("centre"),
+            post=ad.translate([0, 0, io_z_rel])
+        )
+
         # Barrel Jack Position (Relative to center)
         # barrel_x = width - 10.0 (from left 0). Center is width/2.
         # x_rel = (width - 10) - width/2 = width/2 - 10.
         barrel_x_rel = (width / 2) - 10.0
         
         io_shield_top = self.dim.mobo.io_shield_z_offset + self.dim.mobo.io_shield_height
-        # barrel_z = (io_shield_top + height) / 2.0 (absolute height?).
-        # Assuming Z=0 is bottom edge in SCAD logic.
-        # Height is centered. Z_rel = Z_abs - height/2.
-        barrel_z_abs = (io_shield_top + height) / 2.0
+        io_shield_top_abs = self.dim.standoff_height + self.dim.mobo.pcb_thickness + io_shield_top
+        barrel_z_abs = (io_shield_top_abs + height) / 2.0
         barrel_z_rel = barrel_z_abs - (height / 2)
         
         barrel_d = 7.0
@@ -294,39 +372,15 @@ class PicoBackPanel(ad.CompositeShape):
             post=ad.translate([barrel_x_rel, 0, barrel_z_rel]) * ad.rotX(90)
         )
         
-        # Dovetails
-        from parts.dovetail import DovetailDimensions, MaleDovetail
-        dd = DovetailDimensions()
-
-        # Male dovetails to bottom (connects to PicoBasePanel's +Y channel)
-        # Positions: 25% and 75% of back panel width.
-        bottom_dovetail_positions_x_rel = [(width * 0.25) - width/2, (width * 0.75) - width/2]
-        
-        for i, x_rel in enumerate(bottom_dovetail_positions_x_rel):
-            dovetail = MaleDovetail(dim=dd, with_latch=False)
-            shape.add_at(
-                dovetail.solid(f"dovetail_bottom_{i}").at("centre"),
-                post=ad.translate([x_rel, -thickness/2, -height/2 + dd.scaled_dovetail_length/2]) * ad.rotZ(90) * ad.rotX(90)
-            )
-        
-        # Side dovetails (male clips to PicoSidePanel)
-        side_dovetail_positions_z_rel = [(height * 0.25) - height/2, (height * 0.75) - height/2]
-        
-        # Left side (protrudes -X)
-        for i, z_rel in enumerate(side_dovetail_positions_z_rel):
-            dovetail = MaleDovetail(dim=dd, with_latch=True)
-            shape.add_at(
-                dovetail.solid(f"dovetail_side_left_{i}").at("centre"),
-                post=ad.translate([-width/2, 0, z_rel]) * ad.rotY(-90) * ad.rotX(90)
-            )
-        
-        # Right side (protrudes +X)
-        for i, z_rel in enumerate(side_dovetail_positions_z_rel):
-            dovetail = MaleDovetail(dim=dd, with_latch=True)
-            shape.add_at(
-                dovetail.solid(f"dovetail_side_right_{i}").at("centre"),
-                post=ad.translate([width/2, 0, z_rel]) * ad.rotY(90) * ad.rotX(90)
-            )
+        # Latch Lip (top edge)
+        lip_h = 2.0
+        lip_d = 2.0
+        lip = ad.Box([width, lip_d + thickness, lip_h])
+        # Position at top edge (height/2), extending inwards (-Y)
+        shape.add_at(
+            lip.solid("latch_lip").at("centre"),
+            post=ad.translate([0, -lip_d/2, height/2 - lip_h/2])
+        )
         
         return shape
 
@@ -404,13 +458,180 @@ class PicoSidePanel(ad.CompositeShape):
         
         return shape
 
-@register_part("parts_case_pico_bottom_shell")
-def create_pico_shell_bottom() -> ad.Shape:
-    return PicoBottomShell(dim=PicoDimensions())
+@register_part("parts_case_pico_bottom_tray")
+def create_pico_bottom_tray() -> ad.Shape:
+    return PicoBottomTray(dim=PicoDimensions())
 
-@register_part("parts_case_pico_top_shell")
-def create_pico_shell_top() -> ad.Shape:
-    return PicoTopShell(dim=PicoDimensions())
+@ad.shape
+@datatree
+class PicoBottomTray(ad.CompositeShape):
+    """
+    Bottom tray for Pico configuration.
+    Features integrated standoffs, back wall, and hinged front.
+    """
+    dim: PicoDimensions
+
+    def build(self) -> ad.Maker:
+        from parts.hinge import HingeLine, HingeDimensions
+
+        w = self.dim.pico_case_width
+        d = self.dim.pico_case_depth
+        wall = self.dim.wall_thickness
+        h_side = self.dim.side_wall_height
+        
+        # Base panel (reusing logic from PicoBasePanel)
+        base = PicoBasePanel(dim=self.dim, with_dovetails=False)
+        shape = base.solid("base").at("centre")
+        
+        # Back Wall
+        back_h = self.dim.pico_interior_chamber_height + wall
+        back = PicoBackPanel(dim=self.dim)
+        # PicoBackPanel build() returns a centered panel. 
+        # We need to position it at the back edge.
+        shape.add_at(
+            back.solid("back_wall").at("centre"),
+            post=ad.translate([0, d/2 - wall/2, back_h/2 - wall/2])
+        )
+        
+        # Side walls with outward L-lip
+        lip_w = self.dim.side_lip_width
+        lip_h = self.dim.side_lip_height
+        
+        side_wall_thickness = wall
+        side_wall = ad.Box([side_wall_thickness, d, h_side])
+        
+        # Left side wall
+        shape.add_at(
+            side_wall.solid("side_wall_left").at("centre"),
+            post=ad.translate([-w/2 + wall/2, 0, wall/2 + h_side/2])
+        )
+        # Left lip
+        left_lip = ad.Box([lip_w, d, lip_h])
+        shape.add_at(
+            left_lip.solid("lip_left").at("centre"),
+            post=ad.translate([-w/2 - lip_w/2 + wall, 0, wall/2 + h_side - lip_h/2])
+        )
+        
+        # Right side wall
+        shape.add_at(
+            side_wall.solid("side_wall_right").at("centre"),
+            post=ad.translate([w/2 - wall/2, 0, wall/2 + h_side/2])
+        )
+        # Right lip
+        right_lip = ad.Box([lip_w, d, lip_h])
+        shape.add_at(
+            right_lip.solid("lip_right").at("centre"),
+            post=ad.translate([w/2 + lip_w/2 - wall, 0, wall/2 + h_side - lip_h/2])
+        )
+
+        # Front hinge (Female)
+        hd = HingeDimensions(barrel_diameter=self.dim.hinge_barrel_diameter,
+                             clearance=self.dim.hinge_clearance,
+                             knuckle_width=self.dim.hinge_knuckle_width)
+        
+        # 5 knuckles total, female takes indices 1, 3
+        # Wait, if 5 total, maybe female takes 0, 2, 4 and male takes 1, 3? 
+        # Let's use 0, 2, 4 for bottom tray (Female)
+        hinge_front = HingeLine(dim=hd, length=w, indices=[0, 2, 4], total_count=5, mode="female")
+        
+        # Position at front edge, centered. HingeLine is along Z.
+        # We need to rotate it to align with X.
+        shape.add_at(
+            hinge_front.solid("hinge_front").at("centre"),
+            post=ad.translate([0, -d/2, wall/2]) * ad.rotY(90)
+        )
+
+        return shape
+
+@register_part("parts_case_pico_top_hat")
+def create_pico_top_hat() -> ad.Shape:
+    return PicoTopHat(dim=PicoDimensions())
+
+@ad.shape
+@datatree
+class PicoTopHat(ad.CompositeShape):
+    """
+    Top hat for Pico configuration.
+    Includes honeycomb ventilation, SSD harness, and hinged edges.
+    """
+    dim: PicoDimensions
+    
+    def build(self) -> ad.Maker:
+        from parts.hinge import HingeLine, HingeDimensions, LatchHook
+        from parts.ssd_harness import SsdHarness
+
+        w = self.dim.pico_case_width
+        d = self.dim.pico_case_depth
+        wall = self.dim.wall_thickness
+        
+        # Top panel
+        panel = ad.Box([w, d, wall])
+        shape = panel.solid("panel").colour("gray").at("centre")
+        
+        # Honeycomb Ventilation
+        vent_w = 70
+        vent_d = 68
+        vent_x_rel = (25 + vent_w/2) - w/2
+        vent_y_rel = (22 + vent_d/2) - d/2
+        
+        vent = Honeycomb(width=vent_w, height=vent_d, thickness=wall, radius=self.dim.honeycomb_radius)
+        shape.add_at(
+            vent.hole("ventilation").at("centre"),
+            post=ad.translate([vent_x_rel, vent_y_rel, 0])
+        )
+
+        # SSD Harness
+        harness = SsdHarness(dim=self.dim)
+        shape.add_at(
+            harness.solid("ssd_harness").at("centre"),
+            post=ad.translate([0, 0, -wall/2]) # Sits under panel
+        )
+
+        # Front Hinge (Male)
+        hd = HingeDimensions(barrel_diameter=self.dim.hinge_barrel_diameter,
+                             clearance=self.dim.hinge_clearance,
+                             knuckle_width=self.dim.hinge_knuckle_width)
+        
+        # 5 knuckles total, male takes indices 1, 3
+        hinge_front = HingeLine(dim=hd, length=w, indices=[1, 3], total_count=5, mode="male")
+        shape.add_at(
+            hinge_front.solid("hinge_front").at("centre"),
+            post=ad.translate([0, -d/2, -wall/2]) * ad.rotY(90)
+        )
+
+        # Side Hinges (Female - for side flaps)
+        # 5 knuckles per side. Female takes 1, 3.
+        hd_side = HingeDimensions(barrel_diameter=self.dim.hinge_barrel_diameter,
+                                  clearance=self.dim.hinge_clearance,
+                                  knuckle_width=self.dim.hinge_knuckle_width,
+                                  knuckle_count=5)
+        
+        hinge_left = HingeLine(dim=hd_side, length=d, indices=[1, 3], total_count=5, mode="female")
+        shape.add_at(
+            hinge_left.solid("hinge_left").at("centre"),
+            post=ad.translate([-w/2, 0, -wall/2]) * ad.rotX(90)
+        )
+        
+        hinge_right = HingeLine(dim=hd_side, length=d, indices=[1, 3], total_count=5, mode="female")
+        shape.add_at(
+            hinge_right.solid("hinge_right").at("centre"),
+            post=ad.translate([w/2, 0, -wall/2]) * ad.rotX(90)
+        )
+
+        # Back Latch Hooks
+        latch = LatchHook()
+        # Back-left
+        shape.add_at(
+            latch.solid("latch_left").at("centre"),
+            post=ad.translate([-w/2 + 10, d/2, -wall/2]) * ad.rotZ(180)
+        )
+        # Back-right
+        shape.add_at(
+            latch.solid("latch_right").at("centre"),
+            post=ad.translate([w/2 - 10, d/2, -wall/2]) * ad.rotZ(180)
+        )
+
+        return shape
 
 @ad.shape
 @datatree

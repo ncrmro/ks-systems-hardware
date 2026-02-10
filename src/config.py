@@ -57,6 +57,22 @@ class PicoDimensions(CommonDimensions):
         nh_l9_fan_size=NOCTUA_L9.fan_size
     ))
 
+    # Hinge and Latch
+    hinge_barrel_diameter: float = 5.0
+    hinge_clearance: float = 0.3
+    hinge_knuckle_width: float = 10.0
+    latch_hook_height: float = 3.0
+    
+    # Side Wall and Flap
+    side_wall_height: float = 10.0
+    side_lip_width: float = 3.0
+    side_lip_height: float = 2.0
+    side_ledge_width: float = 3.0
+    side_ledge_height: float = 2.0
+    
+    # Top Hat
+    tophat_interior_height: float = 15.0
+
     @property
     def pico_case_width(self) -> float:
         return self.mobo.width + (2 * self.wall_thickness)
