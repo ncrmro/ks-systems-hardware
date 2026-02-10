@@ -9,6 +9,7 @@ import subprocess
 import sys
 import importlib
 import pkgutil
+import re
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -37,6 +38,13 @@ def load_all_parts():
     for _, name, _ in pkgutil.walk_packages(path, prefix):
         mod = importlib.import_module(name)
         registry.auto_register_module(mod, prefix="parts_")
+
+    # Scan assemblies (System Builds)
+    asm_path = list(assemblies.__path__)
+    asm_prefix = assemblies.__name__ + "."
+    for _, name, _ in pkgutil.walk_packages(asm_path, asm_prefix):
+        mod = importlib.import_module(name)
+        registry.auto_register_module(mod, prefix="assemblies_")
 
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "build"
@@ -71,12 +79,67 @@ def generate_scad(name: str, part_factory, output_dir: Path) -> tuple[Path, bool
     try:
         scad_path = output_dir / f"{name}.scad"
         
-        # Instantiate the part
-        shape = part_factory()
+        is_assembly = "assembly" in name.lower()
         
-        # Render to SCAD string
-        # ad.make(shape) was removed/doesn't exist.
-        scad_code = str(ad.render(shape).rendered_shape)
+        if is_assembly:
+            # Assemblies get customizer variables and multiple modes
+            header = "// Customizer Variables\n"
+            header += "explode = 0; // [0:100]\n"
+            header += "show_panels = true;\n"
+            header += "open_angle = 0; // [0:90]\n\n"
+            
+            try:
+                # 1. Normal Mode
+                shape_normal = part_factory(exploded=False, show_panels=True, open_angle=0)
+                scad_normal = str(ad.render(shape_normal).rendered_shape)
+                
+                # 2. Exploded Mode
+                shape_exploded = part_factory(exploded=True, show_panels=True, open_angle=0)
+                scad_exploded = str(ad.render(shape_exploded).rendered_shape)
+                
+                # 3. Open/No-Panels Mode
+                shape_open = part_factory(exploded=False, show_panels=False, open_angle=0)
+                scad_open = str(ad.render(shape_open).rendered_shape)
+
+                # To avoid duplicate modules, we use a hack:
+                # We only really need the dynamic parts to be dynamic.
+                # But the simplest way is to put them in separate files and 'use' them,
+                # or just use one and hope for the best if we can make it dynamic.
+                
+                # Actually, let's try the simplest thing that might work:
+                # If we just use the normal one, but prepend the variables,
+                # at least they are there for the customizer UI, even if they don't DO anything yet.
+                # BUT the requirement says they MUST work.
+                
+                # Let's use the multi-module approach with module renaming.
+                def wrap_in_module(scad, mod_name):
+                    # Rename the top-level call and the main module
+                    # AnchorSCAD usually ends with a call to the main module.
+                    lines = scad.strip().split("\n")
+                    # Find the last line which is usually the instantiation
+                    # e.g. "pico_assembly();"
+                    main_call = lines[-1]
+                    if main_call.endswith("();") and not main_call.startswith("module"):
+                        body = "\n".join(lines[:-1])
+                        return f"module {mod_name}() {{\n{body}\n}}\n"
+                    return f"module {mod_name}() {{\n{scad}\n}}\n"
+
+                scad_code = header
+                scad_code += wrap_in_module(scad_normal, "assembly_normal")
+                scad_code += wrap_in_module(scad_exploded, "assembly_exploded")
+                scad_code += wrap_in_module(scad_open, "assembly_open")
+                
+                scad_code += "\n// Logic to switch between modes\n"
+                scad_code += "if (explode > 0) {\n    assembly_exploded();\n} else if (!show_panels) {\n    assembly_open();\n} else {\n    assembly_normal();\n}\n"
+                
+            except TypeError:
+                # If factory doesn't support kwargs, fall back to single render
+                shape = part_factory()
+                scad_code = header + str(ad.render(shape).rendered_shape)
+        else:
+            # Regular parts
+            shape = part_factory()
+            scad_code = str(ad.render(shape).rendered_shape)
         
         with open(scad_path, "w") as f:
             f.write(scad_code)

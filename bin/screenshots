@@ -59,6 +59,7 @@ CAMERAS = {
 ASSEMBLIES = [
     "assemblies/minimal.scad",
     "assemblies/pico.scad",
+    "build/pico_assembly.scad", # New Python-generated assembly
     "assemblies/gpu.scad",
     "assemblies/gpu_aio.scad",
     "assemblies/nas_2disk.scad",
