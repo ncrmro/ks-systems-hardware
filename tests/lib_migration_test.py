@@ -1,7 +1,7 @@
 import anchorscad as ad
 import pytest
-from lib.cooling import Fan, FAN_120_25, FAN_120_15
-from lib.psu import SfxPsu, FlexAtxPsu
+from vitamins.cooling import Fan, FAN_120_25, FAN_120_15
+from vitamins.psu import SfxPsu, FlexAtxPsu
 
 def test_fan_generation():
     # 120x25

@@ -3,10 +3,10 @@ from typing import Tuple, List
 from dataclasses import field
 
 # Import component dimensions
-from lib.motherboard import MiniItxDimensions
-from lib.psu import FlexAtxDimensions, SfxDimensions, PicoPsuDimensions
-from lib.cooling import CoolingDimensions
-from lib.heatsink import NOCTUA_L9, NOCTUA_L12S
+from vitamins.motherboard import MiniItxDimensions
+from vitamins.psu import FlexAtxDimensions, SfxDimensions, PicoPsuDimensions
+from vitamins.cooling import CoolingDimensions
+from vitamins.heatsink import NOCTUA_L9, NOCTUA_L12S
 
 @datatree
 class CommonDimensions:

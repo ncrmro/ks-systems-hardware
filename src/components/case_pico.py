@@ -5,21 +5,21 @@ from dataclasses import field
 
 from config import PicoDimensions
 from registry import register_part
-from parts.dovetail import FemaleDovetail
+from components.dovetail import FemaleDovetail
 
-@register_part("parts_case_pico_base_panel")
+@register_part("pico_base_panel", part_type="component")
 def create_pico_base_panel() -> ad.Shape:
     return PicoBasePanel(dim=PicoDimensions())
 
-@register_part("parts_case_pico_back_panel")
+@register_part("pico_back_panel", part_type="component")
 def create_pico_back_panel() -> ad.Shape:
     return PicoBackPanel(dim=PicoDimensions())
 
-@register_part("parts_case_pico_side_panel_left")
+@register_part("pico_side_panel_left", part_type="component")
 def create_pico_side_panel_left() -> ad.Shape:
     return PicoSidePanel(dim=PicoDimensions(), side="left")
 
-@register_part("parts_case_pico_side_panel_right")
+@register_part("pico_side_panel_right", part_type="component")
 def create_pico_side_panel_right() -> ad.Shape:
     return PicoSidePanel(dim=PicoDimensions(), side="right")
 
@@ -163,7 +163,7 @@ class PicoBasePanel(ad.CompositeShape):
 
         # TODO: Dovetails
         if self.with_dovetails:
-            from parts.dovetail import DovetailDimensions
+            from components.dovetail import DovetailDimensions
 
             dd = DovetailDimensions()
             
@@ -295,7 +295,7 @@ class PicoBackPanel(ad.CompositeShape):
         )
         
         # Dovetails
-        from parts.dovetail import DovetailDimensions, MaleDovetail
+        from components.dovetail import DovetailDimensions, MaleDovetail
         dd = DovetailDimensions()
 
         # Male dovetails to bottom (connects to PicoBasePanel's +Y channel)
@@ -350,7 +350,7 @@ class PicoSidePanel(ad.CompositeShape):
         shape = panel.solid("panel").colour("gray").at("centre")
         
         # Dovetails
-        from parts.dovetail import DovetailDimensions, FemaleDovetail, MaleDovetail
+        from components.dovetail import DovetailDimensions, FemaleDovetail, MaleDovetail
         dd = DovetailDimensions()
         
         # Back edge dovetails (Female, receives BackPanel males)
@@ -404,11 +404,11 @@ class PicoSidePanel(ad.CompositeShape):
         
         return shape
 
-@register_part("parts_case_pico_bottom_shell")
+@register_part("pico_bottom_shell", part_type="component")
 def create_pico_shell_bottom() -> ad.Shape:
     return PicoBottomShell(dim=PicoDimensions())
 
-@register_part("parts_case_pico_top_shell")
+@register_part("pico_top_shell", part_type="component")
 def create_pico_shell_top() -> ad.Shape:
     return PicoTopShell(dim=PicoDimensions())
 

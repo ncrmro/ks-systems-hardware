@@ -9,6 +9,7 @@ tmp-stls/
 !.env.example
 
 worktrees
+.worktrees/
 
 # Python
 __pycache__/

@@ -4,9 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    cadeng.url = "github:ncrmro/cadeng";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, cadeng }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -15,27 +16,30 @@
         devShells.default = pkgs.mkShell {
           name = "ks-hardware";
 
-          packages = with pkgs; [
+          packages = [
+            # CADeng server (compiled binary, provides `cadeng` CLI)
+            cadeng.packages.${system}.default
+
             # Python 3.13
-            python313
+            pkgs.python313
 
             # Package manager
-            uv
+            pkgs.uv
 
             # CAD tools
-            openscad-unstable
+            pkgs.openscad-unstable
 
             # Build dependencies for Python packages
-            stdenv.cc.cc.lib
-            zlib
-            libGL
-            libGLU
-            xorg.libX11
-            xorg.libXext
-            xorg.libXrender
+            pkgs.stdenv.cc.cc.lib
+            pkgs.zlib
+            pkgs.libGL
+            pkgs.libGLU
+            pkgs.xorg.libX11
+            pkgs.xorg.libXext
+            pkgs.xorg.libXrender
 
             # Development tools
-            git
+            pkgs.git
           ];
 
           shellHook = ''
@@ -66,6 +70,7 @@
             echo "Keystone Hardware dev shell ready!"
             echo "Run './bin/test' to run tests"
             echo "Run './bin/render' to generate SCAD/STL files"
+            echo "Run 'cadeng' to start the gallery server"
           '';
         };
       }

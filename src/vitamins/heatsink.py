@@ -2,7 +2,7 @@ import anchorscad as ad
 from anchorscad import datatree
 from dataclasses import field
 from registry import register_part
-from lib.cooling import CoolingDimensions, Fan, FanDimensions
+from vitamins.cooling import CoolingDimensions, Fan, FanDimensions
 
 from dataclasses import dataclass
 
@@ -40,12 +40,12 @@ class NoctuaL12SConstants:
 
 NOCTUA_L12S = NoctuaL12SConstants()
 
-@register_part("lib_noctua_l12s")
+@register_part("noctua_l12s", part_type="vitamin")
 def create_noctua_l12s() -> ad.Shape:
     """Creates a Noctua NH-L12S heatsink for rendering."""
     return NoctuaL12S()
 
-@register_part("lib_noctua_l9")
+@register_part("noctua_l9", part_type="vitamin")
 def create_noctua_l9() -> ad.Shape:
     """Creates a Noctua NH-L9 low-profile heatsink for rendering."""
     return NoctuaL9()

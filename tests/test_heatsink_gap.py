@@ -2,8 +2,8 @@
 import anchorscad as ad
 import numpy as np
 import pytest
-from lib.heatsink import NoctuaL9
-from lib.cooling import CoolingDimensions
+from vitamins.heatsink import NoctuaL9
+from vitamins.cooling import CoolingDimensions
 
 def get_transform_z(maker, target_name):
     """
@@ -97,7 +97,7 @@ def test_noctua_l9_stacking():
     Stack: Base -> Fins -> Fan
     """
     # Use default dimensions or specific ones
-    # Note: NoctuaL9 now defaults to using NOCTUA_L9 constants from lib.heatsink
+    # Note: NoctuaL9 now defaults to using NOCTUA_L9 constants from vitamins.heatsink
     # but we can override with dim if needed. 
     # For this test, we can trust the defaults or pass them explicitly to be safe.
     # The class uses default_factory=CoolingDimensions, which now defaults to the constants in config? 
@@ -115,7 +115,7 @@ def test_noctua_l9_stacking():
     
     # We need the dimensions to verify.
     # We can import them.
-    from lib.heatsink import NOCTUA_L9
+    from vitamins.heatsink import NOCTUA_L9
     
     # 1. Check Base position
     # The "base" solid is named "base".

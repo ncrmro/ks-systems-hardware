@@ -14,21 +14,23 @@ Keystone Hardware is a modular, expandable computer case. The project is current
 This is the active development area for new features and migration.
 - **Source:** `src/` (Root package directory).
 - **Library:** Uses `anchorscad` for geometry generation.
-- **Registry:** Parts are registered using `@registry.register_part("name")` (defined in `src/registry.py`).
+- **Registry:** Parts are registered using `@registry.register_part("name", part_type="component")` (defined in `src/registry.py`). Registry stores `(factory, part_type)` tuples.
 - **Configuration:** `src/config.py` uses `@anchorscad.datatree` to define parametric dimensions (`CommonDimensions`, `PicoDimensions`, etc.).
 - **Organization:**
-  - `src/lib/`: **Vitamins** (Off-the-shelf parts). Things you buy (Motherboards, PSUs, Heatsinks). These define the fixed interfaces.
-  - `src/parts/`: **Fabricated Parts** (3D printed/machined). Things you make (Shells, Frames, Brackets). These derive dimensions from `config.py`.
-  - `src/assemblies/`: **System Builds**. Top-level compositions of Parts + Vitamins (e.g., `PicoAssembly`).
+  - `src/vitamins/`: **Vitamins** (Off-the-shelf parts). Things you buy (Motherboards, PSUs, Heatsinks). These define the fixed interfaces.
+  - `src/components/`: **Fabricated Parts** (3D printed/machined). Things you make (Shells, Frames, Brackets). These derive dimensions from `config.py`.
+  - `src/assemblies/`: **System Builds**. Top-level compositions of Components + Vitamins (e.g., `PicoAssembly`).
+- **CADeng Integration:** `cadeng.yaml` defines projects, models, and camera angles for the gallery server.
 - **Build System:** `bin/render`
-  - **Discovery:** Recursively imports `lib`, `parts`, and `assemblies` packages to trigger registration.
+  - **Discovery:** Recursively imports `vitamins`, `components`, and `assemblies` packages to trigger registration.
   - **Output:** Generates `.scad` and `.stl` files in `build/`.
   - **Usage:**
     - `bin/render`: Build all registered parts.
     - `bin/render [filter]`: Build parts matching the filter string.
     - `bin/render --list`: List all registered parts.
+    - `bin/render --list-json`: Output JSON for cadeng gallery integration.
     - `bin/render --scad-only`: Skip STL generation (faster).
-    - `bin/watch`: Watch for changes in `src/`, run tests, then build.
+    - `cadeng`: Start the gallery server (requires `nix develop`).
 
 ### Legacy OpenSCAD (Reference)
 - **Source:** `modules/` and `assemblies/`.
@@ -91,7 +93,7 @@ This is the active development area for new features and migration.
 - **Python:** `anchorscad`, `numpy`, `watchdog`, `pytest`.
 - **System:** `openscad` CLI required for STL generation.
 - **Environment:** Managed via `uv`.
-- **Imports:** Source root is `src/`. Imports should be absolute (e.g., `from lib.motherboard import ...`).
+- **Imports:** Source root is `src/`. Imports should be absolute (e.g., `from vitamins.motherboard import ...`).
 
 ## Key Files
 - `src/registry.py`: Registry logic.

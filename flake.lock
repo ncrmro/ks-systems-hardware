@@ -1,5 +1,23 @@
 {
   "nodes": {
+    "cadeng": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1772060046,
+        "narHash": "sha256-SdSXHyLdyyrKkf4NO9nXVb4kpX1aAwyJb/OesIaMnMA=",
+        "owner": "ncrmro",
+        "repo": "cadeng",
+        "rev": "154176be54dc3cb59a26dd1b95753244a29d139b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ncrmro",
+        "repo": "cadeng",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -20,6 +38,22 @@
     },
     "nixpkgs": {
       "locked": {
+        "lastModified": 1771848320,
+        "narHash": "sha256-0MAd+0mun3K/Ns8JATeHT1sX28faLII5hVLq0L3BdZU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2fc6539b481e1d2569f25f8799236694180c0993",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
         "lastModified": 1766902085,
         "narHash": "sha256-coBu0ONtFzlwwVBzmjacUQwj3G+lybcZ1oeNSQkgC0M=",
         "owner": "NixOS",
@@ -36,8 +70,9 @@
     },
     "root": {
       "inputs": {
+        "cadeng": "cadeng",
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "systems": {

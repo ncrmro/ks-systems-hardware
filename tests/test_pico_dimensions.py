@@ -6,8 +6,8 @@ import os
 sys.path.append(os.path.join(os.getcwd(), 'src'))
 
 from config import PicoDimensions
-from lib.motherboard import MiniItxDimensions
-from lib.heatsink import NOCTUA_L9
+from vitamins.motherboard import MiniItxDimensions
+from vitamins.heatsink import NOCTUA_L9
 
 class TestPicoDimensions(unittest.TestCase):
     def setUp(self):

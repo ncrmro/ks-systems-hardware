@@ -1,0 +1,177 @@
+project:
+  name: "KS Systems Hardware"
+  build_dir: build
+  port: 9091
+
+python:
+  build_command: "uv run ./bin/render --scad-only"
+  build_cwd: .
+  registry_command: "uv run ./bin/render --list-json"
+  watch_dirs:
+    - src
+  watch_extensions:
+    - .py
+  debounce_ms: 2000
+
+render:
+  resolution: [1920, 1080]
+  colorscheme: "Tomorrow Night"
+  fn: 64
+  autocenter: true
+  viewall: true
+
+cameras:
+  iso:   "0,0,0,55,0,25,200"
+  front: "0,0,0,90,0,0,200"
+  back:  "0,0,0,90,0,180,200"
+  top:   "0,0,0,0,0,0,200"
+  right: "0,0,0,90,0,90,200"
+
+camera_sets:
+  quick: [iso]
+  standard: [iso, front, top]
+  full: [iso, front, back, top, right]
+  default: full
+
+stl:
+  scales: [100, 50, 25]
+
+projects:
+  - name: pico
+    label: Pico Case
+    models:
+      - motherboard_mini_itx
+      - noctua_l9
+      - pico_base_panel
+      - pico_back_panel
+      - pico_side_panel_left
+      - pico_side_panel_right
+      - pico_bottom_shell
+      - pico_top_shell
+      - motherboard_assembly_pico
+      - pico_assembly
+
+  - name: vitamins
+    label: Vitamins
+    models:
+      - motherboard_mini_itx
+      - ssd_2_5
+      - ram_stick
+      - fan_120_25
+      - fan_120_15
+      - psu_sfx
+      - psu_flex_atx
+      - noctua_l9
+      - noctua_l12s
+
+models:
+  # Vitamins (off-the-shelf components)
+  - name: motherboard_mini_itx
+    type: vitamin
+    scad: build/motherboard_mini_itx.scad
+    angles: standard
+    stl: false
+
+  - name: ssd_2_5
+    type: vitamin
+    scad: build/ssd_2_5.scad
+    angles: standard
+    stl: false
+
+  - name: ram_stick
+    type: vitamin
+    scad: build/ram_stick.scad
+    angles: standard
+    stl: false
+
+  - name: fan_120_25
+    type: vitamin
+    scad: build/fan_120_25.scad
+    angles: standard
+    stl: false
+
+  - name: fan_120_15
+    type: vitamin
+    scad: build/fan_120_15.scad
+    angles: standard
+    stl: false
+
+  - name: psu_sfx
+    type: vitamin
+    scad: build/psu_sfx.scad
+    angles: standard
+    stl: false
+
+  - name: psu_flex_atx
+    type: vitamin
+    scad: build/psu_flex_atx.scad
+    angles: standard
+    stl: false
+
+  - name: noctua_l9
+    type: vitamin
+    scad: build/noctua_l9.scad
+    angles: full
+    stl: false
+
+  - name: noctua_l12s
+    type: vitamin
+    scad: build/noctua_l12s.scad
+    angles: full
+    stl: false
+
+  - name: motherboard_assembly_pico
+    type: vitamin
+    scad: build/motherboard_assembly_pico.scad
+    angles: full
+    stl: false
+
+  # Components (3D printed / fabricated)
+  - name: standoff
+    type: component
+    scad: build/standoff.scad
+    angles: standard
+    stl: true
+
+  - name: pico_base_panel
+    type: component
+    scad: build/pico_base_panel.scad
+    angles: full
+    stl: true
+
+  - name: pico_back_panel
+    type: component
+    scad: build/pico_back_panel.scad
+    angles: full
+    stl: true
+
+  - name: pico_side_panel_left
+    type: component
+    scad: build/pico_side_panel_left.scad
+    angles: full
+    stl: true
+
+  - name: pico_side_panel_right
+    type: component
+    scad: build/pico_side_panel_right.scad
+    angles: full
+    stl: true
+
+  - name: pico_bottom_shell
+    type: component
+    scad: build/pico_bottom_shell.scad
+    angles: full
+    stl: true
+
+  - name: pico_top_shell
+    type: component
+    scad: build/pico_top_shell.scad
+    angles: full
+    stl: true
+
+  # Assemblies
+  - name: pico_assembly
+    type: assembly
+    scad: build/pico_assembly.scad
+    angles: full
+    stl: false
