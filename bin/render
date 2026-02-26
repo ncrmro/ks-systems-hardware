@@ -1,7 +1,5 @@
 #!/usr/bin/env -S uv run python
-"""
-Render AnchorSCAD parts to SCAD and STL files.
-"""
+"""Render AnchorSCAD parts to SCAD and STL files."""
 
 import argparse
 import os
@@ -9,48 +7,55 @@ import subprocess
 import sys
 import importlib
 import pkgutil
+import traceback
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-# Setup path to find the 'keystone' package in src/
+# Setup path to find packages in src/
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-# MOCK OpenGL to prevent crash in headless environments
-# AnchorSCAD imports pythonopenscad, which imports OpenGL.GL, which crashes if no display.
+# Mock OpenGL to prevent crash in headless environments
 from unittest.mock import MagicMock
+
 sys.modules["OpenGL"] = MagicMock()
 sys.modules["OpenGL.GL"] = MagicMock()
 
 import anchorscad as ad
 import registry
-import lib
-import parts
-import assemblies # New import
+import vitamins
+import components
+import assemblies
+
+
+def _walk(package):
+    """Yield all submodules of a package."""
+    path = list(package.__path__)
+    prefix = package.__name__ + "."
+    for _, name, _ in pkgutil.walk_packages(path, prefix):
+        yield importlib.import_module(name)
+
 
 def load_all_parts():
-    """Recursively import all modules in parts, lib, and assemblies to trigger decorators and auto-discovery."""
-    
-    # Scan parts (Fabricated Components)
-    path = list(parts.__path__)
-    prefix = parts.__name__ + "."
-    for _, name, _ in pkgutil.walk_packages(path, prefix):
-        mod = importlib.import_module(name)
-        registry.auto_register_module(mod, prefix="parts_")
+    """Recursively import all modules in vitamins, components, and assemblies."""
+    for mod in _walk(vitamins):
+        registry.auto_register_module(mod, part_type="vitamin")
+
+    for mod in _walk(components):
+        registry.auto_register_module(mod, part_type="component")
+
+    for mod in _walk(assemblies):
+        registry.auto_register_module(mod, part_type="assembly")
 
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "build"
+
 
 def run_openscad(scad_path: Path, stl_path: Path) -> tuple[Path, bool, str]:
     """Run OpenSCAD to convert SCAD to STL."""
     try:
         result = subprocess.run(
-            [
-                "openscad",
-                "-o",
-                str(stl_path),
-                str(scad_path),
-            ],
+            ["openscad", "-o", str(stl_path), str(scad_path)],
             capture_output=True,
             text=True,
             timeout=300,
@@ -62,68 +67,81 @@ def run_openscad(scad_path: Path, stl_path: Path) -> tuple[Path, bool, str]:
     except Exception as e:
         return (scad_path, False, f"STL ERROR: {stl_path.name} - {e}")
 
-import traceback
-
-# ...
 
 def generate_scad(name: str, part_factory, output_dir: Path) -> tuple[Path, bool, str]:
     """Generate .scad file from AnchorSCAD part."""
     try:
         scad_path = output_dir / f"{name}.scad"
-        
+
         # Instantiate the part
         shape = part_factory()
-        
+
         # Render to SCAD string
-        # ad.make(shape) was removed/doesn't exist.
         scad_code = str(ad.render(shape).rendered_shape)
-        
+
         with open(scad_path, "w") as f:
             f.write(scad_code)
-            
+
         return (scad_path, True, f"SCAD OK: {name}")
     except Exception as e:
         traceback.print_exc()
         return (Path(f"{name}.scad"), False, f"SCAD ERROR: {name} - {e}")
 
+
 def main():
     parser = argparse.ArgumentParser(description="Render Keystone AnchorSCAD parts.")
     parser.add_argument("filter", nargs="?", help="Filter parts by name")
     parser.add_argument("--scad-only", action="store_true", help="Skip STL generation")
-    parser.add_argument("-j", "--jobs", type=int, default=os.cpu_count(), help="Parallel jobs")
-    parser.add_argument("-o", "--output", type=Path, default=DEFAULT_OUTPUT_DIR, help="Output dir")
+    parser.add_argument(
+        "-j", "--jobs", type=int, default=os.cpu_count(), help="Parallel jobs"
+    )
+    parser.add_argument(
+        "-o", "--output", type=Path, default=DEFAULT_OUTPUT_DIR, help="Output dir"
+    )
     parser.add_argument("--list", action="store_true", help="List parts")
-    
+    parser.add_argument(
+        "--list-json", action="store_true", help="List parts as JSON for cadeng"
+    )
+
     args = parser.parse_args()
-    
+
     # 1. Load Registry
     load_all_parts()
     reg = registry.get_registry()
-    
+
     # 2. Filter
     if args.filter:
-        parts = {k: v for k, v in reg.items() if args.filter in k}
+        filtered_parts = {k: v for k, v in reg.items() if args.filter in k}
     else:
-        parts = reg
+        filtered_parts = reg
 
-    if not parts:
+    if not filtered_parts:
         print("No parts found.")
         sys.exit(1)
 
     if args.list:
-        print("\n".join(sorted(parts.keys())))
+        print("\n".join(sorted(filtered_parts.keys())))
+        sys.exit(0)
+
+    if args.list_json:
+        import json
+
+        entries = []
+        for name, (factory, ptype) in sorted(filtered_parts.items()):
+            entries.append({"name": name, "type": ptype, "stl": True})
+        print(json.dumps(entries))
         sys.exit(0)
 
     # 3. Build
     args.output.mkdir(parents=True, exist_ok=True)
-    print(f"Generating {len(parts)} parts to {args.output}...")
-    
+    print(f"Generating {len(filtered_parts)} parts to {args.output}...")
+
     scad_files = []
     scad_fail_count = 0
-    for name, factory in parts.items():
+    for name, (factory, ptype) in filtered_parts.items():
         path, ok, msg = generate_scad(name, factory, args.output)
         print(msg)
-        if ok: 
+        if ok:
             scad_files.append(path)
         else:
             scad_fail_count += 1
@@ -135,13 +153,18 @@ def main():
     print(f"Rendering STLs ({args.jobs} jobs)...")
     fail_count = 0
     with ProcessPoolExecutor(max_workers=args.jobs) as ex:
-        futures = {ex.submit(run_openscad, p, args.output / (p.stem + ".stl")): p for p in scad_files}
+        futures = {
+            ex.submit(run_openscad, p, args.output / (p.stem + ".stl")): p
+            for p in scad_files
+        }
         for f in as_completed(futures):
             _, ok, msg = f.result()
             print(msg)
-            if not ok: fail_count += 1
-            
+            if not ok:
+                fail_count += 1
+
     sys.exit(1 if fail_count > 0 else 0)
+
 
 if __name__ == "__main__":
     main()

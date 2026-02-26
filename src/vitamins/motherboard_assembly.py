@@ -5,12 +5,12 @@ from dataclasses import field
 
 from config import PicoDimensions
 from registry import register_part
-from lib.motherboard import MiniItxMotherboard
-from lib.ram import RamStick
-from lib.psu import PicoPsu
-from lib.heatsink import NoctuaL9
+from vitamins.motherboard import MiniItxMotherboard
+from vitamins.ram import RamStick
+from vitamins.psu import PicoPsu
+from vitamins.heatsink import NoctuaL9
 
-@register_part("motherboard_assembly_pico")
+@register_part("motherboard_assembly_pico", part_type="vitamin")
 def create_motherboard_assembly_pico() -> ad.Shape:
     return MotherboardAssemblyPico(dim=PicoDimensions())
 

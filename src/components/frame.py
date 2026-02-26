@@ -3,7 +3,7 @@ from anchorscad import datatree
 from config import CommonDimensions
 from registry import register_part
 
-@register_part("parts_standoff")
+@register_part("standoff", part_type="component")
 def create_standoff() -> ad.Shape:
     """Creates a standard standoff for rendering."""
     return Standoff(dim=CommonDimensions())

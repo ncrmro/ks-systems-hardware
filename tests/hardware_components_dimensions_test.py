@@ -7,10 +7,10 @@ import anchorscad as ad
 import numpy as np
 import pytest
 from config import CommonDimensions, MinimalDimensions, PicoDimensions
-from parts.frame import Standoff
-from lib.motherboard import MiniItxMotherboard
-from lib.cooling import CoolingDimensions
-from lib.psu import PicoPsuDimensions
+from components.frame import Standoff
+from vitamins.motherboard import MiniItxMotherboard
+from vitamins.cooling import CoolingDimensions
+from vitamins.psu import PicoPsuDimensions
 
 # --- Tests from test_basic_parts.py ---
 
