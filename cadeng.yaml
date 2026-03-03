@@ -42,13 +42,13 @@ projects:
       - motherboard_mini_itx
       - noctua_l9
       - pico_base_panel
-      - pico_back_panel
-      - pico_side_panel_left
-      - pico_side_panel_right
-      - pico_bottom_shell
+      - pico_base_panel_hdd
       - pico_top_shell
+      - pico_top_shell_hdd
       - motherboard_assembly_pico
+      - pico_base_assembly
       - pico_assembly
+      - pico_assembly_hdd
 
   - name: vitamins
     label: Vitamins
@@ -138,27 +138,9 @@ models:
     angles: full
     stl: true
 
-  - name: pico_back_panel
+  - name: pico_base_panel_hdd
     type: component
-    scad: build/pico_back_panel.scad
-    angles: full
-    stl: true
-
-  - name: pico_side_panel_left
-    type: component
-    scad: build/pico_side_panel_left.scad
-    angles: full
-    stl: true
-
-  - name: pico_side_panel_right
-    type: component
-    scad: build/pico_side_panel_right.scad
-    angles: full
-    stl: true
-
-  - name: pico_bottom_shell
-    type: component
-    scad: build/pico_bottom_shell.scad
+    scad: build/pico_base_panel_hdd.scad
     angles: full
     stl: true
 
@@ -168,9 +150,35 @@ models:
     angles: full
     stl: true
 
+  - name: pico_top_shell_hdd
+    type: component
+    scad: build/pico_top_shell_hdd.scad
+    angles: full
+    stl: true
+
   # Assemblies
+  - name: pico_base_assembly
+    type: assembly
+    scad: build/pico_base_assembly.scad
+    angles: full
+    stl: false
+
   - name: pico_assembly
     type: assembly
     scad: build/pico_assembly.scad
     angles: full
     stl: false
+    variants:
+      - name: exploded
+        scad: build/pico_assembly_exploded.scad
+        angles: standard
+
+  - name: pico_assembly_hdd
+    type: assembly
+    scad: build/pico_assembly_hdd.scad
+    angles: full
+    stl: false
+    variants:
+      - name: exploded
+        scad: build/pico_assembly_hdd_exploded.scad
+        angles: standard

@@ -65,6 +65,13 @@ class PicoDimensions(CommonDimensions):
     def pico_case_depth(self) -> float:
         return self.mobo.depth + (2 * self.wall_thickness)
 
+    # HDD top hat allowance
+    hdd_height_allowance: float = 12.5  # 9.5mm SSD + 3mm clearance
+
+    @property
+    def pico_exterior_height_hdd(self) -> float:
+        return self.pico_exterior_height + self.hdd_height_allowance
+
     # Variation: "normal" or "server"
     variation: str = "normal"
 
@@ -72,7 +79,7 @@ class PicoDimensions(CommonDimensions):
     def extra_interior_height(self) -> float:
         # Server variation adds height for 2.5" drives
         return 15.0 if self.variation == "server" else 0.0
-        
+
     @property
     def pico_interior_chamber_height(self) -> float:
         cooler_stack = self.standoff_height + self.mobo.pcb_thickness + self.cooling.nh_l9_total_height
