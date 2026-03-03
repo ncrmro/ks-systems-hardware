@@ -1,75 +1,109 @@
 import anchorscad as ad
 from anchorscad import datatree
-from typing import Optional
 from dataclasses import field
 
 from config import PicoDimensions
 from registry import register_part
 from vitamins.motherboard_assembly import MotherboardAssemblyPico
-from components.case_pico import PicoBottomShell, PicoTopShell
+from components.case_pico import PicoBasePanel, PicoTopShell
+
+@register_part("pico_base_assembly", part_type="assembly")
+def create_pico_base_assembly() -> ad.Shape:
+    return PicoBaseAssembly(dim=PicoDimensions())
 
 @register_part("pico_assembly", part_type="assembly")
 def create_pico_assembly() -> ad.Shape:
     return PicoAssembly(dim=PicoDimensions())
+
+@register_part("pico_assembly_exploded", part_type="assembly")
+def create_pico_assembly_exploded() -> ad.Shape:
+    return PicoAssembly(dim=PicoDimensions(), explode=30.0)
+
+@register_part("pico_assembly_hdd", part_type="assembly")
+def create_pico_assembly_hdd() -> ad.Shape:
+    return PicoAssembly(dim=PicoDimensions(), with_hdd=True)
+
+@register_part("pico_assembly_hdd_exploded", part_type="assembly")
+def create_pico_assembly_hdd_exploded() -> ad.Shape:
+    return PicoAssembly(dim=PicoDimensions(), with_hdd=True, explode=30.0)
+
+@ad.shape
+@datatree
+class PicoBaseAssembly(ad.CompositeShape):
+    """
+    Base panel with motherboard assembly. No top shell.
+    Useful for verifying motherboard fit and IO alignment on the base panel.
+    """
+    dim: PicoDimensions
+
+    def build(self) -> ad.Maker:
+        wall = self.dim.wall_thickness
+
+        base_panel = PicoBasePanel(dim=self.dim)
+        assembly = base_panel.solid("base_panel").at("centre")
+
+        mobo_assy = MotherboardAssemblyPico(dim=self.dim)
+        mobo_z = wall / 2 + self.dim.standoff_height + self.dim.mobo.pcb_thickness / 2
+
+        assembly.add_at(
+            mobo_assy.solid("mobo_assembly").at("centre"),
+            post=ad.translate([0, 0, mobo_z])
+        )
+
+        return assembly
+
 
 @ad.shape
 @datatree
 class PicoAssembly(ad.CompositeShape):
     """
     Full Assembly for Pico Case.
+    Two-piece design: base panel + top shell.
+    When explode > 0, components are separated vertically for visibility.
     """
     dim: PicoDimensions
-    
+    with_hdd: bool = False
+    explode: float = 0.0
+
     def build(self) -> ad.Maker:
-        # 1. Bottom Shell
-        # Positioned so bottom face is at Z=0.
-        # Shell build() is centered. Z=wall/2 is floor center.
-        # So Z=0 is floor bottom.
-        
-        bottom_shell = PicoBottomShell(dim=self.dim)
         wall = self.dim.wall_thickness
-        
-        # BottomShell center Z is 0 (in its local coords). 
-        # But we defined it as floor centered at 0. So it straddles 0.
-        # Let's verify.
-        # floor = Box([w, d, wall]).at("centre").
-        # Center of box is 0,0,0. Z ranges -wall/2 to wall/2.
-        # Perfect.
-        
-        assembly = bottom_shell.solid("bottom_shell").at("centre")
-        
+
+        if self.with_hdd:
+            exterior_height = self.dim.pico_exterior_height_hdd
+        else:
+            exterior_height = self.dim.pico_exterior_height
+
+        # 1. Base Panel
+        # Panel is centered at origin. Z spans -wall/2 to +wall/2.
+        base_panel = PicoBasePanel(dim=self.dim, with_hdd=self.with_hdd)
+        assembly = base_panel.solid("base_panel").at("centre")
+
         # 2. Motherboard Assembly
-        # Sits on standoffs.
-        # Standoff height from floor top (wall/2).
-        # Mobo assembly origin is PCB center.
-        # Z pos = wall/2 (floor top) + standoff_height + pcb_thickness/2.
-        
+        # Sits on standoffs above the base panel.
+        # Z pos = wall/2 (panel top) + standoff_height + pcb_thickness/2
         mobo_assy = MotherboardAssemblyPico(dim=self.dim)
-        mobo_z = wall/2 + self.dim.standoff_height + self.dim.mobo.pcb_thickness/2
-        
+        mobo_z = wall / 2 + self.dim.standoff_height + self.dim.mobo.pcb_thickness / 2
+        mobo_z += self.explode  # exploded gap above base panel
+
         assembly.add_at(
             mobo_assy.solid("mobo_assembly").at("centre"),
             post=ad.translate([0, 0, mobo_z])
         )
-        
+
         # 3. Top Shell
-        # Top plate center Z is h - wall/2?
-        # In PicoTopShell, top plate is at 0,0,0 (local).
-        # We need to lift it.
-        # Case Height = pico_exterior_height.
-        # Top plate center Z should be (Height - wall/2) relative to Bottom(0).
-        # But our Assembly origin is Bottom center (0,0,0) (which is floor center).
-        # Wait, if Bottom Shell floor is at 0,0,0, then bottom surface is -wall/2.
-        # Case Height starts from -wall/2.
-        # Top surface is -wall/2 + Height.
-        # Top plate center is -wall/2 + Height - wall/2 = Height - wall.
-        
-        top_shell = PicoTopShell(dim=self.dim)
-        top_z = self.dim.pico_exterior_height - wall
-        
+        # Shell height = exterior_height - wall (base panel thickness).
+        # Shell is centered in its local coords.
+        # Shell bottom (open) should sit on top of the base panel.
+        # Base panel top is at Z = +wall/2.
+        # Shell center Z should be at: wall/2 + shell_height/2
+        shell_height = exterior_height - wall
+        top_shell = PicoTopShell(dim=self.dim, with_hdd=self.with_hdd)
+        top_z = wall / 2 + shell_height / 2
+        top_z += 2 * self.explode  # exploded gap above motherboard
+
         assembly.add_at(
             top_shell.solid("top_shell").at("centre"),
             post=ad.translate([0, 0, top_z])
         )
-        
+
         return assembly
