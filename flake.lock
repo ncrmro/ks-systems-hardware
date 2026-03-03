@@ -5,11 +5,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1772060046,
-        "narHash": "sha256-SdSXHyLdyyrKkf4NO9nXVb4kpX1aAwyJb/OesIaMnMA=",
+        "lastModified": 1772552861,
+        "narHash": "sha256-DLNbf03utJNp6zQjV1jLTQrTrR+NKOmf1dR1K/saEAU=",
         "owner": "ncrmro",
         "repo": "cadeng",
-        "rev": "154176be54dc3cb59a26dd1b95753244a29d139b",
+        "rev": "1eca42f67b60e605c6d7b51bfc1f1d61e729a834",
         "type": "github"
       },
       "original": {

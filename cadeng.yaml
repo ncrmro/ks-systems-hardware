@@ -6,7 +6,6 @@ project:
 python:
   build_command: "uv run ./bin/render --scad-only"
   build_cwd: .
-  registry_command: "uv run ./bin/render --list-json"
   watch_dirs:
     - src
   watch_extensions:
