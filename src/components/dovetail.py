@@ -45,14 +45,14 @@ class FemaleDovetail(ad.CompositeShape):
         boss = ad.Box([boss_width, boss_depth, boss_height])
         shape = boss.solid("boss").colour("dimgray").at("centre")
 
-        # Channel (hole) - open on -Y side (toward case interior)
-        # Prongs face -Y (interior), solid wall on +Y (toward mating panel).
-        # The male rail enters from the top (+Z). The -Y opening provides
-        # visual access and assembly clearance from the interior side.
+        # Channel (hole) - open on +Y side (toward mating back panel)
+        # The +Y face of the channel is flush with the +Y face of the boss,
+        # allowing the male rail to slide in from the back (+Y direction).
+        # Solid wall on -Y side retains the rail once seated.
         channel = ad.Box([dovetail_width, dovetail_length + dd.dovetail_boss_margin, boss_height + 0.02])
         shape.add_at(
             channel.hole("channel_cut").at("centre"),
-            post=ad.translate([0, -dd.dovetail_boss_margin / 2, 0])
+            post=ad.translate([0, dd.dovetail_boss_margin / 2, 0])
         )
 
         return shape

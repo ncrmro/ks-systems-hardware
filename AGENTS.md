@@ -172,3 +172,9 @@ Record confirmed findings here as they are discovered. Format: `### YYYY-MM-DD: 
 - **Printability** — orientation constraints, support requirements, build-plate contact rules
 - **AnchorSCAD bugs/workarounds** — library-specific issues encountered during development
 - **Assembly fit** — clearance values that work, interference findings from physical builds
+
+### 2026-03-04: Headless OpenSCAD Rendering in Nix Containers
+
+OpenSCAD screenshot generation works in headless environments (Podman containers, CI, SSH without X) using `xvfb-run` + Mesa software rasterizer. The critical environment variable is `__EGL_VENDOR_LIBRARY_DIRS` — without it, OpenSCAD's EGL initialization fails even with xvfb-run active.
+
+See `.deepwork/jobs/cadeng/steps/shared/screenshot-conventions.md` "Headless Rendering" section for the full recipe and troubleshooting guide.

@@ -258,43 +258,17 @@ class PicoBackPanel(ad.CompositeShape):
 
         # ── Male Dovetails on Bottom Edge ──
         dd = DovetailDimensions()
-        # With -Y open channel, the boss has a solid wall on +Y (boss_margin
-        # thick). The male rail must be centered on the channel center, which
-        # is offset from the wall by clearance + boss_margin.
-        # A connecting tab above the boss height bridges the rail to the wall.
-        boss_depth = (dd.dovetail_length + 2 * dd.dovetail_clearance
-                      + 2 * dd.dovetail_boss_margin)
-        # Channel center in back panel local coords:
-        # female channel center (world) = panel_depth/2 - wall - boss_depth/2 - boss_margin/2
-        # back panel center (world) = panel_depth/2 - wall/2
-        # male_y (local) = channel_world - panel_world
-        chan_offset = dd.dovetail_clearance + dd.dovetail_boss_margin  # 4.15mm
-        male_y = -wall / 2 - chan_offset - dd.dovetail_length / 2
-        tab_y_gap = chan_offset  # gap between rail +Y face and wall -Y face
-        tab_height = 3.0  # connecting tab thickness in Z
+        # Rails flush with wall interior face (-Y). Rail +Y face touches wall -Y face.
+        male_y = -wall / 2 - dd.dovetail_length / 2
 
         for i, x_pos in enumerate(_dovetail_x_positions(inner_width)):
             male = MaleDovetail(dim=dd)
-            # Rail centered on channel (offset from wall by chan_offset)
             shape.add_at(
                 male.solid(f"dovetail_male_{i}").at("centre"),
                 post=ad.translate([
                     x_pos,
                     male_y,
                     -back_wall_height / 2 + dd.dovetail_height / 2
-                ])
-            )
-
-            # Connecting tab: bridges from rail +Y face to wall -Y face,
-            # positioned ABOVE the dovetail height so it clears the female
-            # boss during assembly. The tab sits on top of the boss +Y wall.
-            tab = ad.Box([dd.dovetail_base_width, tab_y_gap, tab_height])
-            shape.add_at(
-                tab.solid(f"dovetail_tab_{i}").colour("dimgray").at("centre"),
-                post=ad.translate([
-                    x_pos,
-                    -wall / 2 - tab_y_gap / 2,
-                    -back_wall_height / 2 + dd.dovetail_height + tab_height / 2
                 ])
             )
 
