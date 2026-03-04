@@ -26,8 +26,8 @@
             # Package manager
             pkgs.uv
 
-            # CAD tools
-            pkgs.openscad-unstable
+            # CAD tools (wrapped openscad with EGL headless support)
+            cadeng.packages.${system}.openscad
 
             # Build dependencies for Python packages
             pkgs.stdenv.cc.cc.lib
