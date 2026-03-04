@@ -70,7 +70,6 @@ class PicoAssembly(ad.CompositeShape):
         wall = self.dim.wall_thickness
         panel_width = self.dim.pico_case_width
         panel_depth = self.dim.pico_case_depth
-        inner_width = panel_width - 2 * wall
 
         if self.with_hdd:
             exterior_height = self.dim.pico_exterior_height_hdd

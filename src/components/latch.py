@@ -22,7 +22,7 @@ class LatchArm(ad.CompositeShape):
     Vertical flex arm with outward hook at bottom.
     Attaches to the inner face of the top shell front wall.
     The arm hangs downward (-Z) and the hook protrudes outward (+Y).
-    Origin at the top attachment point.
+    Origin at geometric centre of arm.
     """
     dim: LatchDimensions = field(default_factory=LatchDimensions)
 
@@ -52,7 +52,7 @@ class LatchLedge(ad.CompositeShape):
     """
     Rectangular protrusion on the base panel front edge.
     The latch arm hook catches under this ledge.
-    Origin at the center of the ledge base (where it attaches to panel).
+    Origin at geometric centre of ledge.
     """
     dim: LatchDimensions = field(default_factory=LatchDimensions)
 

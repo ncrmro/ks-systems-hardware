@@ -7,15 +7,11 @@ from registry import register_part
 @datatree
 class DovetailDimensions:
     """Thickened dovetail dimensions for structural back-panel connection."""
-    dovetail_angle: float = 15.0
     dovetail_height: float = 5.0       # was 3.0 - deeper engagement
     dovetail_length: float = 25.0      # was 20.0 - longer rail
     dovetail_base_width: float = 12.0  # was 8.0 - wider contact
     dovetail_clearance: float = 0.15
     dovetail_boss_margin: float = 4.0  # was 3.0 - more wall
-    catch_bump_height: float = 1.2     # was 0.8 - stronger catch
-    catch_bump_length: float = 4.0     # was 3.0
-    catch_ramp_length: float = 2.5     # was 2.0
     center_slot_width: float = 4.0     # was 3.0 - proportional
     center_slot_end_margin: float = 8.0  # was 6.0
 
@@ -25,7 +21,7 @@ class DovetailDimensions:
 class FemaleDovetail(ad.CompositeShape):
     """
     Female dovetail with integrated boss and channel recess.
-    Origin at center of boss top surface.
+    Origin at geometric centre of boss.
     Boss extends in +Z direction, channel opens along specified axis.
     """
     dim: DovetailDimensions = field(default_factory=DovetailDimensions)
@@ -63,7 +59,7 @@ class FemaleDovetail(ad.CompositeShape):
 class MaleDovetail(ad.CompositeShape):
     """
     Male dovetail rail with center-slot snap-fit.
-    Origin at center of rail base (XY plane), extends in +Z direction.
+    Origin at geometric centre of rail.
     """
     dim: DovetailDimensions = field(default_factory=DovetailDimensions)
     with_latch: bool = True
