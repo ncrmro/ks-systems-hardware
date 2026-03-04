@@ -43,6 +43,8 @@ projects:
       - noctua_l9
       - pico_base_panel
       - pico_base_panel_hdd
+      - pico_back_panel
+      - pico_back_panel_hdd
       - pico_top_shell
       - pico_top_shell_hdd
       - motherboard_assembly_pico
@@ -156,6 +158,18 @@ models:
     angles: full
     stl: true
 
+  - name: pico_back_panel
+    type: component
+    scad: build/pico_back_panel.scad
+    angles: full
+    stl: true
+
+  - name: pico_back_panel_hdd
+    type: component
+    scad: build/pico_back_panel_hdd.scad
+    angles: full
+    stl: true
+
   # Assemblies
   - name: pico_base_assembly
     type: assembly
@@ -182,3 +196,4 @@ models:
       - name: exploded
         scad: build/pico_assembly_hdd_exploded.scad
         angles: standard
+
