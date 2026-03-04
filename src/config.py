@@ -72,6 +72,13 @@ class PicoDimensions(CommonDimensions):
     def pico_exterior_height_hdd(self) -> float:
         return self.pico_exterior_height + self.hdd_height_allowance
 
+    # Latch
+    latch_arm_length: float = 12.0
+    latch_arm_thickness: float = 1.5
+    latch_arm_width: float = 10.0
+    latch_hook_depth: float = 2.0
+    latch_hook_height: float = 1.5
+
     # Variation: "normal" or "server"
     variation: str = "normal"
 

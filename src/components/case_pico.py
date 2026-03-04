@@ -5,6 +5,9 @@ from dataclasses import field
 from config import PicoDimensions
 from registry import register_part
 from vitamins.storage import SSD25Dimensions
+from components.dovetail import DovetailDimensions, FemaleDovetail, MaleDovetail
+from components.latch import LatchDimensions, LatchArm, LatchLedge
+
 
 @register_part("pico_base_panel", part_type="component")
 def create_pico_base_panel() -> ad.Shape:
@@ -13,6 +16,14 @@ def create_pico_base_panel() -> ad.Shape:
 @register_part("pico_base_panel_hdd", part_type="component")
 def create_pico_base_panel_hdd() -> ad.Shape:
     return PicoBasePanel(dim=PicoDimensions(), with_hdd=True)
+
+@register_part("pico_back_panel", part_type="component")
+def create_pico_back_panel() -> ad.Shape:
+    return PicoBackPanel(dim=PicoDimensions())
+
+@register_part("pico_back_panel_hdd", part_type="component")
+def create_pico_back_panel_hdd() -> ad.Shape:
+    return PicoBackPanel(dim=PicoDimensions(), with_hdd=True)
 
 @register_part("pico_top_shell", part_type="component")
 def create_pico_top_shell() -> ad.Shape:
@@ -23,13 +34,23 @@ def create_pico_top_shell_hdd() -> ad.Shape:
     return PicoTopShell(dim=PicoDimensions(), with_hdd=True)
 
 
+# Dovetail positions: 25% and 75% of inner width
+def _dovetail_x_positions(inner_width):
+    return [-inner_width / 4, inner_width / 4]
+
+# Latch positions: 25% and 75% of inner width
+def _latch_x_positions(inner_width):
+    return [-inner_width / 4, inner_width / 4]
+
+
 @ad.shape
 @datatree
 class PicoBasePanel(ad.CompositeShape):
     """
     Base panel for Pico configuration.
-    L-shaped piece: flat plate with standoff bosses + back wall with IO shield
-    cutout and barrel jack hole.
+    Flat plate with standoff bosses. No back wall (separate PicoBackPanel).
+    Female dovetails on back edge for back panel connection.
+    Latch ledges on front inner edge for top shell retention.
     """
     dim: PicoDimensions
     with_hdd: bool = False
@@ -38,24 +59,13 @@ class PicoBasePanel(ad.CompositeShape):
     ventilation: bool = False
     center_cutout: bool = False
 
-    # Barrel jack dimensions
-    barrel_jack_diameter: float = 7.0
-    barrel_jack_x_inset: float = 10.0  # from right edge of interior
-
-    # IO shield clearance (per side)
-    io_shield_clearance: float = 1.0
-
     def build(self) -> ad.Maker:
         wall = self.dim.wall_thickness
         panel_width = self.dim.pico_case_width
         panel_depth = self.dim.pico_case_depth
         panel_thickness = wall
         standoff_x_offset = wall
-
-        if self.with_hdd:
-            exterior_height = self.dim.pico_exterior_height_hdd
-        else:
-            exterior_height = self.dim.pico_exterior_height
+        inner_width = panel_width - 2 * wall
 
         # Main Panel (flat base plate)
         panel = ad.Box([panel_width, panel_depth, panel_thickness])
@@ -130,87 +140,182 @@ class PicoBasePanel(ad.CompositeShape):
                 post=ad.translate([x_rel, y_rel, boss_h/2])
             )
 
-        # ── Back Wall ──
-        # Inner width (fits between top shell side walls)
-        back_wall_width = panel_width - 2 * wall
+        # ── Female Dovetails on Back Edge ──
+        dd = DovetailDimensions()
+        boss_depth = (dd.dovetail_length + 2 * dd.dovetail_clearance
+                      + 2 * dd.dovetail_boss_margin)
+        for i, x_pos in enumerate(_dovetail_x_positions(inner_width)):
+            female = FemaleDovetail(dim=dd)
+            # Position: on top surface, inset from back edge by wall (back panel)
+            # + boss_depth/2 so the boss back face is flush with the back panel
+            # interior face.
+            shape.add_at(
+                female.solid(f"dovetail_female_{i}").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    panel_depth / 2 - wall - boss_depth / 2,
+                    panel_thickness / 2 + dd.dovetail_height / 2
+                ])
+            )
+
+        # ── Latch Ledges on Front Inner Edge ──
+        ld = LatchDimensions(
+            arm_width=self.dim.latch_arm_width,
+            hook_depth=self.dim.latch_hook_depth,
+            hook_height=self.dim.latch_hook_height,
+        )
+        for i, x_pos in enumerate(_latch_x_positions(inner_width)):
+            ledge = LatchLedge(dim=ld)
+            # Position: on top surface at front inner edge, protruding inward (+Y)
+            shape.add_at(
+                ledge.solid(f"latch_ledge_{i}").colour("dimgray").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    -panel_depth / 2 + wall + ld.hook_depth / 2,
+                    panel_thickness / 2 + ld.hook_height / 2
+                ])
+            )
+
+        return shape
+
+
+@ad.shape
+@datatree
+class PicoBackPanel(ad.CompositeShape):
+    """
+    Separate back panel for Pico configuration.
+    Printed flat on its back — IO cutout is a through-hole, no bridging.
+    Male dovetails on bottom edge connect to base panel.
+    Latch ledges on front face near top edge for top shell back retention.
+    """
+    dim: PicoDimensions
+    with_hdd: bool = False
+
+    # Barrel jack dimensions
+    barrel_jack_diameter: float = 7.0
+    barrel_jack_x_inset: float = 10.0
+
+    # IO shield clearance (per side)
+    io_shield_clearance: float = 1.0
+
+    def build(self) -> ad.Maker:
+        wall = self.dim.wall_thickness
+        panel_width = self.dim.pico_case_width
+        inner_width = panel_width - 2 * wall  # 170mm
+
+        if self.with_hdd:
+            exterior_height = self.dim.pico_exterior_height_hdd
+        else:
+            exterior_height = self.dim.pico_exterior_height
+
         back_wall_height = exterior_height - wall  # same as shell_height
 
-        back_wall = ad.Box([back_wall_width, wall, back_wall_height])
-        back_wall_shape = back_wall.solid("back_wall").colour("gray").at("centre")
+        # Main back wall panel: inner_width x wall x back_wall_height
+        # Origin at center. The wall is thin along Y (3mm).
+        panel = ad.Box([inner_width, wall, back_wall_height])
+        shape = panel.solid("back_wall").colour("gray").at("centre")
 
-        # Position: back edge of plate, rising from plate top surface
-        # Y center: panel_depth/2 - wall/2 (flush with outer back edge)
-        # Z center: panel_thickness/2 + back_wall_height/2 (bottom at plate top)
-        shape.add_at(
-            back_wall_shape,
-            post=ad.translate([
-                0,
-                panel_depth / 2 - wall / 2,
-                panel_thickness / 2 + back_wall_height / 2
-            ])
-        )
-
-        # ── IO Shield Cutout ──
-        # The IO shield is on the back of the motherboard, centered on mobo width.
-        # back_wall_width == mobo width (170mm), so IO shield is centered on the wall.
+        # ── IO Shield Cutout (through-hole) ──
         io_w = self.dim.mobo.io_shield_width + 2 * self.io_shield_clearance
         io_h = self.dim.mobo.io_shield_height + 2 * self.io_shield_clearance
 
-        # Z position relative to back wall bottom (= plate top):
-        # PCB bottom is at standoff_height above plate top
-        # IO shield bottom = standoff_height + io_shield_z_offset
-        io_z_from_wall_bottom = (
+        # Z position: standoff_height + io_shield_z_offset + io_shield_height/2
+        # measured from the bottom of the wall (which is -back_wall_height/2)
+        io_z_from_bottom = (
             self.dim.standoff_height
             + self.dim.mobo.io_shield_z_offset
             + self.dim.mobo.io_shield_height / 2
         )
-
-        # Convert to base panel coords (Z=0 is plate center)
-        io_z = panel_thickness / 2 + io_z_from_wall_bottom
+        io_z = -back_wall_height / 2 + io_z_from_bottom
 
         io_cutout = ad.Box([io_w, wall + 0.2, io_h])
-        io_cutout_shape = io_cutout.hole("io_shield_cutout").at("centre")
-
         shape.add_at(
-            io_cutout_shape,
-            post=ad.translate([
-                0,  # centered (mobo centered in case)
-                panel_depth / 2 - wall / 2,
-                io_z
-            ])
+            io_cutout.hole("io_shield_cutout").at("centre"),
+            post=ad.translate([0, 0, io_z])
         )
 
         # ── Barrel Jack Hole ──
-        # X: inset from right edge of interior
-        barrel_x = back_wall_width / 2 - self.barrel_jack_x_inset
+        barrel_x = inner_width / 2 - self.barrel_jack_x_inset
 
-        # Z: midpoint between IO shield top and interior top
-        io_shield_top_from_wall_bottom = (
+        io_shield_top_from_bottom = (
             self.dim.standoff_height
             + self.dim.mobo.io_shield_z_offset
             + self.dim.mobo.io_shield_height
         )
-        interior_top_from_wall_bottom = exterior_height - 2 * wall
-        barrel_z_from_wall_bottom = (
-            io_shield_top_from_wall_bottom + interior_top_from_wall_bottom
+        interior_top_from_bottom = exterior_height - 2 * wall
+        barrel_z_from_bottom = (
+            io_shield_top_from_bottom + interior_top_from_bottom
         ) / 2.0
-
-        barrel_z = panel_thickness / 2 + barrel_z_from_wall_bottom
+        barrel_z = -back_wall_height / 2 + barrel_z_from_bottom
 
         barrel_hole = ad.Cylinder(
             r=self.barrel_jack_diameter / 2, h=wall + 0.2, fn=20
         )
-        barrel_hole_shape = barrel_hole.hole("barrel_jack").at("centre")
-
-        # Hole goes through back wall (along Y axis)
         shape.add_at(
-            barrel_hole_shape,
-            post=ad.translate([
-                barrel_x,
-                panel_depth / 2 - wall / 2,
-                barrel_z
-            ]) * ad.rotX(90)
+            barrel_hole.hole("barrel_jack").at("centre"),
+            post=ad.translate([barrel_x, 0, barrel_z]) * ad.rotX(90)
         )
+
+        # ── Male Dovetails on Bottom Edge ──
+        dd = DovetailDimensions()
+        # With -Y open channel, the boss has a solid wall on +Y (boss_margin
+        # thick). The male rail must be centered on the channel center, which
+        # is offset from the wall by clearance + boss_margin.
+        # A connecting tab above the boss height bridges the rail to the wall.
+        boss_depth = (dd.dovetail_length + 2 * dd.dovetail_clearance
+                      + 2 * dd.dovetail_boss_margin)
+        # Channel center in back panel local coords:
+        # female channel center (world) = panel_depth/2 - wall - boss_depth/2 - boss_margin/2
+        # back panel center (world) = panel_depth/2 - wall/2
+        # male_y (local) = channel_world - panel_world
+        chan_offset = dd.dovetail_clearance + dd.dovetail_boss_margin  # 4.15mm
+        male_y = -wall / 2 - chan_offset - dd.dovetail_length / 2
+        tab_y_gap = chan_offset  # gap between rail +Y face and wall -Y face
+        tab_height = 3.0  # connecting tab thickness in Z
+
+        for i, x_pos in enumerate(_dovetail_x_positions(inner_width)):
+            male = MaleDovetail(dim=dd)
+            # Rail centered on channel (offset from wall by chan_offset)
+            shape.add_at(
+                male.solid(f"dovetail_male_{i}").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    male_y,
+                    -back_wall_height / 2 + dd.dovetail_height / 2
+                ])
+            )
+
+            # Connecting tab: bridges from rail +Y face to wall -Y face,
+            # positioned ABOVE the dovetail height so it clears the female
+            # boss during assembly. The tab sits on top of the boss +Y wall.
+            tab = ad.Box([dd.dovetail_base_width, tab_y_gap, tab_height])
+            shape.add_at(
+                tab.solid(f"dovetail_tab_{i}").colour("dimgray").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    -wall / 2 - tab_y_gap / 2,
+                    -back_wall_height / 2 + dd.dovetail_height + tab_height / 2
+                ])
+            )
+
+        # ── Latch Ledges on Front Face Near Top Edge ──
+        # These protrude forward (toward -Y) so the top shell's back latch
+        # arms can catch under them when the shell slides down.
+        ld = LatchDimensions(
+            arm_width=self.dim.latch_arm_width,
+            hook_depth=self.dim.latch_hook_depth,
+            hook_height=self.dim.latch_hook_height,
+        )
+        for i, x_pos in enumerate(_latch_x_positions(inner_width)):
+            ledge = LatchLedge(dim=ld)
+            shape.add_at(
+                ledge.solid(f"latch_ledge_back_{i}").colour("dimgray").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    -wall / 2 - ld.hook_depth / 2,
+                    back_wall_height / 2 - ld.hook_height / 2 - wall
+                ])
+            )
 
         return shape
 
@@ -221,8 +326,8 @@ class PicoTopShell(ad.CompositeShape):
     """
     Top shell for Pico configuration.
     Open-back U-shape: top plate + front wall + left wall + right wall.
-    Open bottom and open back (back wall is on the base panel).
-    Optional HDD variant adds extra interior height and SSD mounting holes.
+    Latch arms on front wall inner face and underside of top plate near
+    back edge provide 4-point snap-fit retention to base + back panel.
     """
     dim: PicoDimensions
     with_hdd: bool = False
@@ -231,6 +336,7 @@ class PicoTopShell(ad.CompositeShape):
         wall = self.dim.wall_thickness
         w = self.dim.pico_case_width
         d = self.dim.pico_case_depth
+        inner_width = w - 2 * wall
 
         if self.with_hdd:
             h = self.dim.pico_exterior_height_hdd
@@ -244,10 +350,6 @@ class PicoTopShell(ad.CompositeShape):
         shape = outer.solid("outer").colour("gray").at("centre")
 
         # Inner cavity — extends to the back face (no back wall)
-        # Width: w - 2*wall (left and right walls remain)
-        # Depth: d - wall (only front wall, back is open)
-        # The cavity is shifted Y=+wall/2 so it extends to the back face
-        # and shifted Z=-wall so the top plate remains solid
         inner_w = w - 2 * wall
         inner_d = d - wall
         inner_h = shell_height
@@ -264,17 +366,17 @@ class PicoTopShell(ad.CompositeShape):
         if self.with_hdd:
             ssd_dim = SSD25Dimensions()
 
-            hole_x_sep = 61.72  # mm between holes across width
+            hole_x_sep = 61.72
             hole_y_positions = [ssd_dim.hole_front_y, ssd_dim.hole_rear_y]
 
             top_z = shell_height / 2
-            ssd_screw_d = 3.0  # M3 clearance
+            ssd_screw_d = 3.0
 
             hole_idx = 0
             for y_pos in hole_y_positions:
                 for x_sign in [-1, 1]:
                     x_pos = x_sign * hole_x_sep / 2
-                    y_rel = y_pos - ssd_dim.length / 2  # center SSD on plate
+                    y_rel = y_pos - ssd_dim.length / 2
 
                     ssd_hole = ad.Cylinder(r=ssd_screw_d / 2, h=wall + 0.2, fn=20)
                     ssd_hole_shape = ssd_hole.hole(f"ssd_hole_{hole_idx}").at("centre")
@@ -284,5 +386,51 @@ class PicoTopShell(ad.CompositeShape):
                         post=ad.translate([x_pos, y_rel, top_z])
                     )
                     hole_idx += 1
+
+        # ── Back Latch Arms on Top Plate Underside Near Back Edge ──
+        # These hang downward from the top plate underside and catch the
+        # latch ledges on the back panel's front face near its top.
+        back_ld = LatchDimensions(
+            arm_length=self.dim.latch_arm_length,
+            arm_thickness=self.dim.latch_arm_thickness,
+            arm_width=self.dim.latch_arm_width,
+            hook_depth=self.dim.latch_hook_depth,
+            hook_height=self.dim.latch_hook_height,
+        )
+        for i, x_pos in enumerate(_latch_x_positions(inner_width)):
+            back_latch = LatchArm(dim=back_ld)
+            # Arm hangs from underside of top plate, near back edge
+            # Top plate underside is at Z = shell_height/2 - wall
+            # Back inner face is at Y = d/2 - wall
+            shape.add_at(
+                back_latch.solid(f"latch_arm_back_{i}").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    d / 2 - wall - back_ld.arm_thickness / 2,
+                    shell_height / 2 - wall - back_ld.arm_length / 2
+                ]) * ad.rotX(180)
+            )
+
+        # ── Latch Arms on Front Wall Inner Face ──
+        ld = LatchDimensions(
+            arm_length=self.dim.latch_arm_length,
+            arm_thickness=self.dim.latch_arm_thickness,
+            arm_width=self.dim.latch_arm_width,
+            hook_depth=self.dim.latch_hook_depth,
+            hook_height=self.dim.latch_hook_height,
+        )
+        for i, x_pos in enumerate(_latch_x_positions(inner_width)):
+            latch_arm = LatchArm(dim=ld)
+            # Arm hangs from inner face of front wall, near the bottom
+            # Front wall inner face is at Y = -d/2 + wall
+            # Arm center Z: bottom of shell + arm_length/2
+            shape.add_at(
+                latch_arm.solid(f"latch_arm_{i}").at("centre"),
+                post=ad.translate([
+                    x_pos,
+                    -d / 2 + wall + ld.arm_thickness / 2,
+                    -shell_height / 2 + ld.arm_length / 2
+                ])
+            )
 
         return shape
