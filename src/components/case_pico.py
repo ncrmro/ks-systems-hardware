@@ -269,7 +269,7 @@ class PicoBackPanel(ad.CompositeShape):
                     x_pos,
                     male_y,
                     -back_wall_height / 2 + dd.dovetail_height / 2
-                ])
+                ]) * ad.rotZ(180)
             )
 
         # ── Latch Ledges on Front Face Near Top Edge ──
