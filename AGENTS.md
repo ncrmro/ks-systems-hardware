@@ -173,6 +173,12 @@ Record confirmed findings here as they are discovered. Format: `### YYYY-MM-DD: 
 - **AnchorSCAD bugs/workarounds** — library-specific issues encountered during development
 - **Assembly fit** — clearance values that work, interference findings from physical builds
 
+### 2026-03-04: Never Bundle Independent Dovetail Fixes
+
+When fixing dovetail positioning (gap/flush), do NOT also remove rotations (`rotZ(180)`, `rotZ(90)`) that were added as separate orientation fixes. The flush fix in `case_pico.py` incorrectly removed `rotZ(180)` from the male dovetails — a rotation the user had explicitly requested to fix orientation. This caused a regression that required a third commit to restore.
+
+**Rule**: Before removing any rotation from a dovetail placement, check `git log` to see if it was a deliberate fix. Only remove if it's provably causing the current bug. See `.deepwork/jobs/cadeng/steps/shared/dovetail-conventions.md` "Multi-Fix Safety" section.
+
 ### 2026-03-04: Headless OpenSCAD Rendering in Nix Containers
 
 OpenSCAD screenshot generation works in headless environments (Podman containers, CI, SSH without X) using `xvfb-run` + Mesa software rasterizer. The critical environment variable is `__EGL_VENDOR_LIBRARY_DIRS` — without it, OpenSCAD's EGL initialization fails even with xvfb-run active.
