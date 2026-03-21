@@ -2,8 +2,9 @@
 
 Manufacturing: FDM 3D print, PETG
 Layout: Inverted motherboard (IO down), SFX PSU on top, vertical GPU side chamber.
-The frame uses 20×20mm square columns at corners with horizontal crossmembers
-at motherboard mounting height and PSU shelf height.
+
+Coordinate convention: Origin = center of motherboard chamber (XY), bottom of frame (Z=0).
+GPU chamber extends in +X direction from the mobo chamber.
 """
 import anchorscad as ad
 from anchorscad import datatree
@@ -28,101 +29,83 @@ def create_tower_bottom_panel() -> ad.Shape:
 class TowerFrame(ad.CompositeShape):
     """V-rod structural frame for tower case.
 
-    Four vertical corner columns connected by horizontal crossmembers.
-    Columns are square profile (default 20×20mm), printed in PETG.
+    6 vertical columns (4 mobo + 2 GPU) with crossmembers on all sides.
+    Origin centered on mobo chamber XY, Z=0 at frame bottom.
     """
     dim: TowerDimensions = field(default_factory=TowerDimensions)
 
     def build(self) -> ad.Maker:
         vrod = self.dim.vrod_profile
         frame_height = self.dim.total_height - 2 * self.dim.wall_thickness
+        hw = self.dim.mobo_chamber_width / 2  # half mobo width
+        hd = self.dim.mobo_chamber_depth / 2  # half mobo depth
 
-        # Create a single V-rod column
+        # Use a thin invisible reference box at mobo chamber center
+        ref = ad.Box([1, 1, 1])
+        maker = ref.solid("origin").colour([0, 0, 0, 0]).at("centre")
+
         column = ad.Box([vrod, vrod, frame_height])
 
-        # Positions for 4 corner columns (mobo chamber corners)
-        # Origin at center of mobo chamber floor
-        half_w = self.dim.mobo_chamber_width / 2
-        half_d = self.dim.mobo_chamber_depth / 2
+        # ── 4 mobo chamber corner columns ──
+        mobo_cols = {
+            "col_ml": (-hw - vrod / 2, -hd - vrod / 2),  # mobo front-left
+            "col_mr": (hw + vrod / 2,  -hd - vrod / 2),   # mobo front-right
+            "col_mbl": (-hw - vrod / 2, hd + vrod / 2),   # mobo back-left
+            "col_mbr": (hw + vrod / 2,  hd + vrod / 2),   # mobo back-right
+        }
 
-        column_positions = [
-            (-half_w - vrod / 2, -half_d - vrod / 2),  # front-left
-            (half_w + vrod / 2, -half_d - vrod / 2),    # front-right
-            (-half_w - vrod / 2, half_d + vrod / 2),    # back-left
-            (half_w + vrod / 2, half_d + vrod / 2),     # back-right
-        ]
+        # ── 2 GPU chamber columns (extend in +X from mobo right columns) ──
+        gpu_x = hw + vrod + self.dim.gpu_chamber_width + vrod / 2
+        gpu_cols = {
+            "col_gf": (gpu_x, -hd - vrod / 2),   # GPU front
+            "col_gb": (gpu_x, hd + vrod / 2),     # GPU back
+        }
 
-        # First column is the base reference
-        maker = column.solid("col_fl").at("centre")
+        all_cols = {**mobo_cols, **gpu_cols}
 
-        # Remaining columns
-        for i, (name, (cx, cy)) in enumerate([
-            ("col_fr", column_positions[1]),
-            ("col_bl", column_positions[2]),
-            ("col_br", column_positions[3]),
-        ]):
-            offset_x = cx - column_positions[0][0]
-            offset_y = cy - column_positions[0][1]
+        for name, (cx, cy) in all_cols.items():
             maker.add_at(
                 column.solid(name).at("centre"),
-                "col_fl", "centre",
-                post=ad.translate([offset_x, offset_y, 0])
+                "origin", "centre",
+                post=ad.translate([cx, cy, frame_height / 2])
             )
 
-        # Motherboard shelf crossmember (horizontal bar connecting front columns)
-        mobo_shelf_z = self.dim.io_clearance_zone  # Above IO zone
-        shelf_width = self.dim.mobo_chamber_width + 2 * vrod
-        shelf_bar = ad.Box([shelf_width, vrod, vrod])
+        # ── Crossmembers at two heights ──
+        mobo_z = self.dim.io_clearance_zone + vrod / 2
+        psu_z = (self.dim.io_clearance_zone + self.dim.standoff_height
+                 + self.dim.mobo.pcb_thickness + self.dim.mobo_to_psu_gap + vrod / 2)
 
-        # Front crossmember at mobo height
-        maker.add_at(
-            shelf_bar.solid("shelf_front").at("centre"),
-            "col_fl", "centre",
-            post=ad.translate([
-                (column_positions[1][0] - column_positions[0][0]) / 2,
-                0,
-                -(frame_height / 2) + mobo_shelf_z + vrod / 2
-            ])
-        )
+        def bar(name, x1, y1, x2, y2, z):
+            """Horizontal bar between two column positions at height z."""
+            dx, dy = x2 - x1, y2 - y1
+            length = (dx**2 + dy**2) ** 0.5
+            b = ad.Box([length if abs(dx) > abs(dy) else vrod,
+                        vrod if abs(dx) > abs(dy) else length,
+                        vrod])
+            maker.add_at(
+                b.solid(name).at("centre"),
+                "origin", "centre",
+                post=ad.translate([(x1 + x2) / 2, (y1 + y2) / 2, z])
+            )
 
-        # Back crossmember at mobo height
-        maker.add_at(
-            shelf_bar.solid("shelf_back").at("centre"),
-            "col_fl", "centre",
-            post=ad.translate([
-                (column_positions[1][0] - column_positions[0][0]) / 2,
-                column_positions[2][1] - column_positions[0][1],
-                -(frame_height / 2) + mobo_shelf_z + vrod / 2
-            ])
-        )
+        for suffix, z in [("lo", mobo_z), ("hi", psu_z)]:
+            # Mobo front/back bars (X-axis)
+            bar(f"mobo_f_{suffix}", mobo_cols["col_ml"][0], mobo_cols["col_ml"][1],
+                mobo_cols["col_mr"][0], mobo_cols["col_mr"][1], z)
+            bar(f"mobo_b_{suffix}", mobo_cols["col_mbl"][0], mobo_cols["col_mbl"][1],
+                mobo_cols["col_mbr"][0], mobo_cols["col_mbr"][1], z)
 
-        # PSU shelf crossmember (above cooler)
-        psu_shelf_z = (
-            self.dim.io_clearance_zone
-            + self.dim.standoff_height
-            + self.dim.mobo.pcb_thickness
-            + self.dim.mobo_to_psu_gap
-        )
+            # Mobo side bars (Y-axis)
+            bar(f"mobo_l_{suffix}", mobo_cols["col_ml"][0], mobo_cols["col_ml"][1],
+                mobo_cols["col_mbl"][0], mobo_cols["col_mbl"][1], z)
+            bar(f"mobo_r_{suffix}", mobo_cols["col_mr"][0], mobo_cols["col_mr"][1],
+                mobo_cols["col_mbr"][0], mobo_cols["col_mbr"][1], z)
 
-        maker.add_at(
-            shelf_bar.solid("psu_shelf_front").at("centre"),
-            "col_fl", "centre",
-            post=ad.translate([
-                (column_positions[1][0] - column_positions[0][0]) / 2,
-                0,
-                -(frame_height / 2) + psu_shelf_z + vrod / 2
-            ])
-        )
-
-        maker.add_at(
-            shelf_bar.solid("psu_shelf_back").at("centre"),
-            "col_fl", "centre",
-            post=ad.translate([
-                (column_positions[1][0] - column_positions[0][0]) / 2,
-                column_positions[2][1] - column_positions[0][1],
-                -(frame_height / 2) + psu_shelf_z + vrod / 2
-            ])
-        )
+            # GPU front/back bars (X-axis, connecting mobo-right to GPU columns)
+            bar(f"gpu_f_{suffix}", mobo_cols["col_mr"][0], mobo_cols["col_mr"][1],
+                gpu_cols["col_gf"][0], gpu_cols["col_gf"][1], z)
+            bar(f"gpu_b_{suffix}", mobo_cols["col_mbr"][0], mobo_cols["col_mbr"][1],
+                gpu_cols["col_gb"][0], gpu_cols["col_gb"][1], z)
 
         return maker
 
@@ -130,36 +113,41 @@ class TowerFrame(ad.CompositeShape):
 @ad.shape
 @datatree
 class TowerBottomPanel(ad.CompositeShape):
-    """Bottom panel with IO shield cutout, C14 power inlet, and honeycomb vents.
+    """Bottom panel with IO shield cutout, C14 power inlet, and USB-C access.
 
-    The bottom panel sits at the base of the tower. It has:
-    - IO shield cutout (inverted motherboard, ports face down)
-    - C14 panel-mount power inlet cutout (PSU extension)
-    - ESP32 USB-C access cutout
-    - Honeycomb ventilation for intake airflow
+    Origin centered on mobo chamber XY (same as frame).
     """
     dim: TowerDimensions = field(default_factory=TowerDimensions)
 
     def build(self) -> ad.Maker:
-        panel_width = self.dim.mobo_chamber_width + 2 * self.dim.vrod_profile + 2 * self.dim.wall_thickness
-        panel_depth = self.dim.mobo_chamber_depth + 2 * self.dim.vrod_profile + 2 * self.dim.wall_thickness
+        vrod = self.dim.vrod_profile
+        # Total panel width includes mobo chamber + GPU chamber
+        gpu_extra = self.dim.gpu_chamber_width + vrod
+        panel_width = self.dim.mobo_chamber_width + 2 * vrod + 2 * self.dim.wall_thickness + gpu_extra
+        panel_depth = self.dim.mobo_chamber_depth + 2 * vrod + 2 * self.dim.wall_thickness
 
-        # Base panel
+        # Panel center is offset from mobo chamber center by half the GPU extra width
+        panel_x_offset = gpu_extra / 2
+
         panel = ad.Box([panel_width, panel_depth, self.dim.wall_thickness])
         maker = panel.solid("panel").at("centre")
 
-        # IO shield cutout (centered on motherboard position)
+        # Shift panel so mobo chamber center is at X=0
+        # (panel center is at +gpu_extra/2 from mobo center)
+
+        # IO cutout centered on mobo chamber (X=0 relative to mobo center = -panel_x_offset relative to panel center)
         io_cutout = ad.Box([
             self.dim.io_cutout_width,
             self.dim.io_cutout_height,
-            self.dim.wall_thickness + 2  # Through-cut
+            self.dim.wall_thickness + 2
         ])
         maker.add_at(
             io_cutout.hole("io_cutout").at("centre"),
-            "panel", "centre"
+            "panel", "centre",
+            post=ad.translate([-panel_x_offset, 0, 0])
         )
 
-        # C14 power inlet cutout (offset to side of IO cutout)
+        # C14 power inlet cutout
         c14_cutout = ad.Box([
             self.dim.c14_cutout_width,
             self.dim.c14_cutout_height,
@@ -168,7 +156,7 @@ class TowerBottomPanel(ad.CompositeShape):
         maker.add_at(
             c14_cutout.hole("c14_cutout").at("centre"),
             "panel", "centre",
-            post=ad.translate([self.dim.io_cutout_width / 2 + 20, 0, 0])
+            post=ad.translate([-panel_x_offset + self.dim.io_cutout_width / 2 + 20, 0, 0])
         )
 
         # ESP32 USB-C access cutout
@@ -180,7 +168,7 @@ class TowerBottomPanel(ad.CompositeShape):
         maker.add_at(
             usb_cutout.hole("usb_cutout").at("centre"),
             "panel", "centre",
-            post=ad.translate([-(self.dim.io_cutout_width / 2 + 15), 0, 0])
+            post=ad.translate([-panel_x_offset - self.dim.io_cutout_width / 2 - 15, 0, 0])
         )
 
         return maker
