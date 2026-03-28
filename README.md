@@ -86,6 +86,22 @@ modules/
 - **Integrated standoffs**: Bottom panel includes hexagonal recesses for motherboard mounting
 - **Dovetail joints**: Tool-free panel assembly
 
+## Large file storage
+
+Binary files (STL, PNG, STEP, etc.) are stored in Cloudflare R2 via [lfs-s3](https://github.com/nicolas-graves/lfs-s3), a Git LFS transfer agent for S3-compatible storage.
+
+### Setup
+
+1. Enter the dev shell (`direnv allow` or `nix develop`)
+2. Copy `.env.example` to `.env` and fill in your R2 credentials:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Cloudflare R2 access key, secret, and endpoint
+   ```
+3. Re-enter the directory (or run `direnv allow`) so `.envrc` configures git
+
+Git LFS operations (`git push`, `git pull`, `git lfs pull`) will automatically use R2.
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
