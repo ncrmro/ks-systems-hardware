@@ -21,13 +21,13 @@ check() {
 # Req Task 1: lfs-s3 binary must be available in the devshell
 check "lfs-s3 binary in PATH" which lfs-s3
 
-# Req Task 2: Git LFS configured with lfs-s3 as standalone transfer agent
-check "git lfs standalonetransferagent is lfs-s3" \
-  test "$(git config --get lfs.standalonetransferagent)" = "lfs-s3"
+# Req Task 2: .envrc configures lfs-s3 as standalone transfer agent
+check ".envrc sets standalonetransferagent" \
+  grep -q "lfs.standalonetransferagent lfs-s3" .envrc
 
-# Req Task 2: Custom transfer path configured
-check "git lfs custom transfer path set" \
-  git config --get lfs.customtransfer.lfs-s3.path
+# Req Task 2: .envrc configures custom transfer path
+check ".envrc sets custom transfer path" \
+  grep -q "lfs.customtransfer.lfs-s3.path lfs-s3" .envrc
 
 # Req Task 3: .gitattributes tracks STL files via LFS
 check ".gitattributes tracks *.stl" \
