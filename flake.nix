@@ -5,12 +5,24 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     cadeng.url = "github:ncrmro/cadeng";
+
+    lfs-s3-src = {
+      url = "github:nicolas-graves/lfs-s3/0.2.1";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, cadeng }:
+  outputs = { self, nixpkgs, flake-utils, cadeng, lfs-s3-src }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        lfs-s3 = pkgs.buildGoModule {
+          pname = "lfs-s3";
+          version = "0.2.1";
+          src = lfs-s3-src;
+          vendorHash = "sha256-CRHfPj5gQ54WA+2LjkLIHta7br03TZ4svfkbcezfUOE=";
+          meta.mainProgram = "lfs-s3";
+        };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -40,6 +52,8 @@
 
             # Development tools
             pkgs.git
+            pkgs.git-lfs
+            lfs-s3
           ];
 
           shellHook = ''
