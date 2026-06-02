@@ -86,6 +86,11 @@ modules/
 - **Integrated standoffs**: Bottom panel includes hexagonal recesses for motherboard mounting
 - **Dovetail joints**: Tool-free panel assembly
 
+## Contributing
+
+See [`CONTRIBUTOR.md`](CONTRIBUTOR.md) for the development workflow and
+[`AGENTS.md`](AGENTS.md) for the agent-oriented map of the repo.
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.

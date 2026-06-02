@@ -1,5 +1,7 @@
 # Keystone Hardware - AI Agent Context
 
+@CONTRIBUTOR.md — branching, worktrees, commits, and PR workflow
+
 ## Project Overview
 Keystone Hardware is a modular, expandable computer case. The project is currently **migrating from legacy OpenSCAD (`modules/*.scad`) to Python-generated OpenSCAD (`src/`)** using the `anchorscad` library.
 
