@@ -52,6 +52,17 @@ projects:
       - pico_assembly
       - pico_assembly_hdd
 
+  - name: tower
+    label: Tower Case
+    models:
+      - noctua_l12s
+      - psu_sfx
+      - fan_120_25
+      - tower_frame
+      - tower_bottom_panel
+      - tower_assembly
+      - tower_assembly_exploded
+
   - name: vitamins
     label: Vitamins
     models:
@@ -170,7 +181,31 @@ models:
     angles: full
     stl: true
 
-  # Assemblies
+  # Tower components
+  - name: tower_frame
+    type: component
+    scad: build/tower_frame.scad
+    angles: full
+    stl: true
+
+  - name: tower_bottom_panel
+    type: component
+    scad: build/tower_bottom_panel.scad
+    angles: full
+    stl: true
+
+  # Tower assemblies
+  - name: tower_assembly
+    type: assembly
+    scad: build/tower_assembly.scad
+    angles: full
+    stl: false
+    variants:
+      - name: exploded
+        scad: build/tower_assembly_exploded.scad
+        angles: standard
+
+  # Pico assemblies
   - name: pico_base_assembly
     type: assembly
     scad: build/pico_base_assembly.scad
